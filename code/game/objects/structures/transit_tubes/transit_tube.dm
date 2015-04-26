@@ -19,6 +19,23 @@
 	//  this continues to work.
 	var/global/list/tube_dir_list = list(NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST)
 
+/obj/structure/transit_tube/Bumped(mob/AM as mob|obj)
+	if(istype(AM,/obj/structure/transit_tube_pod))
+		var/obj/structure/transit_tube_pod/P = AM
+		P.loc = src.loc
+		P.jumped = 1
+		P.moving = 0
+		spawn(1)
+			P.follow_tube(0)
+		return
+
+	var/obj/structure/transit_tube/T = locate() in AM.loc
+	if(T)
+		AM << "<span class='warning'>The tube's support pylons block your way.</span>"
+		return ..()
+	else
+		AM.loc = src.loc
+		AM << "<span class='info'>You slip under the tube.</span>"
 
 // When destroyed by explosions, properly handle contents.
 obj/structure/transit_tube/ex_act(severity)

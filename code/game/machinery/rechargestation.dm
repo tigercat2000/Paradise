@@ -44,6 +44,9 @@
 	for(var/obj/item/weapon/stock_parts/cell/C in component_parts)
 		recharge_speed *= C.maxcharge / 10000
 
+/obj/machinery/recharge_station/Bumped(var/atom/A)
+	move_inside()
+
 /obj/machinery/recharge_station/process()
 	if(!(NOPOWER|BROKEN))
 		return
@@ -106,6 +109,15 @@
 					R.cell.charge = R.cell.maxcharge
 				else
 					R.cell.charge = min(R.cell.charge + recharge_speed, R.cell.maxcharge)
+
+		else if (istype(occupant, /mob/living/carbon/human))
+			var/mob/living/carbon/human/H = occupant //for machine people, unnecessary to typecast as human/machine
+			if(H.nutrition < 450)
+				H.nutrition += 15
+
+				src.occupant.show_message("<span class='notice'>\The [src] trickles energy to your cell.</span>")
+			else
+				src.occupant.show_message("<span class='notice'>\The [src] attempts to trickle energy to your cell, but you are already fully charged.</span>")
 
 /obj/machinery/recharge_station/proc/go_out()
 	if(!( src.occupant ))
@@ -191,6 +203,7 @@
 							S.reagents.add_reagent("sacid", 2 * coeff)
 
 /obj/machinery/recharge_station/verb/move_eject()
+	set name = "Eject Charger"
 	set category = "Object"
 	set src in oview(1)
 	if (usr.stat != 0)
@@ -200,24 +213,35 @@
 	return
 
 /obj/machinery/recharge_station/verb/move_inside()
+	set name = "Enter Charger"
 	set category = "Object"
 	set src in oview(1)
+	var/isMP = 0
 	if (usr.stat == 2)
 		//Whoever had it so that a borg with a dead cell can't enter this thing should be shot. --NEO
 		return
-	if (!(istype(usr, /mob/living/silicon/)))
+	if(ishuman(usr))
+		if(usr:get_species() == "Machine")
+			isMP = 1
+
+	if(!istype(usr, /mob/living/silicon/) && !isMP)
 		usr << "\blue <b>Only non-organics may enter the recharger!</b>"
 		return
+
 	if (src.occupant)
 		usr << "\blue <b>The cell is already occupied!</b>"
 		return
-	if (!usr:cell)
-		usr << "\blue <b>Without a powercell, you can't be recharged.</b>"
-		//Make sure they actually HAVE a cell, now that they can get in while powerless. --NEO
-		return
-	if (panel_open)
-		usr << "\blue <b>Close the maintenance panel first.</b>"
-		return
+
+	if(!isMP)
+		if (!usr:cell)
+			usr << "\blue <b>Without a powercell, you can't be recharged.</b>"
+			//Make sure they actually HAVE a cell, now that they can get in while powerless. --NEO
+			return
+
+		if (panel_open)
+			usr << "\blue <b>Close the maintenance panel first.</b>"
+			return
+
 	usr.stop_pulling()
 	if(usr && usr.client)
 		usr.client.perspective = EYE_PERSPECTIVE

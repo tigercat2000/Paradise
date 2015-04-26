@@ -1,14 +1,14 @@
 /datum/job/civilian
-	title = "Civilian"
+	title = "Larkens"
 	flag = CIVILIAN
 	department_flag = SUPPORT
 	total_positions = -1
 	spawn_positions = -1
-	supervisors = "the head of personnel"
+	supervisors = "no one"
 	selection_color = "#dddddd"
 	access = list()			//See /datum/job/assistant/get_access()
 	minimal_access = list()	//See /datum/job/assistant/get_access()
-	alt_titles = list("Tourist","Businessman","Trader","Assistant")
+	alt_titles = list()
 
 /datum/job/civilian/equip(var/mob/living/carbon/human/H)
 	if(!H)	return 0
@@ -22,6 +22,6 @@
 
 /datum/job/civilian/get_access()
 	if(config.assistant_maint)
-		return list(access_maint_tunnels)
+		return get_all_accesses()
 	else
-		return list()
+		return get_all_accesses()

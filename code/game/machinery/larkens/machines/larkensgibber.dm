@@ -477,18 +477,18 @@
 			src.occupant.show_message("<span class='warning'>A large clamp seals around your waist. This can't bode well.</span>")
 			sleep(30)
 			visible_message("<span class='warning'><b>\The [src]</b> states 'Engaging Grinders.'</span>")
-			visible_message("<span class='warning'>\The [src] starts rumbling!</span>")
 			src.occupant.show_message("<span class='notice'>You hear a faint voice. <span class='warning'><b>\The [src]</b> states 'Engaging Grinders.'</span>")
 			sleep(30)
+			visible_message("<span class='warning'>\The [src] starts rumbling!</span>")
 			src.occupant.show_message("<span class='warning'><b> You feel an extreme amount of pain as your hands and feet are seperated from your body. </b></span>")
 			src.occupant.apply_effect(40, AGONY, 0)
 			visible_message("<span class='warning'>You hear a loud squelchy grinding sound.</span>")
 			sleep(20)
 			src.occupant.show_message("<span class='warning'><b>You make a loud groan as your knees and elbows are seperated. </b></span>")
-			visible_message("<b>[src.occupant]</b>groans loudly.</span>")
+			visible_message("<b>[src.occupant]</b> groans loudly.</span>")
 			sleep(40)
 			src.occupant.show_message("<span class='warning'><b>As a blade saws your remaining limbs off, you attempt to scream out, but only make a little whimper. </b></span>")
-			visible_message("<b>[src.occupant]</b>lightly whimpers.</span>")
+			visible_message("<b>[src.occupant]</b> lightly whimpers.</span>")
 			sleep(40)
 			src.occupant.show_message("<span class='warning'><b>You feel a serrated blade splitting your torso open! </b></span>")
 			src.occupant.apply_effect(20, AGONY, 0)
@@ -509,7 +509,7 @@
 		playsound(src.loc, 'sound/effects/splat.ogg', 50, 1)
 		operating = 0
 
-		for (var/obj/item/thing in contents) //Meat is spawned inside \The [src] and thrown out afterwards.
+		for (var/obj/item/thing in contents) //Meat is spawned inside the gibber and thrown out afterwards.
 			thing.loc = get_turf(thing) // Drop it onto the turf for throwing.
 			thing.throw_at(get_edge_target_turf(src,gib_throw_dir),rand(1,5),15) // Being pelted with bits of meat and bone would hurt.
 
