@@ -84,7 +84,7 @@ var/global/list/undershirt_list = undershirt_t
 	//Backpacks
 var/global/list/backbaglist = list("Nothing", "Backpack", "Satchel", "Satchel Alt")
 
-
+var/global/autostripperoutputs = list()
 //////////////////////////
 /////Initial Building/////
 //////////////////////////
