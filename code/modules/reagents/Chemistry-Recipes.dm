@@ -17,6 +17,7 @@ datum
 		var/required_temp = 0
 		var/mix_message = "The solution begins to bubble."
 		var/mix_sound = 'sound/effects/bubbles.ogg'
+		var/no_message = 0
 
 
 		proc
@@ -379,6 +380,7 @@ datum
 			mix_message = "The mixture gives off a sharp acidic tang."
 
 ///////Changeling Blood Test/////////////
+/*
 		changeling_test
 			name = "Changeling blood test"
 			id = "changelingblood"
@@ -403,6 +405,7 @@ datum
 						M.show_message( "<span class ='notice'>The blood seems to break apart in the fuel.</span>", 1)
 				holder.del_reagent("blood")
 				return
+*/
 
 /////////////////////////////////////////////NEW SLIME CORE REACTIONS/////////////////////////////////////////////
 
