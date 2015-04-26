@@ -82,5 +82,7 @@
 
 	var/frozen = 0 //used for preventing attacks on admin-frozen people
 
+	var/should_absorb = 0 //slime people lulz
+
 	fire_dmi = 'icons/mob/OnFire.dmi'
 	fire_sprite = "Standing"

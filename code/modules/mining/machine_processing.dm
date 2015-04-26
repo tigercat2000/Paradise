@@ -14,7 +14,10 @@
 /obj/machinery/mineral/processing_unit_console/New()
 	..()
 	spawn(7)
-		src.machine = locate(/obj/machinery/mineral/processing_unit, get_step(src, machinedir))
+		for(var/obj/machinery/mineral/processing_unit/PU in orange(5,src))
+			src.machine = PU
+			break
+
 		if (machine)
 			machine.console = src
 		else

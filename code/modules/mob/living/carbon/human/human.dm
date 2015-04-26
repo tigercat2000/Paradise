@@ -1528,26 +1528,11 @@
 
 	T.Weaken(5)
 
-	//Only official raider vox get the grab and no self-prone."
-	if(src.mind && src.mind.special_role != "Vox Raider")
-		src.Weaken(5)
-		return
-
-	var/use_hand = "left"
-	if(l_hand)
-		if(r_hand)
-			src << "\red You need to have one hand free to grab someone."
-			return
-		else
-			use_hand = "right"
-
 	src.visible_message("<span class='warning'><b>\The [src]</b> seizes [T] aggressively!</span>")
 
-	var/obj/item/weapon/grab/G = new(src,T)
-	if(use_hand == "left")
-		l_hand = G
-	else
-		r_hand = G
+	T.grabbedby(src,1)
+
+	var/obj/item/weapon/grab/G = src.get_active_hand()
 
 	G.state = GRAB_AGGRESSIVE
 	G.icon_state = "grabbed1"

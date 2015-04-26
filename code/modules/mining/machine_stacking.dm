@@ -14,7 +14,10 @@
 	..()
 
 	spawn(7)
-		src.machine = locate(/obj/machinery/mineral/stacking_machine, get_step(src, machinedir))
+		for(var/obj/machinery/mineral/stacking_machine/SM in orange(5,src))
+			src.machine = SM
+			break
+
 		if (machine)
 			machine.console = src
 		else
@@ -126,6 +129,6 @@
 			S.amount = stack_amt
 			stack_storage[sheet] -= stack_amt
 
-	console.updateUsrDialog()
+	if(console)	console.updateUsrDialog()
 	return
 

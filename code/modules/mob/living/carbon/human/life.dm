@@ -111,6 +111,9 @@ var/global/list/brutefireloss_overlays = list("1" = image("icon" = 'icons/mob/sc
 		//stuff in the stomach
 		handle_stomach()
 
+		//stuff in slime
+		handle_slime()
+
 		handle_shock()
 
 		handle_pain()
@@ -332,6 +335,7 @@ var/global/list/brutefireloss_overlays = list("1" = image("icon" = 'icons/mob/sc
 		if(reagents.has_reagent("lexorin")) return
 		if(NO_BREATH in mutations) return // No breath mutation means no breathing.
 		if(istype(loc, /obj/machinery/atmospherics/unary/cryo_cell)) return
+		if(istype(loc, /mob))	return //lol why not
 		if(species && (species.flags & NO_BREATHE)) return
 
 		var/datum/gas_mixture/environment = loc.return_air()
@@ -1416,6 +1420,23 @@ var/global/list/brutefireloss_overlays = list("1" = image("icon" = 'icons/mob/sc
 					if(M.stat == 2)
 						M.death(1)
 						stomach_contents.Remove(M)
+						del(M)
+						continue
+					if(air_master.current_cycle%3==1)
+						if(!(M.status_flags & GODMODE))
+							M.adjustBruteLoss(5)
+						nutrition += 10
+
+	proc/handle_slime()
+		spawn(0)
+			for(var/mob/living/M in slime_contents)
+				if(M.loc != src)
+					slime_contents.Remove(M)
+					continue
+				if(isliving(M) && stat != 2 && should_absorb)
+					if(M.stat == 2)
+						M.death(1)
+						slime_contents.Remove(M)
 						del(M)
 						continue
 					if(air_master.current_cycle%3==1)

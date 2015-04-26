@@ -190,19 +190,54 @@
 	if(M == affecting)
 		s_click(hud)
 		return
+
 	if(M == assailant && state >= GRAB_AGGRESSIVE)
-		if( (ishuman(user) && (FAT in user.mutations) && iscarbon(affecting) ) || ( isalien(user) && iscarbon(affecting) ) || ( istype(user,/mob/living/carbon/human/kidan) && istype(affecting,/mob/living/carbon/monkey/diona) ) || ( ishuman(user) && user.get_species() == "Tajaran"  && istype(affecting,/mob/living/simple_animal/mouse) ) )
+		var/vcheck = validcheck(M, user)
+
+		if(vcheck)
 			var/mob/living/carbon/attacker = user
-			user.visible_message("<span class='danger'>[user] is attempting to devour \the [affecting]!</span>")
+			switch(vcheck)
+				if(1)
+					user.visible_message("<span class='danger'>[user] is attempting to devour \the [affecting]!</span>")
+				if(2)
+					user.visible_message("<span class='danger'>[user] is starting to cover \the [affecting] in their slime!</span>")
+
 			if(istype(user, /mob/living/carbon/alien/humanoid/hunter) || istype(affecting, /mob/living/simple_animal/mouse)) //mice are easy to eat
 				if(!do_mob(user, affecting)||!do_after(user, 30)) return
+
 			else
 				if(!do_mob(user, affecting)||!do_after(user, 100)) return
-			user.visible_message("<span class='danger'>[user] devours \the [affecting]!</span>")
+
 			affecting.loc = user
-			attacker.stomach_contents.Add(affecting)
+
+			switch(vcheck)
+				if(1)
+					user.visible_message("<span class='danger'>[user] devours \the [affecting]!</span>")
+					attacker.stomach_contents.Add(affecting)
+				if(2)
+					user.visible_message("<span class='danger'>[user] entirely covers \the [affecting] with their slime!</span>")
+					attacker.slime_contents.Add(affecting)
 			del(src)
 
+/obj/item/weapon/grab/proc/validcheck(var/mob/affecting,var/mob/user)
+	if(!affecting || !user)	return
+
+	if(ishuman(user) && (FAT in user.mutations) && iscarbon(affecting))
+		return 1
+
+	if(isalien(user) && iscarbon(affecting))
+		return 1
+
+	if(istype(user,/mob/living/carbon/human/kidan) && istype(affecting,/mob/living/carbon/monkey/diona))
+		return 1
+
+	if(ishuman(user) && user.get_species() == "Tajaran"  && istype(affecting,/mob/living/simple_animal/mouse))
+		return 1
+
+	if(ishuman(user) && user.get_species() == "Slime People" && iscarbon(affecting))
+		return 2
+
+	return 0
 
 /obj/item/weapon/grab/dropped()
 	del(src)

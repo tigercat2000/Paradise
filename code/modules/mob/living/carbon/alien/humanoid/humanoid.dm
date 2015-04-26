@@ -245,6 +245,10 @@
 		M << "No attacking people at spawn, you jackass."
 		return
 
+	if(istype(M.loc,/mob)) //hue hue hue hue hue hue hue
+		M << "<span class='warning'>That's not going to work. Find a weapon.</span>"
+		return
+
 	if(..())	//to allow surgery to return properly.
 		return
 
