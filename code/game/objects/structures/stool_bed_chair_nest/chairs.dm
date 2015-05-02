@@ -73,7 +73,6 @@
 
 // Chair types
 /obj/structure/stool/bed/chair/wood
-	autoignition_temperature = AUTOIGNITION_WOOD
 	// TODO:  Special ash subtype that looks like charred chair legs
 
 /obj/structure/stool/bed/chair/wood/normal
@@ -193,7 +192,7 @@
 	name = "old ratty sofa"
 	icon_state = "sofamiddle"
 	anchored = 1
-	density = 1
+
 /obj/structure/stool/bed/chair/sofa/left
 	icon_state = "sofaend_left"
 /obj/structure/stool/bed/chair/sofa/right

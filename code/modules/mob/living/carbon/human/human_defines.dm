@@ -84,5 +84,6 @@
 
 	var/should_absorb = 0 //slime people lulz
 
-	fire_dmi = 'icons/mob/OnFire.dmi'
-	fire_sprite = "Standing"
+	var/fire_dmi = 'icons/mob/OnFire.dmi'
+	var/fire_sprite = "Standing"
+
