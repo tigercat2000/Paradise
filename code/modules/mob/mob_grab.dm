@@ -199,20 +199,30 @@
 		return
 
 	if(M == assailant && state >= GRAB_AGGRESSIVE) //no eatin unless you have an agressive grab
-		if(checkvalid(user, affecting)) //wut
+		if(check_valid(user, affecting)) //wut
+
 			var/mob/living/carbon/attacker = user
-			user.visible_message("<span class='danger'>[user] is attempting to devour \the [affecting]!</span>")
 
-			if(!do_mob(user, affecting) || !do_after(user, checktime(user, affecting))) return
+			var/dev_verb = check_devour_verb(attacker, affecting)
+			var/extra = check_extra_message(attacker, affecting)
+			var/endloc = check_end_location(attacker, affecting)
 
-			user.visible_message("<span class='danger'>[user] devours \the [affecting]!</span>")
+			user.visible_message("<span class='danger'>[user] is attempting to [dev_verb] \the [affecting][extra]</span>")
+
+			if(!do_mob(user, affecting) || !do_after(user, check_time(user, affecting))) return
+
+			user.visible_message("<span class='danger'>[user] [dev_verb]s \the [affecting][extra]</span>")
 
 			affecting.loc = user //add the mob to the user
-			attacker.stomach_contents.Add(affecting) //list keeping
+			switch(endloc)
+				if("slime")
+					attacker.slime_contents.Add(affecting) //list keeping
+				if("stomach")
+					attacker.stomach_contents.Add(affecting) //list keeping
 
 			del(src)
 
-/obj/item/weapon/grab/proc/checkvalid(var/mob/attacker, var/mob/prey) //does all the checking for the attack proc to see if a mob can eat another with the grab
+/obj/item/weapon/grab/proc/check_valid(var/mob/attacker, var/mob/prey) //does all the checking for the attack proc to see if a mob can eat another with the grab
 	if(ishuman(attacker) && (FAT in attacker.mutations) && iscarbon(prey)) //Fat people eating carbon mobs
 		return 1
 
@@ -225,9 +235,12 @@
 	if(ishuman(attacker) && attacker.get_species() == "Tajaran"  && istype(prey,/mob/living/simple_animal/mouse)) //Tajaran eating mice. Meow!
 		return 1
 
+	if(ishuman(attacker) && attacker.get_species() == "Slime People" && iscarbon(prey))
+		return 1
+
 	return 0
 
-/obj/item/weapon/grab/proc/checktime(var/mob/attacker, var/mob/prey) //Returns the time the attacker has to wait before they eat the prey
+/obj/item/weapon/grab/proc/check_time(var/mob/attacker, var/mob/prey) //Returns the time the attacker has to wait before they eat the prey
 	if(isalien(attacker))
 		return EAT_TIME_XENO //xenos get a speed boost
 
@@ -235,6 +248,27 @@
 		return EAT_TIME_MOUSE
 
 	return EAT_TIME_FAT //if it doesn't fit into the above, it's probably a fat guy, take EAT_TIME_FAT to do it
+
+/obj/item/weapon/grab/proc/check_devour_verb(var/mob/attacker, var/mob/prey)
+	if(ishumanslime(attacker))
+		return "coat"
+
+	else
+		return "devour"
+
+/obj/item/weapon/grab/proc/check_extra_message(var/mob/attacker, var/mob/prey)
+	if(ishumanslime(attacker))
+		return " in their slime!"
+
+	else
+		return "!"
+
+/obj/item/weapon/grab/proc/check_end_location(var/mob/attacker, var/mob/prey)
+	if(ishumanslime(attacker))
+		return "slime"
+
+	else
+		return "stomach"
 
 /obj/item/weapon/grab/dropped()
 	del(src)

@@ -561,6 +561,7 @@
 /datum/species/slime/handle_post_spawn(var/mob/living/carbon/human/H)
 	H.verbs += /mob/living/carbon/human/proc/slimepeople_ventcrawl
 	H.verbs += /mob/living/carbon/human/proc/slimecontenthandle
+	H.verbs += /mob/living/carbon/human/proc/slime_release
 	..()
 
 /datum/species/grey

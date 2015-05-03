@@ -28,14 +28,22 @@ mob/living
 			germ_level++
 
 #define STOMACH_ATTACK_DELAY 4
+#define SLIME_ATTACK_DELAY 10
 
 /mob/living/carbon/var/last_stomach_attack //defining this here because no one would look in carbon_defines for it
 
 /mob/living/carbon/relaymove(var/mob/user, direction)
+	if(user in src.slime_contents)
+		if(last_stomach_attack + SLIME_ATTACK_DELAY > world.time)	return
+		last_stomach_attack = world.time
+		src.visible_message("<span class='warning'>[user] struggles desperately in \the [src]'s slime.</span>")
+		user.show_message("<span class='warning'>You struggle uselessly in \the [src]'s slime.</span>")
+		return
+
 	if(user in src.stomach_contents)
 		if(last_stomach_attack + STOMACH_ATTACK_DELAY > world.time)	return
-
 		last_stomach_attack = world.time
+
 		for(var/mob/M in hearers(4, src))
 			if(M.client)
 				M.show_message(text("\red You hear something rumbling inside [src]'s stomach..."), 2)
@@ -73,6 +81,8 @@ mob/living
 	for(var/mob/M in src)
 		if(M in src.stomach_contents)
 			src.stomach_contents.Remove(M)
+		if(M in src.slime_contents)
+			src.slime_contents.Remove(M)
 		M.loc = src.loc
 		for(var/mob/N in viewers(src, null))
 			if(N.client)
