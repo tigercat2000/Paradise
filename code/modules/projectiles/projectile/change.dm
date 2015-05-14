@@ -12,8 +12,8 @@
 
 /obj/item/projectile/change/proc/wabbajack (mob/M as mob in living_mob_list)
 	if(istype(M, /mob/living) && M.stat != DEAD)
-		if(M.monkeyizing)	return
-		M.monkeyizing = 1
+		if(M.notransform)	return
+		M.notransform = 1
 		M.canmove = 0
 		M.icon = null
 		M.overlays.Cut()
@@ -74,7 +74,7 @@
 				return
 
 		for (var/obj/effect/proc_holder/spell/wizard/S in M.spell_list)
-			new_mob.spell_list += new S.type
+			new_mob.AddSpell(new S.type)
 
 		new_mob.a_intent = "harm"
 		if(M.mind)

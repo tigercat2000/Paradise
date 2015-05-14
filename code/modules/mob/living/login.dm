@@ -7,6 +7,12 @@
 	//If they're SSD, remove it so they can wake back up.
 	player_logged = 0
 
+	//Vents
+	if(ventcrawler)
+		src << "<span class='notice'>You can ventcrawl! Use alt+click on vents to quickly travel about the station.</span>"
+	//Should update regardless of if we can ventcrawl, since we can end up in pipes in other ways.
+	update_pipe_vision()
+
 	//Round specific stuff like hud updates
 	if(ticker && ticker.mode)
 		var/ref = "\ref[mind]"
@@ -27,4 +33,7 @@
 			if("vampire")
 				if((ref in ticker.mode.thralls) || (mind in ticker.mode.enthralled))
 					ticker.mode.update_vampire_icons_added(mind)
+			if("shadowling")
+				if((mind in ticker.mode.shadowling_thralls) || (mind in ticker.mode.shadows))
+					ticker.mode.update_shadow_icons_added(src.mind)
 	return .

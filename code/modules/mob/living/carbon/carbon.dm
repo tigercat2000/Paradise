@@ -102,7 +102,6 @@ mob/living
 			return
 	return
 
-
 /mob/living/carbon/electrocute_act(var/shock_damage, var/obj/source, var/siemens_coeff = 1.0, var/def_zone = null)
 	if(status_flags & GODMODE)	//godmode
 		return 0
@@ -279,86 +278,114 @@ mob/living
 /mob/living/carbon/proc/setDNA(var/datum/dna/newDNA)
 	dna = newDNA
 
-/mob/living/carbon/can_use_vents()
-	return
+
+var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump, /obj/machinery/atmospherics/unary/vent_scrubber)
 
 /mob/living/proc/handle_ventcrawl(var/atom/clicked_on) // -- TLE -- Merged by Carn
-	diary << "[src] is ventcrawling."
-	if(!stat)
-		if(!lying)
+	if(!Adjacent(clicked_on))
+		return
 
-/*
-			if(clicked_on)
-				world << "We start with [clicked_on], and [clicked_on.type]"
-*/
-			var/obj/machinery/atmospherics/unary/vent_found
+	var/ventcrawlerlocal = 0
+	if(ventcrawler)
+		ventcrawlerlocal = ventcrawler
 
-			if(clicked_on && Adjacent(clicked_on))
-				vent_found = clicked_on
-				if(!istype(vent_found) || !vent_found.can_crawl_through())
-					vent_found = null
+	if(!ventcrawler)
+		if(ishuman(src))
+			var/mob/living/carbon/human/H = src
+			if(!H.species.ventcrawler)	ventcrawlerlocal = H.species.ventcrawler
+
+	if(!ventcrawlerlocal)	return
+
+	if(stat)
+		src << "You must be conscious to do this!"
+		return
+
+	if(lying)
+		src << "You can't vent crawl while you're stunned!"
+		return
+
+	var/obj/machinery/atmospherics/unary/vent_found
+
+	if(clicked_on)
+		vent_found = clicked_on
+		if(!istype(vent_found) || !vent_found.can_crawl_through())
+			vent_found = null
 
 
-			if(!vent_found)
-				for(var/obj/machinery/atmospherics/machine in range(1,src))
-					if(is_type_in_list(machine, ventcrawl_machinery))
-						vent_found = machine
+	if(!vent_found)
+		for(var/obj/machinery/atmospherics/machine in range(1,src))
+			if(is_type_in_list(machine, ventcrawl_machinery))
+				vent_found = machine
 
-					if(!vent_found.can_crawl_through())
-						vent_found = null
-
-					if(vent_found)
-						break
+			if(!vent_found.can_crawl_through())
+				vent_found = null
 
 			if(vent_found)
-				if(vent_found.network && (vent_found.network.normal_members.len || vent_found.network.line_members.len))
+				break
 
-					src << "You begin climbing into the ventilation system..."
-					if(!do_after(src, 45))
+	if(vent_found)
+		if(vent_found.network && (vent_found.network.normal_members.len || vent_found.network.line_members.len))
+			visible_message("<span class='notice'>[src] begins climbing into the ventilation system...</span>", \
+							"<span class='notice'>You begin climbing into the ventilation system...</span>")
+
+			if(!do_after(src, 45))
+				return
+
+			if(!client)
+				return
+
+			if(iscarbon(src) && contents.len && ventcrawlerlocal < 2)//It must have atleast been 1 to get this far
+				for(var/obj/item/I in contents)
+					var/failed = 0
+					if(istype(I, /obj/item/weapon/implant))
+						continue
+					if(istype(I, /obj/item/organ))
+						continue
+					else
+						failed++
+
+					if(failed)
+						src << "<span class='warning'>You can't crawl around in the ventilation ducts with items!</span>"
 						return
 
-					if(!client)
-						return
-
-					if(contents.len && !isrobot(src))
-						for(var/obj/item/carried_item in contents)//If the ventcrawler got on objects.
-							if(!(isInTypes(carried_item, canEnterVentWith)))
-								src << "<SPAN CLASS='warning'>You can't be carrying items or have items equipped when vent crawling!</SPAN>"
-								return
-
-					visible_message("<B>[src] scrambles into the ventilation ducts!</B>", "You climb into the ventilation system.")
-
-					loc = vent_found
-					add_ventcrawl(vent_found)
-
-				else
-					src << "This vent is not connected to anything."
-
-			else
-				src << "You must be standing on or beside an air vent to enter it."
-
-		else
-			src << "You can't vent crawl while you're stunned!"
+			visible_message("<b>[src] scrambles into the ventilation ducts!</b>", "You climb into the ventilation system.")
+			src.loc = vent_found
+			add_ventcrawl(vent_found)
 
 	else
-		src << "You must be conscious to do this!"
-	return
+		src << "<span class='warning'>This ventilation duct is not connected to anything!</span>"
 
-/mob/living/proc/add_ventcrawl(obj/machinery/atmospherics/unary/starting_machine)
-	for(var/datum/pipeline/pipeline in starting_machine.network.line_members)
-		for(var/atom/A in (pipeline.members || pipeline.edges))
-			var/image/new_image = image(A, A.loc, dir = A.dir)
-			pipes_shown += new_image
-			client.images += new_image
+
+/mob/living/proc/add_ventcrawl(obj/machinery/atmospherics/starting_machine)
+	var/datum/pipe_network/network = starting_machine.return_network(starting_machine)
+	if(!network)
+		return
+	for(var/datum/pipeline/pipeline in network.line_members)
+		for(var/obj/machinery/atmospherics/A in (pipeline.members || pipeline.edges))
+			if(!A.pipe_image)
+				A.pipe_image = image(A, A.loc, layer = 20, dir = A.dir) //the 20 puts it above Byond's darkness (not its opacity view)
+			pipes_shown += A.pipe_image
+			client.images += A.pipe_image
 
 /mob/living/proc/remove_ventcrawl()
-	for(var/image/current_image in pipes_shown)
-		client.images -= current_image
+	if(client)
+		for(var/image/current_image in pipes_shown)
+			client.images -= current_image
+		client.eye = src
 
 	pipes_shown.len = 0
 
-	if(client)
-		client.eye = src
+//OOP
+/atom/proc/update_pipe_vision()
+	return
+
+/mob/living/update_pipe_vision()
+	if(pipes_shown.len)
+		if(!istype(loc, /obj/machinery/atmospherics))
+			remove_ventcrawl()
+	else
+		if(istype(loc, /obj/machinery/atmospherics))
+			add_ventcrawl(loc)
 
 /mob/living/carbon/clean_blood()
 	. = ..()

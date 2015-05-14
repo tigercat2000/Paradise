@@ -41,8 +41,11 @@
 
 	sleep_offline = 1
 
+	plant_controller = new()
 	// Create robolimbs for chargen.
 	populate_robolimb_list()
+
+	setup_map_transitions() //Before the MC starts up
 
 	processScheduler = new
 	master_controller = new /datum/controller/game_controller()
@@ -51,6 +54,12 @@
 		processScheduler.setup()
 
 		master_controller.setup()
+
+	#ifdef MAP_NAME
+	map_name = "[MAP_NAME]"
+	#else
+	map_name = "Unknown"
+	#endif
 
 	spawn(3000)		//so we aren't adding to the round-start lag
 		if(config.ToRban)
@@ -118,6 +127,7 @@ var/world_topic_spam_protect_time = world.timeofday
 
 //		if(revdata)	s["revision"] = revdata.revision
 		s["admins"] = admins
+		s["map_name"] = map_name ? map_name : "Unknown"
 
 		return list2params(s)
 

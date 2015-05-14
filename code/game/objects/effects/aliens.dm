@@ -49,6 +49,12 @@
 	relativewall_neighbours()
 	..()
 
+/obj/structure/alien/resin/wall/shadowling //For chrysalis
+	name = "chrysalis wall"
+	desc = "Some sort of purple substance in an egglike shape. It pulses and throbs from within and seems impenetrable."
+	health = INFINITY
+	icon_state = "wall0"
+
 /obj/structure/alien/resin/membrane
 	name = "resin membrane"
 	desc = "Resin just thin enough to let light pass through."
@@ -266,7 +272,7 @@
 	name = "glowing resin"
 	desc = "Blue bioluminescence shines from beneath the surface."
 	icon_state = "weednode"
-	luminosity = 1
+	light_range = 1
 	var/node_range = NODERANGE
 
 

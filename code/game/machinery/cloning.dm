@@ -24,13 +24,13 @@
 	var/speed_coeff
 	var/efficiency
 
-	l_color = "#00FF00"
+	light_color = "#00FF00"
 	power_change()
 		..()
 		if(!(stat & (BROKEN|NOPOWER)))
-			SetLuminosity(2)
+			set_light(2)
 		else
-			SetLuminosity(0)
+			set_light(0)
 
 /obj/machinery/clonepod/New()
 	..()
@@ -447,7 +447,7 @@
 	src.occupant.loc = src.loc
 	src.icon_state = "pod_0"
 	src.eject_wait = 0 //If it's still set somehow.
-	domutcheck(src.occupant) //Waiting until they're out before possible monkeyizing.
+	domutcheck(src.occupant) //Waiting until they're out before possible notransform.
 	src.occupant.add_side_effect("Bad Stomach") // Give them an extra side-effect for free.
 	src.occupant = null
 

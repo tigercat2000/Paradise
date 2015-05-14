@@ -4,6 +4,7 @@
 	icon = 'icons/obj/doors/rapid_pdoor.dmi'
 	icon_state = "pdoor1"
 	var/id = 1.0
+	explosion_block = 3
 
 /obj/machinery/door/poddoor/preopen
 	icon_state = "pdoor0"
@@ -24,6 +25,30 @@
 	else
 		return 0
 
+//"BLAST" doors are obviously stronger than regular doors when it comes to BLASTS.
+/obj/machinery/door/poddoor/ex_act(severity, target)
+	switch(severity)
+		if(1.0)
+			if(prob(80))
+				qdel(src)
+			else
+				var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+				s.set_up(2, 1, src)
+				s.start()
+		if(2.0)
+			if(prob(20))
+				qdel(src)
+			else
+				var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+				s.set_up(2, 1, src)
+				s.start()
+
+		if(3.0)
+			if(prob(80))
+				var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+				s.set_up(2, 1, src)
+				s.start()
+
 /obj/machinery/door/poddoor/attackby(obj/item/weapon/C as obj, mob/user as mob, params)
 	src.add_fingerprint(user)
 	if (!( istype(C, /obj/item/weapon/crowbar) || (istype(C, /obj/item/weapon/twohanded/fireaxe) && C:wielded == 1) ))
@@ -33,7 +58,7 @@
 			src.operating = 1
 			flick("pdoorc0", src)
 			src.icon_state = "pdoor0"
-			src.SetOpacity(0)
+			src.set_opacity(0)
 			sleep(15)
 			src.density = 0
 			src.operating = 0
@@ -49,7 +74,7 @@
 		src.operating = 1
 	flick("pdoorc0", src)
 	src.icon_state = "pdoor0"
-	src.SetOpacity(0)
+	src.set_opacity(0)
 	sleep(5)
 	src.density = 0
 	sleep(5)
@@ -69,7 +94,7 @@
 	src.operating = 1
 	flick("pdoorc1", src)
 	src.icon_state = "pdoor1"
-	src.SetOpacity(initial(opacity))
+	src.set_opacity(initial(opacity))
 	air_update_turf(1)
 	update_freelok_sight()
 	sleep(5)
@@ -90,9 +115,9 @@
 		src.operating = 1
 	flick("pdoorc0", src)
 	src.icon_state = "pdoor0"
-	src.SetOpacity(0)
-	f1.SetOpacity(0)
-	f2.SetOpacity(0)
+	src.set_opacity(0)
+	f1.set_opacity(0)
+	f2.set_opacity(0)
 
 	sleep(10)
 	src.density = 0
@@ -120,9 +145,9 @@
 	f2.density = 1
 
 	sleep(10)
-	src.SetOpacity(initial(opacity))
-	f1.SetOpacity(initial(opacity))
-	f2.SetOpacity(initial(opacity))
+	src.set_opacity(initial(opacity))
+	f1.set_opacity(initial(opacity))
+	f2.set_opacity(initial(opacity))
 
 	update_nearby_tiles()
 
@@ -140,14 +165,14 @@
 	src.icon_state = "pdoor0"
 	sleep(10)
 	src.density = 0
-	src.SetOpacity(0)
+	src.set_opacity(0)
 
 	f1.density = 0
-	f1.SetOpacity(0)
+	f1.set_opacity(0)
 	f2.density = 0
-	f2.SetOpacity(0)
+	f2.set_opacity(0)
 	f3.density = 0
-	f3.SetOpacity(0)
+	f3.set_opacity(0)
 
 	air_update_turf(1)
 	update_freelok_sight()
@@ -168,14 +193,14 @@
 	src.density = 1
 
 	f1.density = 1
-	f1.SetOpacity(1)
+	f1.set_opacity(1)
 	f2.density = 1
-	f2.SetOpacity(1)
+	f2.set_opacity(1)
 	f3.density = 1
-	f3.SetOpacity(1)
+	f3.set_opacity(1)
 
 	if (src.visible)
-		src.SetOpacity(1)
+		src.set_opacity(1)
 	air_update_turf(1)
 	update_freelok_sight()
 
@@ -194,16 +219,16 @@
 	src.icon_state = "pdoor0"
 	sleep(10)
 	src.density = 0
-	src.SetOpacity(0)
+	src.set_opacity(0)
 
 	f1.density = 0
-	f1.SetOpacity(0)
+	f1.set_opacity(0)
 	f2.density = 0
-	f2.SetOpacity(0)
+	f2.set_opacity(0)
 	f3.density = 0
-	f3.SetOpacity(0)
+	f3.set_opacity(0)
 	f4.density = 0
-	f4.SetOpacity(0)
+	f4.set_opacity(0)
 
 	air_update_turf(1)
 	update_freelok_sight()
@@ -224,16 +249,16 @@
 	src.density = 1
 
 	f1.density = 1
-	f1.SetOpacity(1)
+	f1.set_opacity(1)
 	f2.density = 1
-	f2.SetOpacity(1)
+	f2.set_opacity(1)
 	f3.density = 1
-	f3.SetOpacity(1)
+	f3.set_opacity(1)
 	f4.density = 1
-	f4.SetOpacity(1)
+	f4.set_opacity(1)
 
 	if (src.visible)
-		src.SetOpacity(1)
+		src.set_opacity(1)
 	air_update_turf(1)
 	update_freelok_sight()
 
@@ -252,12 +277,12 @@
 	src.icon_state = "pdoor0"
 	sleep(10)
 	src.density = 0
-	src.sd_SetOpacity(0)
+	src.sd_set_opacity(0)
 
 	f1.density = 0
-	f1.sd_SetOpacity(0)
+	f1.sd_set_opacity(0)
 	f2.density = 0
-	f2.sd_SetOpacity(0)
+	f2.sd_set_opacity(0)
 
 	update_nearby_tiles()
 
@@ -277,12 +302,12 @@
 	src.density = 1
 
 	f1.density = 1
-	f1.sd_SetOpacity(1)
+	f1.sd_set_opacity(1)
 	f2.density = 1
-	f2.sd_SetOpacity(1)
+	f2.sd_set_opacity(1)
 
 	if (src.visible)
-		src.sd_SetOpacity(1)
+		src.sd_set_opacity(1)
 	update_nearby_tiles()
 
 	sleep(10)
@@ -301,14 +326,14 @@
 	src.icon_state = "pdoor0"
 	sleep(10)
 	src.density = 0
-	src.SetOpacity(0)
+	src.set_opacity(0)
 
 	f1.density = 0
-	f1.SetOpacity(0)
+	f1.set_opacity(0)
 	f2.density = 0
-	f2.SetOpacity(0)
+	f2.set_opacity(0)
 	f3.density = 0
-	f3.SetOpacity(0)
+	f3.set_opacity(0)
 
 	air_update_turf(1)
 	update_freelok_sight()
@@ -329,14 +354,14 @@
 	src.density = 1
 
 	f1.density = 1
-	f1.SetOpacity(1)
+	f1.set_opacity(1)
 	f2.density = 1
-	f2.SetOpacity(1)
+	f2.set_opacity(1)
 	f3.density = 1
-	f3.SetOpacity(1)
+	f3.set_opacity(1)
 
 	if (src.visible)
-		src.SetOpacity(1)
+		src.set_opacity(1)
 	air_update_turf(1)
 	update_freelok_sight()
 
@@ -355,16 +380,16 @@
 	src.icon_state = "pdoor0"
 	sleep(10)
 	src.density = 0
-	src.SetOpacity(0)
+	src.set_opacity(0)
 
 	f1.density = 0
-	f1.SetOpacity(0)
+	f1.set_opacity(0)
 	f2.density = 0
-	f2.SetOpacity(0)
+	f2.set_opacity(0)
 	f3.density = 0
-	f3.SetOpacity(0)
+	f3.set_opacity(0)
 	f4.density = 0
-	f4.SetOpacity(0)
+	f4.set_opacity(0)
 
 	air_update_turf(1)
 	update_freelok_sight()
@@ -385,16 +410,16 @@
 	src.density = 1
 
 	f1.density = 1
-	f1.SetOpacity(1)
+	f1.set_opacity(1)
 	f2.density = 1
-	f2.SetOpacity(1)
+	f2.set_opacity(1)
 	f3.density = 1
-	f3.SetOpacity(1)
+	f3.set_opacity(1)
 	f4.density = 1
-	f4.SetOpacity(1)
+	f4.set_opacity(1)
 
 	if (src.visible)
-		src.SetOpacity(1)
+		src.set_opacity(1)
 	air_update_turf(1)
 	update_freelok_sight()
 
@@ -416,8 +441,8 @@
 		f2 = new/obj/machinery/door/poddoor/filler_object (get_step(src,EAST))
 		f1.density = density
 		f2.density = density
-		f1.sd_SetOpacity(opacity)
-		f2.sd_SetOpacity(opacity)
+		f1.sd_set_opacity(opacity)
+		f2.sd_set_opacity(opacity)
 
 	Destroy()
 		del f1
@@ -435,8 +460,8 @@
 		f2 = new/obj/machinery/door/poddoor/filler_object (get_step(src,NORTH))
 		f1.density = density
 		f2.density = density
-		f1.sd_SetOpacity(opacity)
-		f2.sd_SetOpacity(opacity)
+		f1.sd_set_opacity(opacity)
+		f2.sd_set_opacity(opacity)
 
 	Destroy()
 		del f1
@@ -457,9 +482,9 @@
 		f1.density = density
 		f2.density = density
 		f3.density = density
-		f1.SetOpacity(opacity)
-		f2.SetOpacity(opacity)
-		f3.SetOpacity(opacity)
+		f1.set_opacity(opacity)
+		f2.set_opacity(opacity)
+		f3.set_opacity(opacity)
 
 	Destroy()
 		del f1
@@ -481,9 +506,9 @@
 		f1.density = density
 		f2.density = density
 		f3.density = density
-		f1.SetOpacity(opacity)
-		f2.SetOpacity(opacity)
-		f3.SetOpacity(opacity)
+		f1.set_opacity(opacity)
+		f2.set_opacity(opacity)
+		f3.set_opacity(opacity)
 
 	Destroy()
 		del f1
@@ -508,10 +533,10 @@
 		f2.density = density
 		f3.density = density
 		f4.density = density
-		f1.SetOpacity(opacity)
-		f2.SetOpacity(opacity)
-		f3.SetOpacity(opacity)
-		f4.SetOpacity(opacity)
+		f1.set_opacity(opacity)
+		f2.set_opacity(opacity)
+		f3.set_opacity(opacity)
+		f4.set_opacity(opacity)
 
 	Destroy()
 		del f1
@@ -537,10 +562,10 @@
 		f2.density = density
 		f3.density = density
 		f4.density = density
-		f1.SetOpacity(opacity)
-		f2.SetOpacity(opacity)
-		f3.SetOpacity(opacity)
-		f4.SetOpacity(opacity)
+		f1.set_opacity(opacity)
+		f2.set_opacity(opacity)
+		f3.set_opacity(opacity)
+		f4.set_opacity(opacity)
 
 	Destroy()
 		del f1

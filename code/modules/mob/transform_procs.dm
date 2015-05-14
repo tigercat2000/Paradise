@@ -5,14 +5,14 @@
 
 /*
 /mob/living/carbon/human/proc/monkeyize()
-	if (monkeyizing)
+	if (notransform)
 		return
 	for(var/obj/item/W in src)
 		if (W==w_uniform) // will be torn
 			continue
 		unEquip(W)
 	regenerate_icons()
-	monkeyizing = 1
+	notransform = 1
 	canmove = 0
 	stunned = 1
 	icon = null
@@ -62,7 +62,7 @@
 	return ..()
 
 /mob/living/carbon/human/AIize(move=1) // 'move' argument needs defining here too because BYOND is dumb
-	if (monkeyizing)
+	if (notransform)
 		return
 	for(var/t in organs)
 		del(t)
@@ -70,11 +70,11 @@
 	return ..(move)
 
 /mob/living/carbon/AIize()
-	if (monkeyizing)
+	if (notransform)
 		return
 	for(var/obj/item/W in src)
 		unEquip(W)
-	monkeyizing = 1
+	notransform = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
@@ -178,12 +178,12 @@
 
 //human -> robot
 /mob/living/carbon/human/proc/Robotize()
-	if (monkeyizing)
+	if (notransform)
 		return
 	for(var/obj/item/W in src)
 		unEquip(W)
 	regenerate_icons()
-	monkeyizing = 1
+	notransform = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
@@ -228,6 +228,8 @@
 
 	callHook("borgify", list(O))
 
+	O.update_pipe_vision()
+
 	O.Namepick()
 
 	spawn(0)//To prevent the proc from returning null.
@@ -236,12 +238,12 @@
 
 //human -> alien
 /mob/living/carbon/human/proc/Alienize()
-	if (monkeyizing)
+	if (notransform)
 		return
 	for(var/obj/item/W in src)
 		unEquip(W)
 	regenerate_icons()
-	monkeyizing = 1
+	notransform = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
@@ -262,17 +264,18 @@
 	new_xeno.key = key
 
 	new_xeno << "<B>You are now an alien.</B>"
+	new_xeno.update_pipe_vision()
 	spawn(0)//To prevent the proc from returning null.
 		del(src)
 	return
 
 /mob/living/carbon/human/proc/slimeize(adult as num, reproduce as num)
-	if (monkeyizing)
+	if (notransform)
 		return
 	for(var/obj/item/W in src)
 		unEquip(W)
 	regenerate_icons()
-	monkeyizing = 1
+	notransform = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
@@ -297,17 +300,18 @@
 	new_slime.key = key
 
 	new_slime << "<B>You are now a slime. Skreee!</B>"
+	new_slime.update_pipe_vision()
 	spawn(0)//To prevent the proc from returning null.
 		del(src)
 	return
 
 /mob/living/carbon/human/proc/corgize()
-	if (monkeyizing)
+	if (notransform)
 		return
 	for(var/obj/item/W in src)
 		unEquip(W)
 	regenerate_icons()
-	monkeyizing = 1
+	notransform = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
@@ -319,6 +323,7 @@
 	new_corgi.key = key
 
 	new_corgi << "<B>You are now a Corgi. Yap Yap!</B>"
+	new_corgi.update_pipe_vision()
 	spawn(0)//To prevent the proc from returning null.
 		del(src)
 	return
@@ -332,13 +337,13 @@
 		usr << "\red Sorry but this mob type is currently unavailable."
 		return
 
-	if(monkeyizing)
+	if(notransform)
 		return
 	for(var/obj/item/W in src)
 		unEquip(W)
 
 	regenerate_icons()
-	monkeyizing = 1
+	notransform = 1
 	canmove = 0
 	icon = null
 	invisibility = 101
@@ -353,6 +358,7 @@
 
 
 	new_mob << "You suddenly feel more... animalistic."
+	new_mob.update_pipe_vision()
 	spawn()
 		del(src)
 	return
@@ -371,6 +377,7 @@
 	new_mob.key = key
 	new_mob.a_intent = "harm"
 	new_mob << "You feel more... animalistic"
+	new_mob.update_pipe_vision()
 
 	del(src)
 

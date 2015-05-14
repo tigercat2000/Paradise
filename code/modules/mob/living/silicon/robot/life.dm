@@ -2,7 +2,7 @@
 	set invisibility = 0
 	//set background = 1
 
-	if (src.monkeyizing)
+	if (src.notransform)
 		return
 
 	src.blinded = null
@@ -10,6 +10,8 @@
 	//Status updates, death etc.
 	clamp_values()
 	handle_regular_status_updates()
+
+	handle_actions()
 
 	if(client)
 		handle_regular_hud_updates()

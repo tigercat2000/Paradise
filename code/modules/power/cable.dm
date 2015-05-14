@@ -91,7 +91,7 @@
 			powernet.cut_cable(src)				// update the powernets
 	cable_list -= src
 /*	if(istype(attached))
-		attached.SetLuminosity(0)
+		attached.set_light(0)
 		attached.icon_state = "powersink0"
 		attached.mode = 0
 		processing_objects.Remove(attached)
@@ -635,3 +635,11 @@ obj/structure/cable/proc/cableColor(var/colorC)
 
 	else
 		return ..()
+
+/obj/item/stack/cable_coil/cyborg
+	name = "cyborg cable coil"
+
+/obj/item/stack/cable_coil/cyborg/attack_self(mob/user)
+	var/cable_color = input(user,"Pick a cable color.","Cable Color") in list("red","yellow","green","blue","pink","orange","cyan","white")
+	_color = cable_color
+	update_icon()

@@ -22,3 +22,4 @@
 	var/pulse = PULSE_NORM	//current pulse level
 
 	var/heart_attack = 0
+	var/wetlevel = 0 //how wet the mob is

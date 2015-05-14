@@ -11,7 +11,7 @@
 
 /turf/simulated/floor/light
 	name = "Light floor"
-	luminosity = 5
+	light_range = 5
 	icon_state = "light_on"
 	floor_tile = new/obj/item/stack/tile/light
 
@@ -65,6 +65,19 @@
 			var/turf/simulated/floor/F = src
 			F.make_plating()
 			return
+
+/turf/simulated/floor/engine/ex_act(severity,target)
+	switch(severity)
+		if(1.0)
+			if(prob(80))
+				ReplaceWithLattice()
+			else if(prob(50))
+				qdel(src)
+			else
+				make_plating(1)
+		if(2.0)
+			if(prob(50))
+				make_plating(1)
 
 /turf/simulated/floor/engine/cult
 	name = "engraved floor"
@@ -260,12 +273,11 @@
 	thermal_conductivity = OPEN_HEAT_TRANSFER_COEFFICIENT
 	heat_capacity = 700000
 
-	lighting_lumcount = 4		//starlight
 //	accepts_lighting=0 			// Don't apply overlays
 
 	New()
 		..()
-		// Fucking cockshit dickfuck shitslut
+		set_light(4) //starlight
 		name = "catwalk"
 		update_icon(1)
 

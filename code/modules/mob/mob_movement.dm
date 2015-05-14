@@ -43,6 +43,14 @@
 	if(iscarbon(usr))
 		var/mob/living/carbon/C = usr
 		C.toggle_throw_mode()
+	else if(isrobot(usr))
+		var/mob/living/silicon/robot/R = usr
+		var/module = R.get_selected_module()
+		if(!module)
+			usr << "\red You have no module selected."
+			return
+		R.cycle_modules()
+		R.uneq_numbered(module)
 	else
 		usr << "\red This mob type cannot throw items."
 	return
@@ -55,6 +63,12 @@
 			usr << "\red You have nothing to drop in your hand."
 			return
 		drop_item()
+	else if(isrobot(usr))
+		var/mob/living/silicon/robot/R = usr
+		if(!R.get_selected_module())
+			usr << "\red You have no module selected."
+			return
+		R.deselect_module(R.get_selected_module())
 	else
 		usr << "\red This mob type cannot drop items."
 	return
@@ -190,7 +204,7 @@
 	if(isAI(mob))
 		return AIMove(n,direct,mob)
 
-	if(mob.monkeyizing)	return//This is sota the goto stop mobs from moving var
+	if(mob.notransform)	return//This is sota the goto stop mobs from moving var
 
 	if(isliving(mob))
 		var/mob/living/L = mob
@@ -321,6 +335,13 @@
 		else
 			. = ..()
 			mob.last_movement=world.time
+
+		for (var/obj/item/weapon/grab/G in mob)
+			if (G.state == GRAB_NECK)
+				mob.set_dir(reverse_dir[direct])
+			G.adjust_position()
+		for (var/obj/item/weapon/grab/G in mob.grabbed_by)
+			G.adjust_position()
 
 		moving = 0
 

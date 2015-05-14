@@ -49,6 +49,7 @@
 	var/hasShocked = 0 //Prevents multiple shocks from happening
 	var/frozen = 0 //special condition for airlocks that are frozen shut, this will look weird on not normal airlocks because of a lack of special overlays.
 	autoclose = 1
+	explosion_block = 1
 
 /obj/machinery/door/airlock/command
 	name = "Airlock"
@@ -283,6 +284,7 @@
 	name = "High Tech Security Airlock"
 	icon = 'icons/obj/doors/hightechsecurity.dmi'
 	assembly_type = /obj/structure/door_assembly/door_assembly_highsecurity
+	explosion_block = 2
 
 /obj/machinery/door/airlock/highsecurity/red
 	name = "Secure Armory Airlock"
@@ -924,7 +926,7 @@ About the new airlock wires panel:
 	sleep(5)
 	update_icon()
 	if(visible && !glass)
-		SetOpacity(1)
+		set_opacity(1)
 	operating = 0
 	air_update_turf(1)
 	update_freelok_sight()

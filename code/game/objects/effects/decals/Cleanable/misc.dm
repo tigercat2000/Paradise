@@ -67,7 +67,7 @@
 	density = 0
 	anchored = 1
 	layer = 2
-	luminosity = 1
+	light_range = 1
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "greenglow"
 
@@ -170,6 +170,16 @@
 	layer = 2
 	icon = 'icons/effects/tomatodecal.dmi'
 	random_icon_states = list("smashed_pie")
+
+/obj/effect/decal/cleanable/fruit_smudge
+	name = "smudge"
+	desc = "Some kind of fruit smear."
+	density = 0
+	anchored = 1
+	layer = 2
+	icon = 'icons/effects/blood.dmi'
+	icon_state = "mfloor1"
+	random_icon_states = list("mfloor1", "mfloor2", "mfloor3", "mfloor4", "mfloor5", "mfloor6", "mfloor7")
 
 /obj/effect/decal/cleanable/fungus
 	name = "space fungus"

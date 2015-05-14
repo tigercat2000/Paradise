@@ -14,6 +14,7 @@ var/global/list/ghdel_profiling = list()
 	var/pass_flags = 0
 	var/throwpass = 0
 	var/germ_level = GERM_LEVEL_AMBIENT // The higher the germ level, the more germ on the atom.
+	var/simulated = 1 //filter for actions - used by lighting overlays
 
 	///Chemistry.
 	var/datum/reagents/reagents = null
@@ -21,6 +22,10 @@ var/global/list/ghdel_profiling = list()
 	//var/chem_is_open_container = 0
 	// replaced by OPENCONTAINER flags and atom/proc/is_open_container()
 	///Chemistry.
+
+
+	//Value used to increment ex_act() if reactionary_explosions is on
+	var/explosion_block = 0
 
 	//Detective Work, used for the duplicate data points kept in the scanners
 	var/list/original_atom
@@ -30,7 +35,7 @@ var/global/list/ghdel_profiling = list()
 
 
 /atom/Destroy()
-	SetOpacity(0)
+	set_opacity(0)
 
 
 	if(reagents)
@@ -240,6 +245,11 @@ its easier to just keep the beam vertical.
 
 /atom/proc/relaymove()
 	return
+
+//called to set the atom's dir and used to add behaviour to dir-changes - Not fully used (yet)
+/atom/proc/set_dir(new_dir)
+	. = new_dir != dir
+	dir = new_dir
 
 /atom/proc/ex_act()
 	return

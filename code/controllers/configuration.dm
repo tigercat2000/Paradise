@@ -62,6 +62,7 @@
 	var/automute_on = 0					//enables automuting/spam prevention
 	var/jobs_have_minimal_access = 0	//determines whether jobs use minimal access or expanded access.
 
+	var/reactionary_explosions = 0 //If we use reactionary explosions, explosions that react to walls and doors
 
 	var/assistantlimit = 0 //enables assistant limiting
 	var/assistantratio = 2 //how many assistants to security members
@@ -150,6 +151,8 @@
 	// The upper delay until next event
 	// 15, 45, 70 minutes respectively
 	var/list/event_delay_upper = list(EVENT_LEVEL_MUNDANE = 9000,	EVENT_LEVEL_MODERATE = 27000,	EVENT_LEVEL_MAJOR = 42000)
+
+	var/starlight = 0	// Whether space turfs have ambient light or not
 
 /datum/configuration/New()
 	var/list/L = typesof(/datum/game_mode) - /datum/game_mode
@@ -340,6 +343,9 @@
 				if("protect_roles_from_antagonist")
 					config.protect_roles_from_antagonist = 1
 
+				if("reactionary_explosions")
+					config.reactionary_explosions	= 1
+
 				if ("probability")
 					var/prob_pos = findtext(value, " ")
 					var/prob_name = null
@@ -496,6 +502,10 @@
 					config.event_delay_upper[EVENT_LEVEL_MUNDANE] = MinutesToTicks(values[1])
 					config.event_delay_upper[EVENT_LEVEL_MODERATE] = MinutesToTicks(values[2])
 					config.event_delay_upper[EVENT_LEVEL_MAJOR] = MinutesToTicks(values[3])
+
+				if("starlight")
+					var/vvalue = text2num(value)
+					config.starlight = vvalue >= 0 ? vvalue : 0
 
 				else
 					diary << "Unknown setting in configuration: '[name]'"
