@@ -272,7 +272,9 @@
 	name = "glowing resin"
 	desc = "Blue bioluminescence shines from beneath the surface."
 	icon_state = "weednode"
-	light_range = 1
+	light_range = 3
+	light_color = "#079C9D"
+	light_power = 1
 	var/node_range = NODERANGE
 
 
