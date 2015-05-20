@@ -159,10 +159,8 @@
 	desc = "Moves slime people to a different conveyer."
 
 /obj/machinery/larkens/autostripper/dts/slime/Crossed(AM as mob|obj)
-	if(ishuman(AM))
+	if(ishumanslime(AM))
 		var/mob/living/carbon/human/H = AM
-		if(H.species != "Slime People")
-			return
 		if(H.abiotic(1))
 			handle_stripping(H)
 			handle_message(H)
