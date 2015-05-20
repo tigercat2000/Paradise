@@ -16,7 +16,7 @@ var/global/datum/controller/occupations/job_master
 	proc/SetupOccupations(var/list/faction = list("Station"))
 		if(no_synthetic)
 			occupations = list()
-			var/list/all_jobs = typesof(/datum/job) -list(/datum/job,/datum/job/ai,/datum/job/cyborg)
+			var/list/all_jobs = typesof(/datum/job/civilian)
 			if(!all_jobs.len)
 				world << "\red \b Error setting up jobs, no job datums found"
 				return 0
@@ -27,7 +27,7 @@ var/global/datum/controller/occupations/job_master
 				occupations += job
 		else
 			occupations = list()
-			var/list/all_jobs = typesof(/datum/job) -/datum/job
+			var/list/all_jobs = typesof(/datum/job/civilian) -/datum/job
 			if(!all_jobs.len)
 				world << "\red \b Error setting up jobs, no job datums found"
 				return 0
@@ -124,7 +124,7 @@ var/global/datum/controller/occupations/job_master
 			if(!job)
 				continue
 
-			if(istype(job, GetJob("Civilian"))) // We don't want to give him assistant, that's boring!
+			if(istype(job, GetJob("Larkens"))) // We don't want to give him assistant, that's boring!
 				continue
 
 			if(job in command_positions) //If you want a command position, select it!
@@ -285,7 +285,7 @@ var/global/datum/controller/occupations/job_master
 		Debug("AC1, Candidates: [civilian_candidates.len]")
 		for(var/mob/new_player/player in civilian_candidates)
 			Debug("AC1 pass, Player: [player]")
-			AssignRole(player, "Civilian")
+			AssignRole(player, "Larkens")
 			civilian_candidates -= player
 		Debug("DO, AC1 end")
 
@@ -379,7 +379,7 @@ var/global/datum/controller/occupations/job_master
 		for(var/mob/new_player/player in unassigned)
 			if(player.client.prefs.alternate_option == BE_ASSISTANT)
 				Debug("AC2 Assistant located, Player: [player]")
-				AssignRole(player, "Civilian")
+				AssignRole(player, "Larkens")
 
 		//For ones returning to lobby
 		for(var/mob/new_player/player in unassigned)
@@ -402,9 +402,14 @@ var/global/datum/controller/occupations/job_master
 
 		if(!joined_late)
 			var/obj/S = null
+			if(H.mind)
+				world << "SLOC NAMECHECK, [rank]-[H.real_name]"
 			for(var/obj/effect/landmark/start/sloc in landmarks_list)
-				if(sloc.name != rank)	continue
 				if(locate(/mob/living) in sloc.loc)	continue
+				if(sloc.name == "[rank]-[H.real_name]")
+					S = sloc
+					break
+				if(sloc.name != rank)	continue
 				S = sloc
 				break
 			if(!S)
