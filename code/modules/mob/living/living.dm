@@ -337,12 +337,14 @@
 		var/mob/living/carbon/C = src
 		C.handcuffed = initial(C.handcuffed)
 		C.heart_attack = 0
+		C.brain_op_stage = 0
 
 		// restore all of the human's blood and reset their shock stage
 		if(ishuman(src))
 			var/mob/living/carbon/human/human_mob = src
 			human_mob.restore_blood()
 			human_mob.shock_stage = 0
+			human_mob.decaylevel = 0
 
 	restore_all_organs()
 	if(stat == 2)
@@ -529,8 +531,8 @@
 		for(var/atom/A in M.contents)
 			if(istype(A,/mob/living/simple_animal/borer) || istype(A,/obj/item/weapon/holder))
 				return
+		M.status_flags &= ~PASSEMOTES
 
-	M.status_flags &= ~PASSEMOTES
 	return
 
 /* resist_borer allows a mob to regain control of their body after a borer has assumed control.

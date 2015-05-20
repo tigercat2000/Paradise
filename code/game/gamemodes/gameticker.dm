@@ -104,8 +104,9 @@ var/global/datum/controller/gameticker/ticker
 
 	//Configure mode and assign player to special mode stuff
 	src.mode.pre_pre_setup()
+	var/can_continue
+	can_continue = src.mode.pre_setup()//Setup special modes
 	job_master.DivideOccupations() //Distribute jobs
-	var/can_continue = src.mode.pre_setup()//Setup special modes
 	if(!can_continue)
 		del(mode)
 		current_state = GAME_STATE_PREGAME
@@ -157,8 +158,11 @@ var/global/datum/controller/gameticker/ticker
 
 		world << "<FONT color='blue'><B>Enjoy the game!</B></FONT>"
 		world << sound('sound/AI/welcome.ogg') // Skie
-		//Holiday Round-start stuff	~Carn
-		Holiday_Game_Start()
+		if(holiday_master.holidays)
+			world << "<font color='blue'>and...</font>"
+			for(var/holidayname in holiday_master.holidays)
+				var/datum/holiday/holiday = holiday_master.holidays[holidayname]
+				world << "<h4>[holiday.greet()]</h4>"
 
 	spawn(0) // Forking dynamic room selection
 		var/list/area/dynamic/source/available_source_candidates = typesof(/area/dynamic/source) - /area/dynamic/source
