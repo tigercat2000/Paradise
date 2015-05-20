@@ -19,8 +19,9 @@
 	var/allow_upgrade = 1
 	var/last_upgrade = 0
 	var/last_hit_zone = 0
-//	var/force_down //determines if the affecting mob will be pinned to the ground //disabled due to balance, kept for an example for any new things.
+	var/force_down //determines if the affecting mob will be pinned to the ground
 	var/dancing //determines if assailant and affecting keep looking at each other. Basically a wrestling position
+	var/kissing
 
 	layer = 21
 	item_state = "nothing"
@@ -101,6 +102,25 @@
 			if(G.state >= GRAB_AGGRESSIVE)
 				allow_upgrade = 0
 
+		if(state < GRAB_AGGRESSIVE)
+			if(dancing)
+				var/hit_zone = assailant.zone_sel.selecting
+				var/announce = 0
+				if(hit_zone != last_hit_zone)
+					announce = 1
+				last_hit_zone = hit_zone
+				if(ishuman(affecting))
+					switch(hit_zone)
+						if("mouth")
+							var/obj/item/weapon/grab/otherdancer
+							if(assailant.grabbed_by)
+								for(var/obj/item/weapon/grab/G in assailant.grabbed_by)
+									if(G.assailant == affecting && G.affecting == assailant)
+										otherdancer = G
+							if(announce)
+								assailant.visible_message("<span class='notice'>[assailant] [otherdancer.kissing ? "returns [affecting]'s kiss" : "leans in and kisses [affecting]"].</span>") //why not
+								kissing = 1
+
 		if(allow_upgrade)
 			if(state < GRAB_AGGRESSIVE)
 				hud.icon_state = "reinforce"
@@ -118,13 +138,13 @@
 		affecting.hand = h
 
 		var/hit_zone = assailant.zone_sel.selecting
-		//var/announce = 0
-		//(hit_zone != last_hit_zone)
-			//announce = 1
+		var/announce = 0
+		if(hit_zone != last_hit_zone)
+			announce = 1
 		last_hit_zone = hit_zone
-	/*	if(ishuman(affecting))
+		if(ishuman(affecting))
 			switch(hit_zone)
-				/*if("mouth")
+				if("mouth")
 					if(announce)
 						assailant.visible_message("<span class='warning'>[assailant] covers [affecting]'s mouth!</span>")
 					if(affecting.silent < 3)
@@ -133,7 +153,7 @@
 					if(announce)
 						assailant.visible_message("<span class='warning'>[assailant] covers [affecting]'s eyes!</span>")
 					if(affecting.eye_blind < 3)
-						affecting.eye_blind = 3*///These are being left in the code as an example for adding new hit-zone based things.
+						affecting.eye_blind = 3
 
 		if(force_down)
 			if(affecting.loc != assailant.loc)
@@ -141,7 +161,6 @@
 			else
 				affecting.Weaken(3) //This is being left in the code as an example of adding a new variable to do something in grab code.
 
-*/
 
 	if(state >= GRAB_NECK)
 		affecting.Stun(5)  //It will hamper your voice, being choked and all.
@@ -168,9 +187,9 @@
 		return
 	if(affecting.lying && state != GRAB_KILL)
 		animate(affecting, pixel_x = 0, pixel_y = 0, 5, 1, LINEAR_EASING)
+		if(force_down)
+			affecting.set_dir(SOUTH) //face up
 		return //KJK
-	/*	if(force_down) //THIS GOES ABOVE THE RETURN LABELED KJK
-			affecting.set_dir(SOUTH)*///This shows how you can apply special directions based on a variable. //face up
 
 	var/shift = 0
 	var/adir = get_dir(assailant, affecting)
@@ -223,16 +242,16 @@
 	if(state < GRAB_AGGRESSIVE)
 		if(!allow_upgrade)
 			return
-		//if(!affecting.lying)
-		assailant.visible_message("<span class='warning'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
-		/* else
+		if(!affecting.lying)
+			assailant.visible_message("<span class='warning'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
+		else
 			assailant.visible_message("<span class='warning'>[assailant] pins [affecting] down to the ground (now hands)!</span>")
 			force_down = 1
 			affecting.Weaken(3)
 			step_to(assailant, affecting)
 			assailant.set_dir(EAST) //face the victim
 			affecting.set_dir(SOUTH) //face up  //This is an example of a new feature based on the context of the location of the victim.
-			*/									//It means that upgrading while someone is lying on the ground would cause you to go into pin mode.
+												//It means that upgrading while someone is lying on the ground would cause you to go into pin mode.
 		state = GRAB_AGGRESSIVE
 		icon_state = "grabbed1"
 		hud.icon_state = "reinforce1"
@@ -293,10 +312,10 @@
 			var/mob/living/carbon/human/attacker = assailant
 			switch(assailant.a_intent)
 				if("help")
-					/*if(force_down)
+					if(force_down)
 						assailant << "<span class='warning'>You no longer pin [affecting] to the ground.</span>"
 						force_down = 0
-						return*///This is a very basic demonstration of a new feature based on attacking someone with the grab, based on intent.
+						return//This is a very basic demonstration of a new feature based on attacking someone with the grab, based on intent.
 								//This specific example would allow you to stop pinning people to the floor without moving away from them.
 					return
 
@@ -344,7 +363,7 @@
 															//This specific example would allow you to squish people's eyes with a GRAB_NECK.
 
 				if("disarm") //This checks that the user is on disarm intent.
-				/*	if(state < GRAB_AGGRESSIVE)
+					if(state < GRAB_AGGRESSIVE)
 						assailant << "<span class='warning'>You require a better grab to do this.</span>"
 						return
 					if(!force_down)
@@ -358,7 +377,7 @@
 						return
 					else
 						assailant << "<span class='warning'>You are already pinning [affecting] to the ground.</span>"
-						return*///This is an example of something being done with an agressive grab + disarm intent.
+						return//This is an example of something being done with an agressive grab + disarm intent.
 					return
 
 
