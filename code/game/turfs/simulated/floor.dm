@@ -94,10 +94,14 @@ var/list/wood_icons = list("wood","wood-broken")
 /turf/simulated/floor/blob_act()
 	return
 
-turf/simulated/floor/proc/update_icon()
+/turf/simulated/floor/proc/update_icon()
 	if(lava)
 		return
-	else if(is_plasteel_floor())
+
+	if(air)
+		update_visuals(air)
+
+	if(is_plasteel_floor())
 		if(!broken && !burnt)
 			icon_state = icon_regular_floor
 	else if(is_plating())
@@ -175,10 +179,7 @@ turf/simulated/floor/proc/update_icon()
 			if( !(icon_state in wood_icons) )
 				icon_state = "wood"
 				//world << "[icon_state]y's got [icon_state]"
-	/*spawn(1)
-		if(istype(src,/turf/simulated/floor)) //Was throwing runtime errors due to a chance of it changing to space halfway through.
-			if(air)
-				update_visuals(air)*/
+
 
 /turf/simulated/floor/return_siding_icon_state()
 	..()
@@ -464,7 +465,7 @@ turf/simulated/floor/proc/update_icon()
 			else
 				user << "\blue The lightbulb seems fine, no need to replace it."
 
-	if(istype(C, /obj/item/weapon/crowbar) && (!(is_plating())))
+	if(istype(C, /obj/item/weapon/crowbar) && (!(is_plating())) && (!is_catwalk()))
 		if(broken || burnt)
 			user << "\red You remove the broken plating."
 		else
@@ -481,18 +482,26 @@ turf/simulated/floor/proc/update_icon()
 		return
 
 
-	if(istype(C, /obj/item/weapon/screwdriver) && is_wood_floor())
-		if(broken || burnt)
-			return
-		else
-			if(is_wood_floor())
-				user << "\red You unscrew the planks."
-				new floor_tile.type(src)
-		make_plating()
-		playsound(src, 'sound/items/Screwdriver.ogg', 80, 1)
-		if(is_catwalk())
+	if(istype(C, /obj/item/weapon/screwdriver))
+		if(is_wood_floor())
+			if(broken || burnt)
+				return
+			else
+				if(is_wood_floor())
+					user << "\red You unscrew the planks."
+					new floor_tile.type(src)
+			make_plating()
+			playsound(src, 'sound/items/Screwdriver.ogg', 80, 1)
+		else if(is_catwalk())
 			if(broken) return
+			user << "\red You unscrew the catwalk's rods."
+			new /obj/item/stack/rods(src, 2)
 			ReplaceWithLattice()
+			for(var/direction in cardinal)
+				var/turf/T = get_step(src,direction)
+				if(T.is_catwalk())
+					var/turf/simulated/floor/plating/airless/catwalk/CW=T
+					CW.update_icon(0)
 			playsound(src, 'sound/items/Screwdriver.ogg', 80, 1)
 		return
 

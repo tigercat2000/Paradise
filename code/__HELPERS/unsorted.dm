@@ -542,6 +542,8 @@ Turf and target are seperate in case you want to teleport some distance from a t
 	var/list/sortmob = sortAtom(mob_list)
 	for(var/mob/living/silicon/ai/M in sortmob)
 		moblist.Add(M)
+		if(M.eyeobj)
+			moblist.Add(M.eyeobj)
 	for(var/mob/living/silicon/pai/M in sortmob)
 		moblist.Add(M)
 	for(var/mob/living/silicon/robot/M in sortmob)
@@ -1034,11 +1036,13 @@ proc/anim(turf/location as turf,target as mob|obj,a_icon,a_icon_state as text,fl
 
 	if(toupdate.len)
 		for(var/turf/simulated/T1 in toupdate)
+			air_master.remove_from_active(T1)
 			T1.CalculateAdjacentTurfs()
 			air_master.add_to_active(T1,1)
 
 	if(fromupdate.len)
 		for(var/turf/simulated/T2 in fromupdate)
+			air_master.remove_from_active(T2)
 			T2.CalculateAdjacentTurfs()
 			air_master.add_to_active(T2,1)
 

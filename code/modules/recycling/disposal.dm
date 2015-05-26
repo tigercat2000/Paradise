@@ -642,7 +642,9 @@
 
 	// called to vent all gas in holder to a location
 	proc/vent_gas(var/atom/location)
-		location.assume_air(gas)  // vent all gas to turf
+		if(location)
+			location.assume_air(gas)  // vent all gas to turf
+		air_update_turf()
 		return
 
 // Disposal pipes
@@ -1295,7 +1297,8 @@
 				AM.pipe_eject(dir)
 				if(!istype(AM,/mob/living/silicon/robot/drone)) //Drones keep smashing windows from being fired out of chutes. Bad for the station. ~Z
 					spawn(5)
-						AM.throw_at(target, 3, 1)
+						if(AM)
+							AM.throw_at(target, 3, 1)
 			H.vent_gas(src.loc)
 			del(H)
 

@@ -623,7 +623,7 @@
 	icon_state = "flour"
 	New()
 		..()
-		reagents.add_reagent("nutriment", 1)
+		reagents.add_reagent("flour", 5)
 
 /obj/item/weapon/reagent_containers/food/snacks/organ
 
@@ -928,8 +928,6 @@
 	New()
 		..()
 		reagents.add_reagent("nutriment", 2)
-		if(prob(5))
-			reagents.add_reagent("nanites", 2)
 		bitesize = 2
 
 /obj/item/weapon/reagent_containers/food/snacks/roburgerbig
@@ -1279,6 +1277,7 @@
 	New()
 		..()
 		reagents.add_reagent("nutriment", 4)
+		reagents.add_reagent("fake_cheese", 2)
 		bitesize = 2
 
 /obj/item/weapon/reagent_containers/food/snacks/chinese/chowmein
@@ -1288,6 +1287,7 @@
 	New()
 		..()
 		reagents.add_reagent("nutriment", 6)
+		reagents.add_reagent("beans", 3)
 		reagents.add_reagent("msg",4)
 		bitesize = 2
 
@@ -1750,6 +1750,13 @@
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/wrapped/farwacube
 	name = "farwa cube"
 	monkey_type =/mob/living/carbon/monkey/tajara
+
+/obj/item/weapon/reagent_containers/food/snacks/monkeycube/wolpincube
+	name = "wolpin cube"
+	monkey_type = /mob/living/carbon/monkey/vulpkanin
+/obj/item/weapon/reagent_containers/food/snacks/monkeycube/wrapped/wolpincube
+	name = "wolpin cube"
+	monkey_type = /mob/living/carbon/monkey/vulpkanin
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/stokcube
 	name = "stok cube"

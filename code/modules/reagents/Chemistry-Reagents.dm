@@ -1382,9 +1382,9 @@ datum
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
-		nanites
+		nanomachines
 			name = "Nanomachines"
-			id = "nanites"
+			id = "nanomachines"
 			description = "Microscopic construction robots."
 			reagent_state = LIQUID
 			color = "#535E66" // rgb: 83, 94, 102
@@ -2605,6 +2605,12 @@ datum
 					if(volume > overdose_threshold)
 						M:adjustToxLoss(1)
 					return
+
+			mojito
+				name = "Mojito"
+				id = "mojito"
+				description = "If it's good enough for Spesscuba, it's good enough for you."
+				color = "#664300" // rgb: 102, 67, 0
 
 			vodka
 				name = "Vodka"
