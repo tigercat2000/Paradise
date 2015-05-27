@@ -58,3 +58,36 @@ Creature-level abilities.
 		src.slime_contents.Remove(mobtorelease)
 		src << "<span class='notice'>You release \the [chosen] from your slime.</span>"
 		return
+
+/mob/living/carbon/human/proc/slime_underdoor()
+	set category = "Abilities"
+	set name = "Slime under a door"
+	set desc = "Squish! Infiltrate! Hug! Squish!"
+
+	var/mob/user = usr
+
+	if(!ishumanslime(user))
+		usr << "ABUSE"
+		return 0 //no
+
+	var/list/nearbydoors = list()
+
+	for(var/cdir in cardinal)
+		for(var/obj/machinery/door/D in get_step(src,cdir))
+			nearbydoors[D.name] += D
+
+	nearbydoors += "--CANCEL--"
+
+	var/choice = input("Which door would you like to move under?","Doorcrawl","--CANCEL--") in nearbydoors
+	if(!choice || choice == "--CANCEL--")	return
+	var/obj/machinery/door/crawl_door = nearbydoors[choice]
+	if(!istype(crawl_door))	return
+
+	user.visible_message("<span class='warning'>\The [user.name] starts to slime under \the [crawl_door.name]!","<span class='notice'>You start to slime under \the [crawl_door.name]!</span>")
+
+	if(do_after(user,50))
+		var/go_dir = get_dir(user,crawl_door)
+		user.forceMove(get_turf(crawl_door))
+		spawn(1)
+			user.forceMove(get_step(crawl_door,go_dir))
+			user.visible_message("<span class='warning'>\The [user.name] slimes under \the [crawl_door.name]!","<span class='notice'>You slime under \the [crawl_door.name]!</span>")
