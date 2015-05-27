@@ -127,6 +127,9 @@ var/global/list/brutefireloss_overlays = list("1" = image("icon" = 'icons/mob/sc
 
 		handle_heartattack()
 
+		if(!client)
+			species.handle_npc(src)
+
 	if(stat == DEAD)
 		handle_decay()
 
