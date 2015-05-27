@@ -132,9 +132,6 @@
 	else
 		src.overlays += image('icons/obj/kitchen.dmi', "gridle")
 
-/obj/machinery/larkens/gibber/attack_paw(mob/user as mob)
-	return src.attack_hand(user)
-
 /obj/machinery/larkens/gibber/relaymove(mob/user as mob)
 	src.go_out()
 	return
@@ -145,7 +142,7 @@
 	if(operating)
 		user << "<span class='warning'>\The [src] is locked and running.</span>"
 		return
-	if(src.occupant.ckey == user.ckey)
+	if(src.occupant == user)
 		src.occupant.show_message ("<span class='warning'>You hit the internal 'Sweet Relief' button.</span>")
 		src.startgibbing(user, "full")
 
@@ -163,7 +160,7 @@
 		user << "<span class='warning'>\The [src] is locked and running.</span>"
 		return
 
-	if(src.occupant.ckey == user.ckey)
+	if(src.occupant == user)
 		src.occupant.show_message ("<span class='danger'>You hit the internal start button.</span>")
 		src.starttenderizing(user)
 

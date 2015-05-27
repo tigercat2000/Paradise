@@ -195,14 +195,12 @@
 			i++
 			newname += pick(vox_name_syllables)
 		return capitalize(newname)
-/*
-/datum/species/vox/handle_post_spawn(var/mob/living/carbon/human/H)
 
+/datum/species/vox/handle_post_spawn(var/mob/living/carbon/human/H)
 	H.verbs += /mob/living/carbon/human/proc/leap
-	..() */
+	..()
 
 /datum/species/vox/armalis/handle_post_spawn(var/mob/living/carbon/human/H)
-
 	H.verbs += /mob/living/carbon/human/proc/gut
 	..()
 
@@ -285,11 +283,17 @@
 	bloodflags = BLOOD_SLIME
 	dietflags = DIET_CARN
 
-	//ventcrawler = 1 //ventcrawling commented out
+	ventcrawler = 1
 
 	has_organ = list(
 		"brain" = /obj/item/organ/brain/slime
 		)
+
+/datum/species/slime/handle_post_spawn(var/mob/living/carbon/human/H)
+	H.verbs += /mob/living/carbon/human/proc/slimecontenthandle
+	H.verbs += /mob/living/carbon/human/proc/slime_release
+	H.verbs += /mob/living/carbon/human/proc/slime_underdoor
+	..()
 
 /datum/species/grey
 	name = "Grey"
