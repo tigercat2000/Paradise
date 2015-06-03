@@ -292,7 +292,7 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 	if(!ventcrawler)
 		if(ishuman(src))
 			var/mob/living/carbon/human/H = src
-			if(H.species.ventcrawler)	ventcrawlerlocal = H.species.ventcrawler
+			ventcrawlerlocal = H.species.ventcrawler
 
 	if(!ventcrawlerlocal)	return
 
@@ -672,3 +672,10 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 
 /mob/living/carbon/is_muzzled()
 	return(istype(src.wear_mask, /obj/item/clothing/mask/muzzle))
+
+/mob/living/carbon/get_standard_pixel_y_offset(lying = 0)
+	if(lying)
+		if(buckled)	return initial(pixel_y)
+		return -6
+	else
+		return initial(pixel_y)

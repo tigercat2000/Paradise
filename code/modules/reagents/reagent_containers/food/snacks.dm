@@ -239,15 +239,13 @@
 
 /obj/item/weapon/reagent_containers/food/snacks/attack_animal(mob/M)
 	if(isanimal(M))
+		M.changeNext_move(CLICK_CD_MELEE)
 		if(iscorgi(M))
 			if(bitecount >= 4)
 				M.visible_message("[M] [pick("burps from enjoyment", "yaps for more", "woofs twice", "looks at the area where \the [src] was")].","<span class=\"notice\">You swallow up the last part of \the [src].")
 				playsound(src.loc,'sound/items/eatfood.ogg', rand(10,50), 1)
-				var/mob/living/simple_animal/corgi/C = M
-				if (C.health <= C.maxHealth + 5)
-					C.health += 5
-				else
-					C.health = C.maxHealth
+				var/mob/living/simple_animal/pet/corgi/C = M
+				C.health = min(C.health + 5, C.maxHealth)
 				del(src)
 			else
 				M.visible_message("[M] takes a bite of \the [src].","<span class=\"notice\">You take a bite of \the [src].")
@@ -1754,14 +1752,14 @@
 	name = "farwa cube"
 	monkey_type = "Farwa"
 
-/*
+
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/wolpincube
 	name = "wolpin cube"
-	monkey_type = /mob/living/carbon/monkey/vulpkanin
+	monkey_type = "Wolpin"
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/wrapped/wolpincube
 	name = "wolpin cube"
-	monkey_type = /mob/living/carbon/monkey/vulpkanin
-*/
+	monkey_type = "Wolpin"
+
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeycube/stokcube
 	name = "stok cube"

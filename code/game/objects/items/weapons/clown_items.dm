@@ -50,7 +50,7 @@
 		M.stop_pulling()
 		M << "\blue You slipped on the [name]!"
 		playsound(src.loc, 'sound/misc/slip.ogg', 50, 1, -3)
-		M.Stun(3)
+		M.Stun(4)
 		M.Weaken(2)
 
 /obj/item/weapon/soap/afterattack(atom/target, mob/user as mob, proximity)
@@ -96,11 +96,12 @@
 	throw_range = 15
 	attack_verb = list("HONKED")
 	var/spam_flag = 0
+	var/honk_sound = 'sound/items/bikehorn.ogg'
 
 /obj/item/weapon/bikehorn/attack_self(mob/user as mob)
 	if (spam_flag == 0)
 		spam_flag = 1
-		playsound(src.loc, 'sound/items/bikehorn.ogg', 50, 1)
+		playsound(src.loc, honk_sound, 50, 1)
 		src.add_fingerprint(user)
 		spawn(20)
 			spam_flag = 0

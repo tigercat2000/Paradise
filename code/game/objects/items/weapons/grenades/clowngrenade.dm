@@ -1,8 +1,9 @@
 /obj/item/weapon/grenade/clown_grenade
 	name = "Banana Grenade"
 	desc = "HONK! brand Bananas. In a special applicator for rapid slipping of wide areas."
-	icon_state = "chemg"
+	icon_state = "banana"
 	item_state = "flashbang"
+	icon_override = 'icons/mob/in-hand/tools.dmi'
 	w_class = 2.0
 	force = 2.0
 	var/stage = 0
@@ -85,7 +86,7 @@
 				M.take_organ_damage(2) // Was 5 -- TLE
 				M << "\blue You slipped on \the [name]!"
 				playsound(src.loc, 'sound/misc/slip.ogg', 50, 1, -3)
-				M.Weaken(10)
+				M.Weaken(7)
 				M.take_overall_damage(0, burned)
 
 	throw_impact(atom/hit_atom)

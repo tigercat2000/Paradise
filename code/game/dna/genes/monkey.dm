@@ -11,8 +11,12 @@
 	if(!istype(H,/mob/living/carbon/human))
 //		testing("Cannot monkey-ify [M], type is [M.type].")
 		return
+	if(issmall(H)) // Already a monkey
+		return
 	for(var/obj/item/W in H)
 		if (W==H.w_uniform) // will be torn
+			continue
+		if(istype(W,/obj/item/organ))
 			continue
 		H.unEquip(W)
 	H.regenerate_icons()
@@ -20,8 +24,6 @@
 	H.stunned = 1
 	H.icon = null
 	H.invisibility = 101
-	for(var/t in H.organs)
-		del(t)
 	var/atom/movable/overlay/animation = new /atom/movable/overlay( H.loc )
 	animation.icon_state = "blank"
 	animation.icon = 'icons/mob/mob.dmi'
@@ -38,8 +40,6 @@
 		H.gib()
 		return
 
-	for(var/obj/item/W in H)
-		H.unEquip(W)
 	H.set_species(H.species.primitive_form)
 
 	if(H.hud_used)
@@ -57,14 +57,14 @@
 	for(var/obj/item/W in H)
 		if (W==H.w_uniform) // will be torn
 			continue
+		if(istype(W,/obj/item/organ))
+			continue
 		H.unEquip(W)
 	H.regenerate_icons()
 	H.canmove = 0
 	H.stunned = 1
 	H.icon = null
 	H.invisibility = 101
-	for(var/t in H.organs)
-		del(t)
 	var/atom/movable/overlay/animation = new /atom/movable/overlay( H.loc )
 	animation.icon_state = "blank"
 	animation.icon = 'icons/mob/mob.dmi'
@@ -84,9 +84,6 @@
 	if(H.hud_used)
 		H.hud_used.human_hud()
 
-
-	for(var/obj/item/W in H)
-		H.unEquip(W)
 	H.set_species(H.species.greater_form)
 
 	H << "<B>You are now [H.species.name]. </B>"

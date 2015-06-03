@@ -994,6 +994,8 @@ var/list/slot_equipment_priority = list( \
 			else
 				stat(null, "processScheduler is not running.")
 
+	statpanel("Status") // Switch to the Status panel again, for the sake of the lazy Stat procs
+
 
 /mob/proc/add_stings_to_statpanel(var/list/stings)
 	for(var/obj/effect/proc_holder/changeling/S in stings)
@@ -1042,6 +1044,8 @@ var/list/slot_equipment_priority = list( \
 			else
 				lying = pick(90, 270) //180 looks like shit since BYOND inverts rather than turns in that case
 	else if(stunned)
+		drop_l_hand()
+		drop_r_hand()
 		canmove = 0
 	else
 		lying = 0
@@ -1053,7 +1057,7 @@ var/list/slot_equipment_priority = list( \
 	if(istype(buckled, /obj/vehicle))
 		var/obj/vehicle/V = buckled
 		if(stat || weakened || paralysis || resting || sleeping || (status_flags & FAKEDEATH))
-			lying = 1
+			lying = 90
 			canmove = 0
 			pixel_y = V.mob_offset_y - 5
 		else
@@ -1066,15 +1070,17 @@ var/list/slot_equipment_priority = list( \
 		if( istype(buckled,/obj/structure/stool/bed/chair) )
 			lying = 0
 		else
-			lying = 1
+			lying = 90
 	else if(buckled && is_movable)
 		anchored = 0
 		canmove = 1
 		lying = 0
 	else if( stat || weakened || paralysis || resting || sleeping || (status_flags & FAKEDEATH))
-		lying = 1
+		lying = 90
 		canmove = 0
 	else if( stunned )
+		drop_l_hand()
+		drop_r_hand()
 		canmove = 0
 	else
 		lying = 0
@@ -1098,9 +1104,8 @@ var/list/slot_equipment_priority = list( \
 	if(update_icon)	//forces a full overlay update
 		update_icon = 0
 		regenerate_icons()
-	else if( lying != lying_prev )
-		update_icons()
-
+	update_transform()
+	lying_prev = lying
 	return canmove
 
 /mob/proc/fall(var/forced)
