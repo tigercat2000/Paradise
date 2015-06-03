@@ -82,6 +82,9 @@
 		assailant.client.screen += hud
 
 	var/hit_zone = assailant.zone_sel.selecting
+	var/announce = 0
+	if(hit_zone != last_hit_zone)
+		announce = 1
 	last_hit_zone = hit_zone
 
 	if(assailant.pulling == affecting)
@@ -107,11 +110,6 @@
 
 		if(state < GRAB_AGGRESSIVE)
 			if(dancing)
-				var/hit_zone = assailant.zone_sel.selecting
-				var/announce = 0
-				if(hit_zone != last_hit_zone)
-					announce = 1
-				last_hit_zone = hit_zone
 				if(ishuman(affecting))
 					switch(hit_zone)
 						if("mouth")
@@ -140,13 +138,7 @@
 		affecting.drop_item()
 		affecting.hand = h
 
-		var/hit_zone = assailant.zone_sel.selecting
-		var/announce = 0
-		if(hit_zone != last_hit_zone)
-			announce = 1
-		last_hit_zone = hit_zone
 		if(ishuman(affecting))
-
 			switch(hit_zone)
 				if("mouth")
 					if(announce)
