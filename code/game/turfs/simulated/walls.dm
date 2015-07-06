@@ -241,15 +241,6 @@
 //	F.sd_LumReset()		//TODO: ~Carn
 	return
 
-/turf/simulated/wall/meteorhit(obj/M as obj)
-	if (prob(15) && !rotting)
-		dismantle_wall()
-	else if(prob(70) && !rotting)
-		ChangeTurf(/turf/simulated/floor/plating)
-	else
-		ReplaceWithLattice()
-	return 0
-
 //Interactions
 
 /turf/simulated/wall/attack_animal(var/mob/living/simple_animal/M)
@@ -478,3 +469,16 @@
 	else
 		return attack_hand(user)
 	return
+
+/turf/simulated/wall/singularity_pull(S, current_size)
+	if(current_size >= STAGE_FIVE)
+		if(prob(50))
+			dismantle_wall()
+		return
+	if(current_size == STAGE_FOUR)
+		if(prob(30))
+			dismantle_wall()
+
+/turf/simulated/wall/narsie_act()
+	if(prob(20))
+		ChangeTurf(/turf/simulated/wall/cult)

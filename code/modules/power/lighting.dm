@@ -165,19 +165,6 @@
 	desc = "A small lighting fixture."
 	light_type = /obj/item/weapon/light/bulb
 
-// the desk lamps are a bit special
-/obj/machinery/light/small/lamp
-	name = "desk lamp"
-	icon_state = "lamp1"
-	base_state = "lamp"
-	desc = "A desk lamp with an adjustable mount."
-
-// green-shaded desk lamp
-/obj/machinery/light/small/lamp/green
-	desc = "A classic green-shaded desk lamp."
-	icon_state = "lampgreen1"
-	base_state = "lampgreen"
-
 /obj/machinery/light/spot
 	name = "spotlight"
 	fitting = "large tube"
@@ -224,7 +211,7 @@
 	if(A)
 		on = 0
 //		A.update_lights()
-	..()
+	return ..()
 
 /obj/machinery/light/update_icon()
 
@@ -269,7 +256,7 @@
 		use_power = 1
 		set_light(0)
 
-	active_power_usage = ((light_range + light_power) * 10)
+	active_power_usage = brightness_range * 10
 	if(on != on_gs)
 		on_gs = on
 
@@ -577,11 +564,11 @@
 
 #define LIGHTING_POWER_FACTOR 20		//20W per unit luminosity
 
-/*
+
 /obj/machinery/light/process()//TODO: remove/add this from machines to save on processing as needed ~Carn PRIORITY
 	if(on)
-		use_power(light_range * LIGHTING_POWER_FACTOR, LIGHT)
-*/
+		use_power(brightness_range * LIGHTING_POWER_FACTOR, LIGHT)
+
 
 // called when area power state changes
 /obj/machinery/light/power_change()

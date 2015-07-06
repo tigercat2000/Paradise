@@ -101,7 +101,7 @@ But you can call procs that are of type /mob/living/carbon/human/proc/ for that 
 	if(!lst)
 		return
 
-	if(!A || A.gc_destroyed)
+	if(!A || !isnull(A.gcDestroyed))
 		usr << "<span class='warning'>Error: callproc_datum(): owner of proc no longer exists.</span>"
 		return
 	if(!hascall(A,procname))
@@ -1109,7 +1109,7 @@ But you can call procs that are of type /mob/living/carbon/human/proc/ for that 
 	spawn(30)
 		for(var/obj/machinery/the_singularitygen/G in world)
 			if(G.anchored)
-				var/obj/machinery/singularity/S = new /obj/machinery/singularity(get_turf(G), 50)
+				var/obj/singularity/S = new /obj/singularity(get_turf(G), 50)
 				spawn(0)
 					del(G)
 				S.energy = 1750

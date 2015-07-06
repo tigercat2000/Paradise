@@ -179,7 +179,7 @@ var/list/robot_verbs_default = list(
 		if(T)	mmi.loc = T
 		if(mind)	mind.transfer_to(mmi.brainmob)
 		mmi = null
-	..()
+	return ..()
 
 /mob/living/silicon/robot/proc/pick_module()
 	if(module)
@@ -528,18 +528,6 @@ var/list/robot_verbs_default = list(
 	return
 
 
-/mob/living/silicon/robot/meteorhit(obj/O as obj)
-	for(var/mob/M in viewers(src, null))
-		M.show_message(text("\red [src] has been hit by [O]"), 1)
-		//Foreach goto(19)
-	if (health > 0)
-		adjustBruteLoss(30)
-		if ((O.icon_state == "flaming"))
-			adjustFireLoss(40)
-		updatehealth()
-	return
-
-
 /mob/living/silicon/robot/bullet_act(var/obj/item/projectile/Proj)
 	..(Proj)
 	updatehealth()
@@ -824,13 +812,8 @@ var/list/robot_verbs_default = list(
 	var/mob/living/M = user
 	if(!opened)//Cover is closed
 		if(locked)
-			if(prob(90))
-				user << "You emag the cover lock."
-				locked = 0
-			else
-				user << "You fail to emag the cover lock."
-				if(prob(25))
-					src << "Hack attempt detected."
+			user << "You emag the cover lock."
+			locked = 0
 		else
 			user << "The cover is already unlocked."
 		return
@@ -842,50 +825,45 @@ var/list/robot_verbs_default = list(
 			return
 		else
 			sleep(6)
-			if(prob(50))
-				emagged = 1
-				if(src.hud_used)
-					src.hud_used.update_robot_modules_display()	//Shows/hides the emag item if the inventory screen is already open.
-				lawupdate = 0
-				connected_ai = null
-				user << "You emag [src]'s interface."
-//					message_admins("[key_name_admin(user)] emagged cyborg [key_name_admin(src)].  Laws overridden.")
-				log_game("[key_name(user)] emagged cyborg [key_name(src)].  Laws overridden.")
-				clear_supplied_laws()
-				clear_inherent_laws()
-				laws = new /datum/ai_laws/syndicate_override
-				var/time = time2text(world.realtime,"hh:mm:ss")
-				lawchanges.Add("[time] <B>:</B> [M.name]([M.key]) emagged [name]([key])")
-				set_zeroth_law("Only [M.real_name] and people he designates as being such are Syndicate Agents.")
-				src << "\red ALERT: Foreign software detected."
-				sleep(5)
-				src << "\red Initiating diagnostics..."
-				sleep(20)
-				src << "\red SynBorg v1.7 loaded."
-				sleep(5)
-				src << "\red LAW SYNCHRONISATION ERROR"
-				sleep(5)
-				src << "\red Would you like to send a report to NanoTraSoft? Y/N"
-				sleep(10)
-				src << "\red > N"
-				sleep(20)
-				src << "\red ERRORERRORERROR"
-				src << "<b>Obey these laws:</b>"
-				laws.show_laws(src)
-				src << "\red \b ALERT: [M.real_name] is your new master. Obey your new laws and his commands."
-				if(src.module && istype(src.module, /obj/item/weapon/robot_module/miner))
-					for(var/obj/item/weapon/pickaxe/borgdrill/D in src.module.modules)
-						del(D)
-					src.module.modules += new /obj/item/weapon/pickaxe/diamonddrill(src.module)
-					src.module.rebuild()
-				if(src.module && istype(src.module, /obj/item/weapon/robot_module/medical))
-					for(var/obj/item/weapon/borg_defib/F in src.module.modules)
-						F.safety = 0
-				updateicon()
-			else
-				user << "You fail to [ locked ? "unlock" : "lock"] [src]'s interface."
-				if(prob(25))
-					src << "Hack attempt detected."
+			emagged = 1
+			if(src.hud_used)
+				src.hud_used.update_robot_modules_display()	//Shows/hides the emag item if the inventory screen is already open.
+			lawupdate = 0
+			connected_ai = null
+			user << "You emag [src]'s interface."
+//			message_admins("[key_name_admin(user)] emagged cyborg [key_name_admin(src)].  Laws overridden.")
+			log_game("[key_name(user)] emagged cyborg [key_name(src)].  Laws overridden.")
+			clear_supplied_laws()
+			clear_inherent_laws()
+			laws = new /datum/ai_laws/syndicate_override
+			var/time = time2text(world.realtime,"hh:mm:ss")
+			lawchanges.Add("[time] <B>:</B> [M.name]([M.key]) emagged [name]([key])")
+			set_zeroth_law("Only [M.real_name] and people he designates as being such are Syndicate Agents.")
+			src << "\red ALERT: Foreign software detected."
+			sleep(5)
+			src << "\red Initiating diagnostics..."
+			sleep(20)
+			src << "\red SynBorg v1.7 loaded."
+			sleep(5)
+			src << "\red LAW SYNCHRONISATION ERROR"
+			sleep(5)
+			src << "\red Would you like to send a report to NanoTraSoft? Y/N"
+			sleep(10)
+			src << "\red > N"
+			sleep(20)
+			src << "\red ERRORERRORERROR"
+			src << "<b>Obey these laws:</b>"
+			laws.show_laws(src)
+			src << "\red \b ALERT: [M.real_name] is your new master. Obey your new laws and his commands."
+			if(src.module && istype(src.module, /obj/item/weapon/robot_module/miner))
+				for(var/obj/item/weapon/pickaxe/borgdrill/D in src.module.modules)
+					del(D)
+				src.module.modules += new /obj/item/weapon/pickaxe/diamonddrill(src.module)
+				src.module.rebuild()
+			if(src.module && istype(src.module, /obj/item/weapon/robot_module/medical))
+				for(var/obj/item/weapon/borg_defib/F in src.module.modules)
+					F.safety = 0
+			updateicon()
 		return
 
 /mob/living/silicon/robot/verb/unlock_own_cover()
@@ -1246,7 +1224,7 @@ var/list/robot_verbs_default = list(
 	if(emagged)
 		if(mmi)
 			qdel(mmi)
-		explosion(src.loc,1,2,4)
+		explosion(src.loc,1,2,4,flame_range = 2)
 	else
 		explosion(src.loc,-1,0,2)
 	gib()

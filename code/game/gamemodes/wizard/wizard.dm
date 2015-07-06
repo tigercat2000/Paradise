@@ -257,12 +257,12 @@
 			else
 				text += "<br><font color='red'><B>The wizard has failed!</B></font>"
 				feedback_add_details("wizard_success","FAIL")
-			if(wizard.current && wizard.current.spell_list)
+			if(wizard.spell_list)
 				text += "<br><B>[wizard.name] used the following spells: </B>"
 				var/i = 1
-				for(var/obj/effect/proc_holder/spell/wizard/S in wizard.current.spell_list)
+				for(var/obj/effect/proc_holder/spell/wizard/S in wizard.spell_list)
 					text += "[S.name]"
-					if(wizard.current.spell_list.len > i)
+					if(wizard.spell_list.len > i)
 						text += ", "
 					i++
 			text += "<br>"
@@ -293,3 +293,6 @@ Made a proc so this is not repeated 14 (or more) times.*/
 		return 0
 	else
 		return 1
+
+/proc/iswizard(mob/living/M as mob)
+	return istype(M) && M.mind && ticker && ticker.mode && (M.mind in ticker.mode.wizards)

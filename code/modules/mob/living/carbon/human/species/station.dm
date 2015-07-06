@@ -15,6 +15,8 @@
 	interests, rampant cyber and bio-augmentation and secretive factions make life on most human \
 	worlds tumultous at best."
 
+	reagent_tag = PROCESS_ORG
+
 /datum/species/unathi
 	name = "Unathi"
 	icobase = 'icons/mob/human_races/r_lizard.dmi'
@@ -48,7 +50,7 @@
 
 	flesh_color = "#34AF10"
 
-	reagent_tag = IS_UNATHI
+	reagent_tag = PROCESS_ORG
 	base_color = "#066000"
 
 /datum/species/unathi/handle_death(var/mob/living/carbon/human/H)
@@ -87,6 +89,7 @@
 	bodyflags = FEET_PADDED | HAS_TAIL | HAS_SKIN_COLOR | TAIL_WAGGING
 	dietflags = DIET_OMNI
 
+	reagent_tag = PROCESS_ORG
 	flesh_color = "#AFA59E"
 	base_color = "#333333"
 
@@ -116,6 +119,7 @@
 	bodyflags = FEET_PADDED | HAS_TAIL | HAS_SKIN_COLOR | TAIL_WAGGING
 	dietflags = DIET_OMNI
 
+	reagent_tag = PROCESS_ORG
 	flesh_color = "#966464"
 	base_color = "#BE8264"
 
@@ -145,7 +149,7 @@
 
 	flesh_color = "#8CD7A3"
 	blood_color = "#1D2CBF"
-	reagent_tag = IS_SKRELL
+	reagent_tag = PROCESS_ORG
 
 /datum/species/vox
 	name = "Vox"
@@ -185,7 +189,7 @@
 	blood_color = "#2299FC"
 	flesh_color = "#808D11"
 
-	reagent_tag = IS_VOX
+	reagent_tag = PROCESS_ORG
 
 	makeName(var/gender,var/mob/living/carbon/human/H=null)
 		var/sounds = rand(2,8)
@@ -237,7 +241,7 @@
 	blood_color = "#2299FC"
 	flesh_color = "#808D11"
 
-	reagent_tag = IS_VOX
+	reagent_tag = PROCESS_ORG
 
 	tail = "armalis_tail"
 	icon_template = 'icons/mob/human_races/r_armalis.dmi'
@@ -268,7 +272,7 @@
 	dietflags = DIET_HERB
 
 	blood_color = "#FB9800"
-
+	reagent_tag = PROCESS_ORG
 
 /datum/species/slime
 	name = "Slime People"
@@ -285,6 +289,7 @@
 	dietflags = DIET_CARN
 
 	ventcrawler = 1
+	reagent_tag = PROCESS_ORG
 
 	has_organ = list(
 		"brain" = /obj/item/organ/brain/slime
@@ -314,6 +319,7 @@
 	flags = IS_WHITELISTED | HAS_LIPS | HAS_UNDERWEAR | CAN_BE_FAT
 	dietflags = DIET_HERB
 
+	reagent_tag = PROCESS_ORG
 	blood_color = "#A200FF"
 
 /datum/species/grey/handle_dna(var/mob/living/carbon/C, var/remove)
@@ -367,7 +373,7 @@
 	blood_color = "#004400"
 	flesh_color = "#907E4A"
 
-	reagent_tag = IS_DIONA
+	reagent_tag = PROCESS_ORG
 
 	has_organ = list(
 		"nutrient channel" =   /obj/item/organ/diona/nutrients,
@@ -449,6 +455,7 @@
 	dietflags = 0		//IPCs can't eat, so no diet
 	blood_color = "#1F181F"
 	flesh_color = "#AAAAAA"
+	reagent_tag = PROCESS_SYN
 
 /datum/species/machine/handle_death(var/mob/living/carbon/human/H)
 	H.emote("deathgasp")

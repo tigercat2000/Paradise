@@ -98,7 +98,7 @@
 		attached.anchored = 0
 		attached.attached = null
 	attached = null*/
-	..()													// then go ahead and delete the cable
+	return ..()													// then go ahead and delete the cable
 
 /obj/structure/cable/hide(var/i)
 
@@ -198,6 +198,10 @@
 				new/obj/item/stack/cable_coil(src.loc, src.d1 ? 2 : 1, cable_color)
 				qdel(src)
 	return
+
+/obj/structure/cable/singularity_pull(S, current_size)
+	if(current_size >= STAGE_FIVE)
+		Destroy()
 
 // the cable coil object, used for laying cable
 

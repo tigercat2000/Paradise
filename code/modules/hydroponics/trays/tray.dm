@@ -71,7 +71,8 @@
 		"adminordrazine" =  1,
 		"eznutrient" =      1,
 		"robustharvest" =   1,
-		"left4zed" =        1
+		"left4zed" =        1,
+		"fishwater" =		0.75,
 		)
 	var/global/list/weedkiller_reagents = list(
 		"fluorine" =       -4,
@@ -98,6 +99,7 @@
 		"phosphorus" =     -0.5,
 		"water" =           1,
 		"sodawater" =       1,
+		"fishwater" =		1,
 		)
 
 	// Beneficial reagents also have values for modifying yield_mod and mut_mod (in that order).
@@ -572,7 +574,7 @@
 			weedlevel -= P.weed_kill_str
 			user << "You spray [src] with [O]."
 			playsound(loc, 'sound/effects/spray3.ogg', 50, 1, -6)
-			del(O)
+			qdel(O)
 
 			check_level_sanity()
 			update_icon()
@@ -585,7 +587,7 @@
 			weedlevel -= W.weed_kill_str
 			user << "You spray [src] with [O]."
 			playsound(loc, 'sound/effects/spray3.ogg', 50, 1, -6)
-			del(O)
+			qdel(O)
 
 			check_level_sanity()
 			update_icon()
@@ -680,7 +682,7 @@
 
 			if(!S.seed)
 				user << "The packet seems to be empty. You throw it away."
-				del(O)
+				qdel(O)
 				return
 
 			user << "You plant the [S.seed.seed_name] [S.seed.seed_noun]."
@@ -691,7 +693,7 @@
 			health = (istype(S, /obj/item/seeds/cutting) ? round(seed.get_trait(TRAIT_ENDURANCE)/rand(2,5)) : seed.get_trait(TRAIT_ENDURANCE))
 			lastcycle = world.time
 
-			del(O)
+			qdel(O)
 
 			check_health()
 
@@ -733,13 +735,13 @@
 			user << "<span class='danger'>[src] is already occupied!</span>"
 		else
 			user.drop_item()
-			del(O)
+			qdel(O)
 
 			var/obj/machinery/apiary/A = new(src.loc)
 			A.icon = src.icon
 			A.icon_state = src.icon_state
 			A.hydrotray_type = src.type
-			del(src)
+			qdel(src)
 	else if ((istype(O, /obj/item/weapon/tank) && !( src.destroyed )))
 		if (src.holding)
 			user << "\blue There is alreadu a tank loaded into the [src]."

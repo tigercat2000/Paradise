@@ -150,6 +150,15 @@
 		..()
 		reagents.add_reagent("morphine", 30)
 
+/obj/item/weapon/reagent_containers/glass/bottle/ether
+	name = "Ether Bottle"
+	desc = "A small bottle. Contains ether."
+	icon = 'icons/obj/chemical.dmi'
+	icon_state = "bottle17"
+	New()
+		..()
+		reagents.add_reagent("ether", 30)
+
 /obj/item/weapon/reagent_containers/glass/bottle/charcoal
 	name = "Charcoal Bottle"
 	desc = "A small bottle. Contains charcoal."
@@ -275,4 +284,4 @@
 
 	New()
 		..()
-		reagents.add_reagent(pick("polonium","initropidril","concentrated_initro","pancuronium","sodium_thiopental","ketamine","sulfonal","amanitin","coniine","curare","sarin","histamine","venom","cyanide"), 40)
+		reagents.add_reagent(pick("polonium","initropidril","concentrated_initro","pancuronium","sodium_thiopental","ketamine","sulfonal","amanitin","coniine","curare","tabun","histamine","venom","cyanide"), 40)

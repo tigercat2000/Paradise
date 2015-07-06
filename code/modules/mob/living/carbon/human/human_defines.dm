@@ -80,8 +80,6 @@
 
 	var/lastFart = 0 // Toxic fart cooldown.
 
-	var/frozen = 0 //used for preventing attacks on admin-frozen people
-
 	var/should_absorb = 0 //slime people lulz
 
 	var/fire_dmi = 'icons/mob/OnFire.dmi'

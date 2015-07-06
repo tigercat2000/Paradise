@@ -35,7 +35,7 @@ Pipelines + Other Objects -> Pipe network
 		M.forceMove(src.loc)
 	if(pipe_image)
 		del(pipe_image) //we have to del it, or it might keep a ref somewhere else
-	..()
+	return ..()
 
 // Find a connecting /obj/machinery/atmospherics in specified direction.
 /obj/machinery/atmospherics/proc/findConnecting(var/direction)
@@ -192,3 +192,7 @@ obj/machinery/atmospherics/proc/check_connect_types_construction(obj/machinery/a
 
 /obj/machinery/atmospherics/proc/can_crawl_through()
 	return 1
+
+/obj/machinery/atmospherics/singularity_pull(S, current_size)
+	if(current_size >= STAGE_FIVE)
+		Destroy()

@@ -63,7 +63,7 @@
 	/*  BROKEN, FUCK BYOND
 	if(hasvar(src, "my_atom"))
 		src:my_atom = null*/
-	..()
+	return ..()
 
 /obj/item/device
 	icon = 'icons/obj/device.dmi'
@@ -698,3 +698,9 @@
 	for(var/obj/item/A in world)
 		if(A.type == type && !A.blood_overlay)
 			A.blood_overlay = image(I)
+
+/obj/item/singularity_pull(S, current_size)
+	spawn(0) //this is needed or multiple items will be thrown sequentially and not simultaneously
+		if(current_size >= STAGE_FOUR)
+			throw_at(S,14,3)
+		else ..()

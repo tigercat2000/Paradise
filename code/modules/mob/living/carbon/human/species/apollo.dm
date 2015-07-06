@@ -37,6 +37,7 @@
 	flags = IS_WHITELISTED | HAS_LIPS | HAS_UNDERWEAR | NO_BREATHE | HAS_SKIN_COLOR | NO_SCAN | NO_SCAN | HIVEMIND
 	dietflags = DIET_HERB		//bees feed off nectar, so bee people feed off plants too
 
+	reagent_tag = PROCESS_ORG
 	base_color = "#704300"
 	flesh_color = "#704300"
 	blood_color = "#FFFF99"
@@ -90,6 +91,7 @@
 	flags = IS_WHITELISTED | NO_BREATHE | NO_BLOOD | NO_PAIN | HAS_LIPS | NO_SCAN
 	dietflags = DIET_OMNI		//still human at their core, so they maintain their eating habits and diet
 
+	reagent_tag = PROCESS_ORG
 	has_organ = list(
 		"heart" =    /obj/item/organ/heart,
 		"crystalized brain" =    /obj/item/organ/brain/crystal,
@@ -106,6 +108,6 @@
 /datum/species/nucleation/handle_death(var/mob/living/carbon/human/H)
 	var/turf/T = get_turf(H)
 	H.visible_message("\red[H]'s body explodes, leaving behind a pile of microscopic crystals!")
-	supermatter_delamination(T, 2, 0, 0) // Create a small supermatter burst upon death
-	new /obj/item/weapon/shard/supermatter( T )
+	explosion(T, 0, 0, 2, 2) // Create a small explosion burst upon death
+//	new /obj/item/weapon/shard/supermatter( T )
 	del(H)

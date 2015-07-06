@@ -17,7 +17,7 @@
 		return
 	if(IsMultiple(activeFor, 5))
 		newAnomaly.anomalyEffect()
-		
+
 /datum/event/anomaly/anomaly_pyro/end()
 	if(newAnomaly.loc)
 		explosion(get_turf(newAnomaly), -1,0,3, flame_range = 4)

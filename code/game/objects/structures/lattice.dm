@@ -30,7 +30,7 @@
 		if(locate(/obj/structure/lattice, get_step(src, dir)))
 			L = locate(/obj/structure/lattice, get_step(src, dir))
 			L.updateOverlays(src.loc)
-	..()
+	return ..()
 
 /obj/structure/lattice/blob_act()
 	qdel(src)
@@ -81,4 +81,7 @@
 
 		icon_state = "lattice[dir_sum]"
 		return
-		
+
+/obj/structure/lattice/singularity_pull(S, current_size)
+	if(current_size >= STAGE_FOUR)
+		Destroy()

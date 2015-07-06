@@ -3,6 +3,7 @@
 	name = "\proper space"
 	icon_state = "0"
 	dynamic_lighting = 0
+	luminosity = 1
 
 	temperature = TCMB
 	thermal_conductivity = OPEN_HEAT_TRANSFER_COEFFICIENT
@@ -13,6 +14,8 @@
 	var/destination_y
 
 /turf/space/New()
+	. = ..()
+
 	if(!istype(src, /turf/space/transit))
 		icon_state = "[((x + y) ^ ~(x * y) + z) % 25]"
 	if(config)
@@ -341,3 +344,6 @@ proc/setup_map_transitions() //listamania
 			S.transition = directions[Z_NORTH]
 
 		S.Assign_Destination()
+
+/turf/space/singularity_act()
+	return

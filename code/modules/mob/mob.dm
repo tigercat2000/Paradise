@@ -3,7 +3,7 @@
 	dead_mob_list -= src
 	living_mob_list -= src
 	ghostize()
-	..()
+	return ..()
 
 /mob/New()
 	mob_list += src
@@ -700,7 +700,7 @@ var/list/slot_equipment_priority = list( \
 				namecounts[name] = 1
 			creatures[name] = O
 
-		if(istype(O, /obj/machinery/singularity))
+		if(istype(O, /obj/singularity))
 			var/name = "Singularity"
 			if (names.Find(name))
 				namecounts[name]++

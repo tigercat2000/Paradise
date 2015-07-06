@@ -127,32 +127,6 @@ datum
 				if (!target.reagents || src.total_volume<=0)
 					return
 
-				/*var/datum/reagents/R = target.reagents
-
-				var/obj/item/weapon/reagent_containers/glass/beaker/noreact/B = new /obj/item/weapon/reagent_containers/glass/beaker/noreact //temporary holder
-
-				amount = min(min(amount, src.total_volume), R.maximum_volume-R.total_volume)
-				var/part = amount / src.total_volume
-				var/trans_data = null
-				for (var/datum/reagent/current_reagent in src.reagent_list)
-					if (!current_reagent)
-						continue
-					//if (current_reagent.id == "blood" && ishuman(target))
-					//	var/mob/living/carbon/human/H = target
-					//	H.inject_blood(my_atom, amount)
-					//	continue
-					var/current_reagent_transfer = current_reagent.volume * part
-					if(preserve_data)
-						trans_data = current_reagent.data
-
-					B.add_reagent(current_reagent.id, (current_reagent_transfer * multiplier), trans_data, safety = 1)	//safety checks on these so all chemicals are transferred
-					src.remove_reagent(current_reagent.id, current_reagent_transfer, safety = 1)							// to the target container before handling reactions
-
-				src.update_total()
-				B.update_total()
-				B.handle_reactions()
-				src.handle_reactions()*/
-
 				var/obj/item/weapon/reagent_containers/glass/beaker/noreact/B = new /obj/item/weapon/reagent_containers/glass/beaker/noreact //temporary holder
 				B.volume = 1000
 
@@ -163,9 +137,13 @@ datum
 
 				src.trans_to(B, amount)
 
-				spawn(100)
+				spawn(-1)
+					src = null // Survive through deletion of the reagent holder
+					sleep(100)
+					if(!target)
+						return
 					BR.trans_to(target, BR.total_volume)
-					del(B)
+					qdel(B)
 
 				return amount
 
@@ -404,6 +382,27 @@ datum
 					del_reagent(R.id)
 				return 0
 
+			reaction_check(var/mob/M, var/datum/reagent/R)
+				var/can_process = 0
+				if(!istype(M, /mob/living))		//Non-living mobs can't metabolize reagents, so don't bother trying (runtime safety check)
+					return can_process
+				if(ishuman(M))
+					var/mob/living/carbon/human/H = M
+					//Check if this mob's species is set and can process this type of reagent
+					if(H.species && H.species.reagent_tag)
+						if((R.process_flags & SYNTHETIC) && (H.species.reagent_tag & PROCESS_SYN))		//SYNTHETIC-oriented reagents require PROCESS_SYN
+							can_process = 1
+						if((R.process_flags & ORGANIC) && (H.species.reagent_tag & PROCESS_ORG))		//ORGANIC-oriented reagents require PROCESS_ORG
+							can_process = 1
+						//Species with PROCESS_DUO are only affected by reagents that affect both organics and synthetics, like acid and hellwater
+						if((R.process_flags & ORGANIC) && (R.process_flags & SYNTHETIC) && (H.species.reagent_tag & PROCESS_DUO))
+							can_process = 1
+				//We'll assume that non-human mobs lack the ability to process synthetic-oriented reagents (adjust this if we need to change that assumption)
+				else
+					if(R.process_flags != SYNTHETIC)
+						can_process = 1
+				return can_process
+
 			reaction(var/atom/A, var/method=TOUCH, var/volume_modifier=0)
 
 				switch(method)
@@ -412,7 +411,11 @@ datum
 							if(ismob(A))
 								spawn(0)
 									if(!R) return
-									else R.reaction_mob(A, TOUCH, R.volume+volume_modifier)
+									var/check = reaction_check(A, R)
+									if(!check)
+										continue
+									else
+										R.reaction_mob(A, TOUCH, R.volume+volume_modifier)
 							if(isturf(A))
 								spawn(0)
 									if(!R) return
@@ -426,7 +429,11 @@ datum
 							if(ismob(A) && R)
 								spawn(0)
 									if(!R) return
-									else R.reaction_mob(A, INGEST, R.volume+volume_modifier)
+									var/check = reaction_check(A, R)
+									if(!check)
+										continue
+									else
+										R.reaction_mob(A, INGEST, R.volume+volume_modifier)
 							if(isturf(A) && R)
 								spawn(0)
 									if(!R) return
@@ -441,6 +448,7 @@ datum
 				if(!isnum(amount)) return 1
 				update_total()
 				if(total_volume + amount > maximum_volume) amount = (maximum_volume - total_volume) //Doesnt fit in. Make it disappear. Shouldnt happen. Will happen.
+				if(amount <= 0) return 0
 				chem_temp = round(((amount * reagtemp) + (total_volume * chem_temp)) / (total_volume + amount)) //equalize with new chems
 
 				for(var/A in reagent_list)
@@ -633,3 +641,5 @@ atom/proc/create_reagents(var/max_vol)
 
 	if(my_atom)
 		my_atom = null
+
+	return ..()

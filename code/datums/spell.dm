@@ -88,7 +88,7 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 			if(user.is_muzzled())
 				user << "Mmmf mrrfff!"
 				return 0
-	var/obj/effect/proc_holder/spell/wizard/noclothes/spell = locate() in user.spell_list
+	var/obj/effect/proc_holder/spell/wizard/noclothes/spell = locate() in (user.spell_list | (user.mind ? user.mind.spell_list : list()))
 	if(clothes_req && !(spell && istype(spell)))//clothes check
 		if(!istype(user, /mob/living/carbon/human))
 			user << "You aren't a human, Why are you trying to cast a human spell, silly non-human? Casting human spells is for humans."
@@ -195,6 +195,10 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 			else if(smoke_spread == 2)
 				var/datum/effect/effect/system/bad_smoke_spread/smoke = new /datum/effect/effect/system/bad_smoke_spread()
 				smoke.set_up(smoke_amt, 0, location) //no idea what the 0 is
+				smoke.start()
+			else if(smoke_spread == 3)
+				var/datum/effect/effect/system/sleep_smoke_spread/smoke = new /datum/effect/effect/system/sleep_smoke_spread()
+				smoke.set_up(smoke_amt, 0, location) // same here
 				smoke.start()
 
 /obj/effect/proc_holder/spell/wizard/proc/cast(list/targets)
@@ -370,13 +374,10 @@ var/list/spells = typesof(/obj/effect/proc_holder/spell) //needed for the badmin
 		var/obj/effect/proc_holder/spell/wizard/noclothes/clothcheck2 = locate() in user.mind.spell_list
 		if(clothes_req && !(clothcheck && istype(clothcheck)) && !(clothcheck2 && istype(clothcheck2)))//clothes check
 			if(!istype(H.wear_suit, /obj/item/clothing/suit/wizrobe) && !istype(H.wear_suit, /obj/item/clothing/suit/space/rig/wizard))
-				user << "I don't feel strong enough without my robe."
 				return 0
 			if(!istype(H.shoes, /obj/item/clothing/shoes/sandal))
-				user << "I don't feel strong enough without my sandals."
 				return 0
 			if(!istype(H.head, /obj/item/clothing/head/wizard) && !istype(H.head, /obj/item/clothing/head/helmet/space/rig/wizard))
-				user << "<span class='notice'>I don't feel strong enough without my hat.</span>"
 				return 0
 	else
 		if(clothes_req)

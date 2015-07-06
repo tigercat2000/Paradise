@@ -50,6 +50,7 @@ var/global/list/possibleEvents = list()
 	//possibleEvents[/datum/event/mundane_news] = 300
 
 	possibleEvents[/datum/event/cargo_bonus] = 150
+	possibleEvents[/datum/event/revenant] = 75
 
 	possibleEvents[/datum/event/pda_spam] = max(min(25, player_list.len) * 4, 200)
 	possibleEvents[/datum/event/money_lotto] = max(min(5, player_list.len), 50)
@@ -80,13 +81,12 @@ var/global/list/possibleEvents = list()
 		possibleEvents[/datum/event/spacevine] = 10 + 5 * active_with_role["Engineer"]
 	if(minutes_passed >= 30) // Give engineers time to set up engine
 		possibleEvents[/datum/event/brand_intelligence] = 50 + 25 * active_with_role["Engineer"]
-//		possibleEvents[/datum/event/anomaly/anomaly_pyro] = 100 + 60 * active_with_role["Engineer"]
+		possibleEvents[/datum/event/anomaly/anomaly_pyro] = 100 + 60 * active_with_role["Engineer"]
 		possibleEvents[/datum/event/anomaly/anomaly_vortex] = 50 + 25 * active_with_role["Engineer"]
 		possibleEvents[/datum/event/anomaly/anomaly_bluespace] = 50 + 25 * active_with_role["Engineer"]
 		possibleEvents[/datum/event/anomaly/anomaly_flux] = 50 + 50 * active_with_role["Engineer"]
 
 		possibleEvents[/datum/event/meteor_wave] = 10 * active_with_role["Engineer"]
-		possibleEvents[/datum/event/meteor_shower] = 20 * active_with_role["Engineer"]
 		possibleEvents[/datum/event/blob] = 10 * active_with_role["Engineer"]
 
 	if(active_with_role["Medical"] > 0)

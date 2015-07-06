@@ -8,7 +8,41 @@
 	//var/darkness_view = 0//Base human is 2
 	//var/invisa_view = 0
 	var/prescription = 0
+	var/prescription_upgradable = 0
 	var/see_darkness = 1
+	var/HUDType = 0
+
+/obj/item/clothing/glasses/New()
+	. = ..()
+	if(prescription_upgradable && prescription)
+		// Pre-upgraded upgradable glasses
+		name = "prescription [name]"
+
+/obj/item/clothing/glasses/attackby(var/obj/item/O as obj, var/mob/user as mob)
+	if (user.stat || user.restrained() || !ishuman(user))
+		return ..()
+	var/mob/living/carbon/human/H = user
+	if(prescription_upgradable)
+		if(istype(O, /obj/item/clothing/glasses/regular))
+			if(prescription)
+				H << "You can't possibly imagine how adding more lenses would improve \the [name]."
+				return
+			H.unEquip(O)
+			O.loc = src // Store the glasses for later removal
+			H << "You fit \the [name] with lenses from \the [O]."
+			prescription = 1
+			name = "prescription [name]"
+			return
+		if(prescription && istype(O, /obj/item/weapon/screwdriver))
+			var/obj/item/clothing/glasses/regular/G = locate() in src
+			if(!G)
+				G = new(get_turf(H))
+			H << "You salvage the prescription lenses from \the [name]."
+			prescription = 0
+			name = initial(name)
+			H.put_in_hands(G)
+			return
+	return ..()
 
 /obj/item/clothing/glasses/meson
 	name = "Optical Meson Scanner"
@@ -17,6 +51,7 @@
 	item_state = "glasses"
 	origin_tech = "magnets=2;engineering=2"
 	vision_flags = SEE_TURFS
+	prescription_upgradable = 1
 	species_fit = list("Vox")
 	sprite_sheets = list(
 		"Vox" = 'icons/mob/species/vox/eyes.dmi'
@@ -29,15 +64,10 @@
 	item_state = "glasses"
 	darkness_view = 8
 	see_darkness = 0
+	prescription_upgradable = 0
 
 /obj/item/clothing/glasses/meson/prescription
-	name = "prescription mesons"
-	desc = "Optical Meson Scanner with prescription lenses."
 	prescription = 1
-	species_fit = list("Vox")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/eyes.dmi'
-		)
 
 /obj/item/clothing/glasses/meson/cyber
 	name = "Eye Replacement Implant"
@@ -45,6 +75,7 @@
 	icon_state = "cybereye-green"
 	item_state = "eyepatch"
 	flags = NODROP
+	prescription_upgradable = 0
 
 /obj/item/clothing/glasses/science
 	name = "Science Goggles"
@@ -107,14 +138,14 @@
 	flags = NODROP
 
 /obj/item/clothing/glasses/regular
-	name = "Prescription Glasses"
+	name = "prescription glasses"
 	desc = "Made by Nerd. Co."
 	icon_state = "glasses"
 	item_state = "glasses"
 	prescription = 1
 
 /obj/item/clothing/glasses/regular/hipster
-	name = "Prescription Glasses"
+	name = "prescription glasses"
 	desc = "Made by Uncool. Co."
 	icon_state = "hipster_glasses"
 	item_state = "hipster_glasses"
@@ -139,6 +170,7 @@
 	darkness_view = 1
 	flash_protect = 1
 	tint = 1
+	prescription_upgradable = 1
 	species_fit = list("Vox")
 	sprite_sheets = list(
 		"Vox" = 'icons/mob/species/vox/eyes.dmi'
@@ -227,18 +259,14 @@
 	//vision_flags = BLIND
 	flash_protect = 2
 	tint = 3				//to make them blind
+	prescription_upgradable = 0
 	species_fit = list("Vox")
 	sprite_sheets = list(
 		"Vox" = 'icons/mob/species/vox/eyes.dmi'
 		)
 
 /obj/item/clothing/glasses/sunglasses/prescription
-	name = "prescription sunglasses"
 	prescription = 1
-	species_fit = list("Vox")
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/eyes.dmi'
-		)
 
 /obj/item/clothing/glasses/sunglasses/big
 	desc = "Strangely ancient technology used to help provide rudimentary eye cover. Larger than average enhanced shielding blocks many flashes."
@@ -258,16 +286,15 @@
 	darkness_view = 1
 	flash_protect = 1
 	tint = 1
-	var/obj/item/clothing/glasses/hud/security/hud = null
+	HUDType = SECHUD
+	prescription_upgradable = 1
 	species_fit = list("Vox")
 	sprite_sheets = list(
 		"Vox" = 'icons/mob/species/vox/eyes.dmi'
 		)
 
-	New()
-		..()
-		src.hud = new/obj/item/clothing/glasses/hud/security(src)
-		return
+/obj/item/clothing/glasses/sunglasses/sechud/prescription
+	prescription = 1
 
 /obj/item/clothing/glasses/thermal
 	name = "Optical Thermal Scanner"

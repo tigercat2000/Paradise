@@ -56,7 +56,7 @@
 	adjust_position()
 
 //Used by throw code to hand over the mob, instead of throwing the grab. The grab is then deleted by the throw code.
-/obj/item/weapon/grab/proc/throw()
+/obj/item/weapon/grab/proc/get_mob_if_throwable()
 	if(affecting && assailant.Adjacent(affecting))
 		if(affecting.buckled)
 			return null
@@ -464,7 +464,7 @@
 		affecting.layer = initial(affecting.layer)
 		affecting.grabbed_by -= src
 	del(hud)
-	..()
+	return ..()
 
 #undef EAT_TIME_XENO
 #undef EAT_TIME_FAT
