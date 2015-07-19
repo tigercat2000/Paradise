@@ -1,10 +1,18 @@
 mob/living
 	var/canEnterVentWith = "/obj/item/weapon/implant=0&/obj/item/clothing/mask/facehugger=0&/obj/item/device/radio/borg=0&/obj/machinery/camera=0"
+	var/datum/middleClickOverride/middleClickOverride = null
 
 /mob/living/carbon/Login()
 	..()
 	update_hud()
 	return
+
+/mob/living/carbon/Destroy()
+	for(var/atom/movable/guts in internal_organs)
+		qdel(guts)
+	for(var/atom/movable/food in stomach_contents)
+		qdel(food)
+	return ..()
 
 /mob/living/carbon/Life()
 	..()
@@ -12,6 +20,13 @@ mob/living
 	// Increase germ_level regularly
 	if(germ_level < GERM_LEVEL_AMBIENT && prob(30))	//if you're just standing there, you shouldn't get more germs beyond an ambient level
 		germ_level++
+
+/mob/living/carbon/blob_act()
+	if (stat == DEAD)
+		return
+	else
+		show_message("<span class='userdanger'>The blob attacks!</span>")
+		adjustBruteLoss(10)
 
 /mob/living/carbon/Move(NewLoc, direct)
 	. = ..()

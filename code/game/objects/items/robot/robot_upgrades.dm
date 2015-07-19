@@ -30,7 +30,7 @@
 	R.uneq_all()
 	R.hands.icon_state = "nomod"
 	R.icon_state = "robot"
-	del(R.module)
+	qdel(R.module)
 	R.module = null
 	R.camera.network.Remove(list("Engineering","Medical","Mining Outpost"))
 	R.updatename("Default")
@@ -39,6 +39,7 @@
 	R.speech_synthesizer_langs = list()
 	R.notify_ai(2)
 	R.updateicon()
+	R.add_language("Robot Talk", 1)
 
 	return 1
 

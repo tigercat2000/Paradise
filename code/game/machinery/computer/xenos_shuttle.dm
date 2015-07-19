@@ -4,7 +4,8 @@
 /obj/machinery/computer/xenos_station
 	name = "xenos shuttle terminal"
 	icon = 'icons/obj/computer.dmi'
-	icon_state = "xenocontrol"
+	icon_keyboard = "telesci_key"
+	icon_screen = "telesci"
 	req_access = list()
 	var/area/curr_location
 	var/moving = 0
@@ -71,7 +72,7 @@
 		for(var/atom/movable/AM as mob|obj in T)
 			AM.Move(D)
 		if(istype(T, /turf/simulated))
-			del(T)
+			qdel(T)
 
 	for(var/mob/living/carbon/bug in dest_location) // If someone somehow is still in the shuttle's docking area...
 		bug.gib()

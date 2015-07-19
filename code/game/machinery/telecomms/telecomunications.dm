@@ -103,7 +103,7 @@ var/global/list/obj/machinery/telecomms/telecomms_list = list()
 				copy.data["original"] = signal.data["original"]
 
 		else
-			del(copy)
+			qdel(copy)
 
 
 		send_count++
@@ -160,9 +160,9 @@ var/global/list/obj/machinery/telecomms/telecomms_list = list()
 				add_link(T)
 
 
-/obj/machinery/telecomms/Del()
+/obj/machinery/telecomms/Destroy()
 	telecomms_list -= src
-	..()
+	return ..()
 
 // Used in auto linking
 /obj/machinery/telecomms/proc/add_link(var/obj/machinery/telecomms/T)

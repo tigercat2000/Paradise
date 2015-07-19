@@ -40,6 +40,9 @@
 			src.Entered(AM)
 			return
 
+/turf/Destroy()
+	return QDEL_HINT_HARDDEL_NOW
+
 // Adds the adjacent turfs to the current atmos processing
 /turf/Del()
 	if(air_master)
@@ -234,11 +237,7 @@
 	var/old_opacity = opacity
 	var/old_dynamic_lighting = dynamic_lighting
 	var/list/old_affecting_lights = affecting_lights
-	#if LIGHTING_RESOLUTION == 1
 	var/old_lighting_overlay = lighting_overlay
-	#else
-	var/old_lighting_overlay = lighting_overlays
-	#endif
 
 	if(air_master)
 		air_master.remove_from_active(src)
@@ -252,11 +251,7 @@
 	for(var/turf/space/S in range(W,1))
 		S.update_starlight()
 
-	#if LIGHTING_RESOLUTION == 1
 	lighting_overlay = old_lighting_overlay
-	#else
-	lighting_overlays = old_lighting_overlay
-	#endif
 
 	affecting_lights = old_affecting_lights
 	if((old_opacity != opacity) || (dynamic_lighting != old_dynamic_lighting))

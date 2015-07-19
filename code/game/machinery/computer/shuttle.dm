@@ -1,7 +1,8 @@
 /obj/machinery/computer/shuttle
 	name = "Shuttle"
 	desc = "For shuttle control."
-	icon_state = "shuttle"
+	icon_keyboard = "tech_key"
+	icon_screen = "shuttle"
 	var/auth_need = 3.0
 	var/list/authorized = list(  )
 
@@ -45,7 +46,7 @@
 						world << "\blue <B>Alert: Shuttle launch time shortened to 10 seconds!</B>"
 						emergency_shuttle.set_launch_countdown(10)
 						//src.authorized = null
-						del(src.authorized)
+						qdel(src.authorized)
 						src.authorized = list(  )
 
 				if("Repeal")

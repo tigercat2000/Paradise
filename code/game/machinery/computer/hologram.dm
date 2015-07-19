@@ -4,7 +4,8 @@
 	name = "Hologram Computer"
 	desc = "Rumoured to control holograms."
 	icon = 'icons/obj/stationobjs.dmi'
-	icon_state = "holo_console0"
+	icon_keyboard = "tech_key"
+	icon_screen = "holocontrol"
 	var/obj/machinery/hologram/projector/projector = null
 	var/temp = null
 	var/lumens = 0.0
@@ -64,7 +65,7 @@
 			if (src.projector.hologram)
 				src.projector.icon_state = "hologram0"
 				//src.projector.hologram = null
-				del(src.projector.hologram)
+				qdel(src.projector.hologram)
 			else
 				src.projector.hologram = new(src.projector.loc)
 				src.projector.hologram.icon = 'icons/mob/human.dmi'

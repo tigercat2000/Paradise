@@ -50,6 +50,12 @@
 		dna.ready_dna(src)
 	UpdateAppearance()
 
+/mob/living/carbon/human/Destroy()
+	for(var/atom/movable/organelle in organs)
+		qdel(organelle)
+	organs = list()
+	return ..()
+
 /mob/living/carbon/human/dummy
 	real_name = "Test Dummy"
 	status_flags = GODMODE|CANPUSH
@@ -240,7 +246,7 @@
 	if (client.statpanel == "Status")
 		if (internal)
 			if (!internal.air_contents)
-				del(internal)
+				qdel(internal)
 			else
 				stat("Internal Atmosphere Info", internal.name)
 				stat("Tank Pressure", internal.air_contents.return_pressure())
@@ -375,11 +381,11 @@
 	..()
 
 /mob/living/carbon/human/blob_act()
-	if(stat == 2)	return
-	show_message("\red The blob attacks you!")
+	if(stat == DEAD)	return
+	show_message("<span class='userdanger'>The blob attacks you!</span>")
 	var/dam_zone = pick("head", "chest", "groin", "l_arm", "l_hand", "r_arm", "r_hand", "l_leg", "l_foot", "r_leg", "r_foot")
 	var/obj/item/organ/external/affecting = get_organ(ran_zone(dam_zone))
-	apply_damage(rand(20,30), BRUTE, affecting, run_armor_check(affecting, "melee"))
+	apply_damage(5, BRUTE, affecting, run_armor_check(affecting, "melee"))
 	return
 
 /mob/living/carbon/human/attack_animal(mob/living/simple_animal/M as mob)
@@ -1199,7 +1205,7 @@
 				if(H.brainmob.real_name == src.real_name)
 					if(H.brainmob.mind)
 						H.brainmob.mind.transfer_to(src)
-						del(H)
+						qdel(H)
 
 
 
@@ -1273,7 +1279,7 @@
 	.=..()
 	if(clean_feet && !shoes && istype(feet_blood_DNA, /list) && feet_blood_DNA.len)
 		feet_blood_color = null
-		del(feet_blood_DNA)
+		qdel(feet_blood_DNA)
 		update_inv_shoes(1)
 		return 1
 

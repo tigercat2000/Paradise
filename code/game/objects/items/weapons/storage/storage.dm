@@ -190,7 +190,7 @@
 
 	New(obj/item/sample as obj)
 		if(!istype(sample))
-			del(src)
+			qdel(src)
 		sample_object = sample
 		number = 1
 
@@ -441,6 +441,11 @@
 	orient2hud()
 	return
 
+/obj/item/weapon/storage/Destroy()
+	qdel(boxes)
+	qdel(closer)
+	return ..()
+
 /obj/item/weapon/storage/emp_act(severity)
 	if(!istype(src.loc, /mob/living))
 		for(var/obj/O in contents)
@@ -474,7 +479,7 @@
 	// Now make the cardboard
 	user << "<span class='notice'>You fold [src] flat.</span>"
 	new src.foldable(get_turf(src))
-	del(src)
+	qdel(src)
 //BubbleWrap END
 
 //Returns the storage depth of an atom. This is the number of storage items the atom is contained in before reaching toplevel (the area).
