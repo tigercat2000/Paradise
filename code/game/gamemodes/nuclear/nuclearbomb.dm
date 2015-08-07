@@ -23,8 +23,12 @@ var/bomb_set
 	var/timing_wire
 	var/removal_stage = 0 // 0 is no removal, 1 is covers removed, 2 is covers open, 3 is sealant open, 4 is unwrenched, 5 is removed from bolts.
 	var/lastentered
+	var/is_syndicate = 0
 	use_power = 0
 	unacidable = 1
+	
+/obj/machinery/nuclearbomb/syndicate
+	is_syndicate = 1
 
 /obj/machinery/nuclearbomb/New()
 	..()
@@ -186,6 +190,7 @@ obj/machinery/nuclearbomb/proc/nukehack_win(mob/user as mob)
 	var/uiwidth
 	var/uiheight
 	var/uititle
+	data["is_syndicate"] = is_syndicate
 	if(!src.opened)
 		data["hacking"] = 0
 		data["auth"] = src.auth
@@ -449,9 +454,34 @@ obj/machinery/nuclearbomb/proc/nukehack_win(mob/user as mob)
 				return
 	return
 
+
+//==========DAT FUKKEN DISK===============
+/obj/item/weapon/disk/nuclear
+	name = "nuclear authentication disk"
+	desc = "Better keep this safe."
+	icon = 'icons/obj/items.dmi'
+	icon_state = "nucleardisk"
+	item_state = "card-id"
+	w_class = 1.0
+
+/obj/item/weapon/disk/nuclear/New()
+	..()
+	processing_objects.Add(src)
+
+/obj/item/weapon/disk/nuclear/process()
+	var/turf/disk_loc = get_turf(src)
+	if(disk_loc.z != ZLEVEL_STATION && disk_loc.z != ZLEVEL_CENTCOMM)
+		get(src, /mob) << "<span class='danger'>You can't help but feel that you just lost something back there...</span>"
+		qdel(src)
+
 /obj/item/weapon/disk/nuclear/Destroy()
 	if(blobstart.len > 0)
-		var/obj/D = new /obj/item/weapon/disk/nuclear(pick(blobstart))
-		message_admins("[src] has been destroyed. Spawning [D] at ([D.x], [D.y], [D.z]).")
-		log_game("[src] has been destroyed. Spawning [D] at ([D.x], [D.y], [D.z]).")
-	return ..()
+		var/obj/item/weapon/disk/nuclear/NEWDISK = new(pick(blobstart))
+		transfer_fingerprints_to(NEWDISK)
+		var/turf/diskturf = get_turf(src)
+		message_admins("[src] has been destroyed in ([diskturf.x], [diskturf.y] ,[diskturf.z] - <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[diskturf.x];Y=[diskturf.y];Z=[diskturf.z]'>JMP</a>). Moving it to ([NEWDISK.x], [NEWDISK.y], [NEWDISK.z] - <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[NEWDISK.x];Y=[NEWDISK.y];Z=[NEWDISK.z]'>JMP</a>).")
+		log_game("[src] has been destroyed in ([diskturf.x], [diskturf.y] ,[diskturf.z]). Moving it to ([NEWDISK.x], [NEWDISK.y], [NEWDISK.z]).")
+		return QDEL_HINT_HARDDEL_NOW
+	else
+		error("[src] was supposed to be destroyed, but we were unable to locate a blobstart landmark to spawn a new one.")
+	return QDEL_HINT_LETMELIVE // Cancel destruction.

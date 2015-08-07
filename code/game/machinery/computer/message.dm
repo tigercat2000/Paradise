@@ -70,6 +70,7 @@
 			user << "<span class='notice'>A no server error appears on the screen.</span>"
 
 /obj/machinery/computer/message_monitor/update_icon()
+	..()
 	if(stat & (NOPOWER|BROKEN))
 		return
 	if(emag || hacking)
@@ -77,19 +78,18 @@
 	else
 		icon_screen = normal_icon
 
-	..()
-
 /obj/machinery/computer/message_monitor/initialize()
+	..()
 	//Is the server isn't linked to a server, and there's a server available, default it to the first one in the list.
 	if(!linkedServer)
 		if(message_servers && message_servers.len > 0)
 			linkedServer = message_servers[1]
 	return
 
-/obj/machinery/computer/message_monitor/attack_hand(var/mob/living/user as mob)
-	if(stat & (NOPOWER|BROKEN))
+/obj/machinery/computer/message_monitor/attack_hand(var/mob/user as mob)
+	if(..()) 
 		return
-	if(!istype(user))
+	if(stat & (NOPOWER|BROKEN)) 
 		return
 	//If the computer is being hacked or is emagged, display the reboot message.
 	if(hacking || emag)
@@ -276,12 +276,8 @@
 	customjob 		= "Admin"
 
 /obj/machinery/computer/message_monitor/Topic(href, href_list)
-	if(..())
+	if(..(href, href_list))
 		return 1
-	if(stat & (NOPOWER|BROKEN))
-		return
-	if(!istype(usr, /mob/living))
-		return
 	if ((usr.contents.Find(src) || (in_range(src, usr) && istype(src.loc, /turf))) || (istype(usr, /mob/living/silicon)))
 		//Authenticate
 		if (href_list["auth"])

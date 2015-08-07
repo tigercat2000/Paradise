@@ -27,7 +27,7 @@ var/global/datum/controller/occupations/job_master
 				occupations += job
 		else
 			occupations = list()
-			var/list/all_jobs = typesof(/datum/job/civilian) -/datum/job
+			var/list/all_jobs = typesof(/datum/job/civilian)
 			if(!all_jobs.len)
 				world << "\red \b Error setting up jobs, no job datums found"
 				return 0
@@ -231,8 +231,8 @@ var/global/datum/controller/occupations/job_master
 				AssignRole(mAI.current, "AI")
 				ai_selected++
 			if(ai_selected)	return 1
-			return 0		
-		
+			return 0
+
 		for(var/i = job.total_positions, i > 0, i--)
 			for(var/level = 1 to 3)
 				var/list/candidates = list()
