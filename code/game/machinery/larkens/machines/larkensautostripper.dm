@@ -53,20 +53,20 @@
 		if(istype(I,/obj/item/organ))
 			continue
 
-		if(!istype(I,/obj/item/clothing))
-			H.unEquip(I)
+		if(!istype(I,/obj/item/clothing))//Prioritizing; Want to make sure the machine collects everything, and nothing falls.
+			H.unEquip(I)				 //Non-clothes first
 			if(useoutput)
 				movetooutput(I)
 			sleep(3)
 
-		else if(istype(I,/obj/item/clothing))
+		else if(istype(I,/obj/item/clothing)) //Now clothes
 			spawn(1)
 				H.unEquip(I)
 				if(useoutput)
 					movetooutput(I)
 				sleep(3)
 		else
-			spawn(2)
+			spawn(2) //finally anything that got left behin d
 				H.unEquip(I)
 				if(useoutput)
 					movetooutput(I)
