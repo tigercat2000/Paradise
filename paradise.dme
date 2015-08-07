@@ -542,6 +542,7 @@
 #include "code\game\machinery\larkens\machines\compresser.dm"
 #include "code\game\machinery\larkens\machines\larkensautostripper.dm"
 #include "code\game\machinery\larkens\machines\larkensgibber.dm"
+#include "code\game\machinery\larkens\machines\oven.dm"
 #include "code\game\machinery\pipe\construction.dm"
 #include "code\game\machinery\pipe\pipe_dispenser.dm"
 #include "code\game\machinery\telecomms\broadcaster.dm"
