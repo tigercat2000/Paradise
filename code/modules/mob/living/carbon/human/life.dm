@@ -163,6 +163,8 @@ var/global/list/brutefireloss_overlays = list("1" = image("icon" = 'icons/mob/sc
 
 	if(mind && mind.vampire)
 		handle_vampire()
+		if(life_tick == 1)
+			regenerate_icons() // Make sure the inventory updates
 
 
 /mob/living/carbon/human/calculate_affecting_pressure(var/pressure)
@@ -1818,7 +1820,7 @@ var/global/list/brutefireloss_overlays = list("1" = image("icon" = 'icons/mob/sc
 					holder.icon_state = "mutineer"
 				if("mutineer")
 					holder.icon_state = "mutineer"
-				if("shadowling")
+				if("Shadowling")
 					holder.icon_state = "hudshadowling"
 				if("shadowling thrall")
 					holder.icon_state = "hudshadowlingthrall"

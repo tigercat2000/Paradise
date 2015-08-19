@@ -37,7 +37,7 @@
 	return
 
 /obj/item/weapon/reagent_containers/food/snacks/attack(mob/M as mob, mob/user as mob, def_zone)
-	if(!reagents.total_volume)						//Shouldn't be needed but it checks to see if it has anything left in it.
+	if(reagents && !reagents.total_volume)						//Shouldn't be needed but it checks to see if it has anything left in it.
 		user << "\red None of [src] left, oh no!"
 		M.unEquip(src)	//so icons update :[
 		qdel(src)
@@ -1244,6 +1244,17 @@
 		..()
 		reagents.add_reagent("protein", 4)
 		bitesize = 2
+
+/obj/item/weapon/reagent_containers/food/snacks/pistachios
+	name = "Pistachios"
+	icon_state = "pistachios"
+	desc = "A snack of deliciously salted pistachios. A perfectly valid choice..."
+	trash = /obj/item/trash/pistachios
+	filling_color = "#BAD145"
+
+	New()
+		..()
+		reagents.add_reagent("plantmatter", 6)
 
 /obj/item/weapon/reagent_containers/food/snacks/no_raisin
 	name = "4no Raisins"

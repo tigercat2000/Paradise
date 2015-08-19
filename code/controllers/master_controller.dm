@@ -20,8 +20,6 @@ var/global/pipe_processing_killed = 0
 datum/controller/game_controller
 	var/list/shuttle_list	                    // For debugging and VV
 
-	var/global/datum/garbage_collector/garbageCollector
-
 datum/controller/game_controller/New()
 	//There can be only one master_controller. Out with the old and in with the new.
 	if(master_controller != src)
@@ -41,8 +39,9 @@ datum/controller/game_controller/New()
 datum/controller/game_controller/proc/setup()
 	world.tick_lag = config.Ticklag
 
-	spawn(20)
-		createRandomZlevel()
+	if(!config.disable_away_missions)
+		spawn(20)
+			createRandomZlevel()
 
 	setup_objects()
 	setup_starlight()

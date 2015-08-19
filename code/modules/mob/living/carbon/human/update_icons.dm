@@ -213,6 +213,7 @@ var/global/list/damage_icon_parts = list()
 			if(O.damage_state == "00") continue
 			var/icon/DI
 			var/cache_index = "[O.damage_state]/[O.icon_name]/[species.blood_color]/[species.name]"
+
 			if(damage_icon_parts[cache_index] == null)
 				DI = new /icon(species.damage_overlays, O.damage_state)			// the damage icon for whole human
 				DI.Blend(new /icon(species.damage_mask, O.icon_name), ICON_MULTIPLY)	// mask with this organ's pixels
@@ -317,10 +318,14 @@ var/global/list/damage_icon_parts = list()
 
 	//Underwear
 	if(underwear && species.flags & HAS_UNDERWEAR)
-		stand_icon.Blend(new /icon('icons/mob/human.dmi', "underwear[underwear]_[g]_s"), ICON_OVERLAY)
+		var/datum/sprite_accessory/underwear/U = underwear_list[underwear]
+		if(U)
+			stand_icon.Blend(new /icon(U.icon, "uw_[U.icon_state]_s"), ICON_OVERLAY)
 
 	if(undershirt && species.flags & HAS_UNDERWEAR)
-		stand_icon.Blend(new /icon('icons/mob/human.dmi', "undershirt[undershirt]_s"), ICON_OVERLAY)
+		var/datum/sprite_accessory/undershirt/U2 = undershirt_list[undershirt]
+		if(U2)
+			stand_icon.Blend(new /icon(U2.icon, "us_[U2.icon_state]_s"), ICON_OVERLAY)
 
 	if(update_icons)
 		update_icons()

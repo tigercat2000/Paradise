@@ -50,11 +50,9 @@
 
 // attack by item places it in to disposal
 /obj/machinery/disposal/attackby(var/obj/item/I, var/mob/user, params)
-	if(stat & BROKEN || !I || !user || (I.flags & NODROP))
+	if(stat & BROKEN || !I || !user || ((I.flags & NODROP) && !istype(I, /obj/item/weapon/storage/bag/trash/cyborg)))
 		return
 
-	if(isrobot(user) && !istype(I, /obj/item/weapon/storage/bag/trash))
-		return
 	src.add_fingerprint(user)
 	if(mode<=0) // It's off
 		if(istype(I, /obj/item/weapon/screwdriver))
@@ -124,10 +122,10 @@
 				for (var/mob/C in viewers(src))
 					C.show_message("\red [GM.name] has been placed in the [src] by [user].", 3)
 				qdel(G)
-				usr.attack_log += text("\[[time_stamp()]\] <font color='red'>Has placed [GM.name] ([GM.ckey]) in disposals.</font>")
-				GM.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been placed in disposals by [usr.name] ([usr.ckey])</font>")
+				usr.attack_log += text("\[[time_stamp()]\] <font color='red'>Has placed [key_name(GM)] in disposals.</font>")
+				GM.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been placed in disposals by [key_name(user)]</font>")
 				if(GM.ckey)
-					msg_admin_attack("[usr] ([usr.ckey])[isAntag(usr) ? "(ANTAG)" : ""] placed [GM] ([GM.ckey]) in a disposals unit. (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[usr.x];Y=[usr.y];Z=[usr.z]'>JMP</a>)")
+					msg_admin_attack("[key_name_admin(user)] placed [key_name_admin(GM)] in a disposals unit. (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>JMP</a>)")
 		return
 
 	if(!I)	return
@@ -241,9 +239,6 @@
 	return
 
 /obj/machinery/disposal/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
-	if(!air_contents) // I'm totally blaming Pete for you Donkie, because this is really shitty
-		return
-		
 	var/data[0]
 
 	var/pressure = 100 * air_contents.return_pressure() / (SEND_PRESSURE)
@@ -265,7 +260,7 @@
 	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
 
 	if (!ui)
-		ui = new(user, src, ui_key, "disposal_bin.tmpl", "Waste Disposal Unit", 375, 250)
+		ui = new(user, src, ui_key, "disposal_bin.tmpl", "Waste Disposal Unit", 395, 250)
 		ui.set_initial_data(data)
 		ui.open()
 		ui.set_auto_update(1)
@@ -348,9 +343,6 @@
 	if(stat & BROKEN)			// nothing can happen if broken
 		return
 
-	if(!air_contents) // Potentially causes a runtime otherwise (if this is really shitty, blame pete //Donkie)
-		return
-
 	flush_count++
 	if( flush_count >= flush_every_ticks )
 		if( contents.len )
@@ -415,9 +407,6 @@
 	if(wrapcheck == 1)
 		H.tomail = 1
 
-
-	air_contents = new()		// new empty gas resv.
-
 	sleep(10)
 	if(last_sound < world.time + 1)
 		playsound(src, 'sound/machines/disposalflush.ogg', 50, 0, 0)
@@ -426,7 +415,7 @@
 
 
 	H.init(src)	// copy the contents of disposer to holder
-
+	air_contents = new() // The holder just took our gas; replace it
 	H.start(src) // start the holder processing movement
 	flushing = 0
 	// now reset disposal state

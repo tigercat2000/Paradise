@@ -464,11 +464,9 @@
 			usr << "There is no coin in this machine."
 			return
 
-		coin.loc = src.loc
-		if(!usr.get_active_hand())
-			usr.put_in_hands(coin)
-		usr << "\blue You remove the [coin] from the [src]"
+		usr.put_in_hands(coin)
 		coin = null
+		usr << "\blue You remove the [coin] from the [src]"
 		categories &= ~CAT_COIN
 
 	if (href_list["pay"])
@@ -560,9 +558,11 @@
 				user << "\blue You successfully pull the coin out before the [src] could swallow it."
 			else
 				user << "\blue You weren't able to pull the coin out fast enough, the machine ate it, string and all."
+				coin = null
 				qdel(coin)
 				categories &= ~CAT_COIN
 		else
+			coin = null
 			qdel(coin)
 			categories &= ~CAT_COIN
 
@@ -773,12 +773,12 @@
 	product_ads = "The healthiest!;Award-winning chocolate bars!;Mmm! So good!;Oh my god it's so juicy!;Have a snack.;Snacks are good for you!;Have some more Getmore!;Best quality snacks straight from mars.;We love chocolate!;Try our new jerky!"
 	icon_state = "snack"
 	products = list(/obj/item/weapon/reagent_containers/food/snacks/candy/candybar = 6,/obj/item/weapon/reagent_containers/food/drinks/dry_ramen = 6,/obj/item/weapon/reagent_containers/food/snacks/chips =6,
-					/obj/item/weapon/reagent_containers/food/snacks/sosjerky = 6,/obj/item/weapon/reagent_containers/food/snacks/no_raisin = 6,/obj/item/weapon/reagent_containers/food/snacks/spacetwinkie = 6,
-					/obj/item/weapon/reagent_containers/food/snacks/cheesiehonkers = 6)
+					/obj/item/weapon/reagent_containers/food/snacks/sosjerky = 6,/obj/item/weapon/reagent_containers/food/snacks/no_raisin = 6,/obj/item/weapon/reagent_containers/food/snacks/pistachios =6,
+					/obj/item/weapon/reagent_containers/food/snacks/spacetwinkie = 6,/obj/item/weapon/reagent_containers/food/snacks/cheesiehonkers = 6)
 	contraband = list(/obj/item/weapon/reagent_containers/food/snacks/syndicake = 6)
 	prices = list(/obj/item/weapon/reagent_containers/food/snacks/candy/candybar = 20,/obj/item/weapon/reagent_containers/food/drinks/dry_ramen = 30,
 					/obj/item/weapon/reagent_containers/food/snacks/chips =25,/obj/item/weapon/reagent_containers/food/snacks/sosjerky = 30,/obj/item/weapon/reagent_containers/food/snacks/no_raisin = 20,
-					/obj/item/weapon/reagent_containers/food/snacks/spacetwinkie = 30,/obj/item/weapon/reagent_containers/food/snacks/cheesiehonkers = 25)
+					/obj/item/weapon/reagent_containers/food/snacks/pistachios = 35, /obj/item/weapon/reagent_containers/food/snacks/spacetwinkie = 30,/obj/item/weapon/reagent_containers/food/snacks/cheesiehonkers = 25)
 	refill_canister = /obj/item/weapon/vending_refill/snack
 
 /obj/machinery/vending/snack/New()

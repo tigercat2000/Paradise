@@ -85,6 +85,8 @@ var/global/list/obj/cortical_stacks = list() //Stacks for 'leave nobody behind' 
 
 	spawn (rand(waittime_l, waittime_h))
 		send_intercept()
+		
+	return ..()
 
 /datum/game_mode/proc/create_vox(var/datum/mind/newraider)
 
@@ -132,7 +134,7 @@ var/global/list/obj/cortical_stacks = list() //Stacks for 'leave nobody behind' 
 		return 0
 
 	for(var/obj/stack in cortical_stacks)
-		if (get_area(stack) != locate(/area/shuttle/vox/station))
+		if (get_area(stack.loc) != locate(/area/shuttle/vox/station))
 			return 0
 	return 1
 
@@ -248,7 +250,7 @@ var/global/list/obj/cortical_stacks = list() //Stacks for 'leave nobody behind' 
 
 	..()
 
-datum/game_mode/declare_completion()
+datum/game_mode/proc/auto_declare_completion_heist()
 	if(raiders.len)
 		var/check_return = 0
 		if(ticker && istype(ticker.mode,/datum/game_mode/heist))
@@ -259,7 +261,7 @@ datum/game_mode/declare_completion()
 			text += "<br>[vox.key] was [vox.name] ("
 			if(check_return)
 				var/obj/stack = raiders[vox]
-				if(get_area(stack) != locate(/area/shuttle/vox/station))
+				if(get_area(stack.loc) != locate(/area/shuttle/vox/station))
 					text += "left behind)"
 					continue
 			if(vox.current)
@@ -275,7 +277,6 @@ datum/game_mode/declare_completion()
 
 		world << text
 		
-	..()	
 	return 1
 
 /datum/game_mode/heist/check_finished()

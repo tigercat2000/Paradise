@@ -138,8 +138,11 @@
 		var/obj/item/organ/external/temp = H.organs_by_name["r_hand"]
 		if (user.hand)
 			temp = H.organs_by_name["l_hand"]
+		if(!temp)
+			user << "<span class='warning'>You try to use your hand, but it's missing!</span>"
+			return 0
 		if(temp && !temp.is_usable())
-			user << "<span class='notice'>You try to move your [temp.name], but cannot!"
+			user << "<span class='warning'>You try to move your [temp.name], but cannot!</span>"
 			return 0
 
 	if (istype(src.loc, /obj/item/weapon/storage))
@@ -339,7 +342,7 @@
 
 		if(istype(src, /obj/item/clothing/under) || istype(src, /obj/item/clothing/suit))
 			if(FAT in H.mutations)
-				testing("[M] TOO FAT TO WEAR [src]!")
+				//testing("[M] TOO FAT TO WEAR [src]!")
 				if(!(flags & ONESIZEFITSALL))
 					if(!disable_warning)
 						H << "\red You're too fat to wear the [name]."
@@ -596,10 +599,10 @@
 		user << "\red You cannot locate any eyes on this creature!"
 		return
 
-	user.attack_log += "\[[time_stamp()]\]<font color='red'> Attacked [M.name] ([M.ckey]) with [src.name] (INTENT: [uppertext(user.a_intent)])</font>"
-	M.attack_log += "\[[time_stamp()]\]<font color='orange'> Attacked by [user.name] ([user.ckey]) with [src.name] (INTENT: [uppertext(user.a_intent)])</font>"
+	user.attack_log += "\[[time_stamp()]\]<font color='red'> Attacked [key_name(M)] with [src.name] (INTENT: [uppertext(user.a_intent)])</font>"
+	M.attack_log += "\[[time_stamp()]\]<font color='orange'> Attacked by [key_name(user)] with [src.name] (INTENT: [uppertext(user.a_intent)])</font>"
 	if(M.ckey)
-		msg_admin_attack("[user.name] ([user.ckey])[isAntag(user) ? "(ANTAG)" : ""] attacked [M.name] ([M.ckey]) with [src.name] (INTENT: [uppertext(user.a_intent)]) (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)") //BS12 EDIT ALG
+		msg_admin_attack("[key_name_admin(user)] attacked [key_name_admin(M)] with [src.name] (INTENT: [uppertext(user.a_intent)])") //BS12 EDIT ALG
 
 	if(!iscarbon(user))
 		M.LAssailant = null

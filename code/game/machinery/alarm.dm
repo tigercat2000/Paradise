@@ -204,6 +204,10 @@
 /obj/machinery/alarm/Destroy()
 	if(radio_controller)
 		radio_controller.remove_object(src, frequency)
+		
+	if (src in machines) // So the cache can properly update
+		removeAtProcessing()
+	air_alarm_repository.update_cache(src)
 	return ..()
 
 /obj/machinery/alarm/proc/first_run()
@@ -212,6 +216,7 @@
 	if (name == "alarm")
 		name = "[alarm_area.name] Air Alarm"
 	apply_preset(1) // Don't cycle.
+	air_alarm_repository.update_cache(src)
 
 /obj/machinery/alarm/initialize()
 	set_frequency(frequency)
@@ -601,6 +606,11 @@
 
 /obj/machinery/alarm/attack_robot(mob/user)
 	return attack_ai(user)
+	
+/obj/machinery/alarm/attack_ghost(user as mob)
+	if(stat & (BROKEN|MAINT))
+		return
+	return ui_interact(user)
 
 /obj/machinery/alarm/attack_hand(mob/user)
 	. = ..()
@@ -685,7 +695,7 @@
 	data["danger"] = danger
 	return data
 
-/obj/machinery/alarm/proc/get_nano_data(mob/user)
+/obj/machinery/alarm/proc/get_nano_data(mob/user, href_list)
 	var/data[0]
 	data["name"] = sanitize(name)
 	data["air"] = ui_air_status()
@@ -695,7 +705,7 @@
 	// Locked when:
 	//   Not sent from atmos console AND
 	//   Not silicon AND locked.
-	data["locked"] =  (!(istype(user, /mob/living/silicon)) && locked)
+	data["locked"] = is_locked(user,href_list)
 	data["rcon"] = rcon_setting
 	data["target_temp"] = target_temperature - T0C
 	data["atmos_alarm"] = alarm_area.atmosalm
@@ -795,14 +805,14 @@
 	return thresholds
 	
 /obj/machinery/alarm/ui_interact(mob/user, ui_key = "main", datum/nanoui/ui = null, force_open = 1, var/master_ui = null, var/datum/topic_state/state = default_state)
-	var/list/data = get_nano_data(user)
-	
+	var/list/href = state.href_list(user)	
 	var/remote_connection = 0
 	var/remote_access = 0
-	if(state)
-		var/list/href = state.href_list(user)
+	if(href)
 		remote_connection = href["remote_connection"]	// Remote connection means we're non-adjacent/connecting from another computer
 		remote_access = href["remote_access"]			// Remote access means we also have the privilege to alter the air alarm.
+
+	var/list/data = get_nano_data(user, href)
 
 	data["remote_connection"] = remote_connection
 	data["remote_access"] = remote_access		
@@ -814,17 +824,35 @@
 		ui.open()
 		ui.set_auto_update(1)
 
-/obj/machinery/alarm/proc/is_authenticated(mob/user as mob)
-	if(isAI(user) || isrobot(user))
+/obj/machinery/alarm/proc/is_authenticated(mob/user as mob, href_list)
+	if(isobserver(user) && check_rights(R_ADMIN, 0, user))
+		return 1
+	else if(isAI(user) || isrobot(user) || emagged || is_auth_rcon(href_list))
 		return 1
 	else
 		return !locked
+		
+/obj/machinery/alarm/proc/is_locked(mob/user as mob, href_list)
+	if(isobserver(user) && check_rights(R_ADMIN, 0, user))
+		return 0
+	else if(is_auth_rcon(href_list))
+		return 0
+	else if(isAI(user) || isrobot(user))
+		return 0
+	else
+		return locked
+		
+/obj/machinery/alarm/proc/is_auth_rcon(href_list)
+	if(href_list && href_list["remote_connection"] && href_list["remote_access"])
+		return 1
+	else
+		return 0
 		
 /obj/machinery/alarm/CanUseTopic(var/mob/user, var/datum/topic_state/state, var/href_list = list())
 	if(buildstage != 2)
 		return STATUS_CLOSE
 
-	if(aidisabled && isAI(user))
+	if(aidisabled && (isAI(user) || isrobot(user)))
 		user << "<span class='warning'>AI control for \the [src] interface has been disabled.</span>"
 		return STATUS_CLOSE
 
@@ -832,14 +860,16 @@
 
 	if(. == STATUS_INTERACTIVE)
 		var/extra_href = state.href_list(usr)
-		// Prevent remote users from altering RCON settings unless they already have access
-		if(href_list["rcon"] && extra_href["remote_connection"] && !extra_href["remote_access"])
+		// Prevent remote users from altering RCON settings or activating atmos alarms unless they already have access
+		if((href_list["atmos_alarm"] || href_list["rcon"]) && extra_href["remote_connection"] && !extra_href["remote_access"])
 			. = STATUS_UPDATE
 	return min(..(), .)
 
 /obj/machinery/alarm/Topic(href, href_list, var/nowindow = 0, var/datum/topic_state/state)	
 	if(..(href, href_list, nowindow, state))
 		return 1
+		
+	var/state_href = state.href_list(usr)
 		
 	if(href_list["rcon"])
 		var/attempted_rcon_setting = text2num(href_list["rcon"])
@@ -855,7 +885,7 @@
 	add_fingerprint(usr)
 
 	if(href_list["command"])
-		if(!is_authenticated(usr))
+		if(!is_authenticated(usr, state_href))
 			return
 
 		var/device_id = href_list["id_tag"]
@@ -910,7 +940,7 @@
 					tlv.vars[varname] = newval
 
 	if(href_list["screen"])
-		if(!is_authenticated(usr))
+		if(!is_authenticated(usr, state_href))
 			return
 
 		screen = text2num(href_list["screen"])
@@ -931,7 +961,7 @@
 		return 1
 
 	if(href_list["mode"])
-		if(!is_authenticated(usr))
+		if(!is_authenticated(usr, state_href))
 			return
 
 		mode = text2num(href_list["mode"])
@@ -939,7 +969,7 @@
 		return 1
 
 	if(href_list["preset"])
-		if(!is_authenticated(usr))
+		if(!is_authenticated(usr, state_href))
 			return
 
 		preset = text2num(href_list["preset"])

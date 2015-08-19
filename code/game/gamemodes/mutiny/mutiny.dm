@@ -105,10 +105,7 @@ datum/game_mode/mutiny
 		if (!pda)
 			return 0
 
-		if (!pda.silent)
-			playsound(pda.loc, 'sound/machines/twobeep.ogg', 50, 1)
-			for (var/mob/O in hearers(3, pda.loc))
-				O.show_message(text("\icon[pda] *[pda.ttone]*"))
+		pda.play_ringtone()
 
 		head_mutineer.current << fluff.get_pda_body()
 		return 1
@@ -332,8 +329,8 @@ datum/game_mode/mutiny
 
 	if (M)
 		src << "Attempting to recruit [M]..."
-		log_admin("[src]([src.ckey]) attempted to recruit [M] as a loyalist.")
-		message_admins("\red [src]([src.ckey]) attempted to recruit [M] as a loyalist.")
+		log_admin("[key_name(src)] attempted to recruit [M] as a loyalist.")
+		message_admins("\red [key_name_admin(src)] attempted to recruit [M] as a loyalist.")
 
 		var/choice = alert(M, "Asked by [src]: Will you help me complete Directive X?", "Loyalist recruitment", "Yes", "No")
 		if(choice == "Yes")
@@ -369,8 +366,8 @@ datum/game_mode/mutiny
 
 	if (M)
 		src << "Attempting to recruit [M]..."
-		log_admin("[src]([src.ckey]) attempted to recruit [M] as a mutineer.")
-		message_admins("\red [src]([src.ckey]) attempted to recruit [M] as a mutineer.")
+		log_admin("[key_name(src)] attempted to recruit [M] as a mutineer.")
+		message_admins("\red [key_name_admin(src)] attempted to recruit [M] as a mutineer.")
 
 		var/choice = alert(M, "Asked by [src]: Will you help me stop Directive X?", "Mutineer recruitment", "Yes", "No")
 		if(choice == "Yes")

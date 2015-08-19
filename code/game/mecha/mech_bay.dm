@@ -13,8 +13,13 @@
 	temperature = TCMB
 	
 /turf/simulated/floor/mech_bay_recharge_floor/Destroy()
-	recharge_console.recharge_floor = null
-	recharge_port.recharge_floor = null
+	if(recharge_console && recharge_console.recharge_floor == src)
+		recharge_console.recharge_floor = null
+	recharge_console = null
+	if(recharge_port && recharge_port.recharge_floor == src)
+		recharge_port.recharge_floor = null
+	recharge_port = null
+	recharging_mecha = null
 	..()
 
 /turf/simulated/floor/mech_bay_recharge_floor/Entered(var/obj/mecha/mecha)
@@ -223,6 +228,7 @@
 /obj/machinery/computer/mech_bay_power_console/proc/mecha_out()
 	if(recharge_port)
 		recharge_port.stop_charge()
+		update_icon()
 	return
 
 /obj/machinery/computer/mech_bay_power_console/power_change()

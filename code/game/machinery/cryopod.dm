@@ -17,6 +17,7 @@
 	circuit = "/obj/item/weapon/circuitboard/cryopodcontrol"
 	density = 0
 	interact_offline = 1
+	req_one_access = list(access_heads, access_armory) //Heads of staff or the warden can go here to claim recover items from their department that people went were cryodormed with.
 	var/mode = null
 
 	//Used for logging people entering cryosleep and important items they are carrying.
@@ -92,6 +93,9 @@
 		user << browse(dat, "window=cryoitems")
 
 	else if(href_list["item"])
+		if(!allowed(user))
+			user << "<span class='warning'>Access Denied.</span>"
+			return
 		if(!allow_items) return
 
 		if(frozen_items.len == 0)
@@ -112,6 +116,9 @@
 		frozen_items -= I
 
 	else if(href_list["allitems"])
+		if(!allowed(user))
+			user << "<span class='warning'>Access Denied.</span>"
+			return
 		if(!allow_items) return
 
 		if(frozen_items.len == 0)
@@ -359,19 +366,19 @@
 						all_objectives -= O
 						O.owner.objectives -= O
 						qdel(O)
+	if(occupant.mind && occupant.mind.assigned_role)
+		//Handle job slot/tater cleanup.
+		var/job = occupant.mind.assigned_role
 
-	//Handle job slot/tater cleanup.
-	var/job = occupant.mind.assigned_role
+		job_master.FreeRole(job)
 
-	job_master.FreeRole(job)
-
-	if(occupant.mind.objectives.len)
-		qdel(occupant.mind.objectives)
-		occupant.mind.special_role = null
-	else
-		if(ticker.mode.name == "AutoTraitor")
-			var/datum/game_mode/traitor/autotraitor/current_mode = ticker.mode
-			current_mode.possible_traitors.Remove(occupant)
+		if(occupant.mind.objectives.len)
+			qdel(occupant.mind.objectives)
+			occupant.mind.special_role = null
+		else
+			if(ticker.mode.name == "AutoTraitor")
+				var/datum/game_mode/traitor/autotraitor/current_mode = ticker.mode
+				current_mode.possible_traitors.Remove(occupant)
 
 	// Delete them from datacore.
 
@@ -481,9 +488,8 @@
 							Gh << "<span style='color: #800080;font-weight: bold;font-size:4;'>Warning: Your body has entered cryostorage.</span>"
 
 			// Book keeping!
-			var/turf/location = get_turf(src)
-			log_admin("[key_name_admin(M)] has entered a stasis pod. (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[location.x];Y=[location.y];Z=[location.z]'>JMP</a>)")
-			message_admins("<span class='notice'>[key_name_admin(M)] has entered a stasis pod.</span>")
+			log_admin("<span class='notice'>[key_name(M)] has entered a stasis pod.</span>")
+			message_admins("[key_name_admin(user)] has entered a stasis pod. (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>JMP</a>)")
 
 			//Despawning occurs when process() is called with an occupant without a client.
 			src.add_fingerprint(M)

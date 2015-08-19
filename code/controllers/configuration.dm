@@ -17,6 +17,7 @@
 	var/log_adminchat = 0				// log admin chat messages
 	var/log_adminwarn = 0				// log warnings admins get about bomb construction and such
 	var/log_pda = 0						// log pda messages
+	var/log_world_output = 0			// log world.log << messages
 	var/log_runtimes = 0                // Logs all runtimes.
 	var/log_hrefs = 0					// logs all links clicked in-game. Could be used for debugging and tracking down exploits
 	var/log_runtime = 0					// logs world.log to a file
@@ -160,6 +161,8 @@
 	var/player_overflow_cap = 0 //number of players before the server starts rerouting
 	var/list/overflow_whitelist = list() //whitelist for overflow
 
+	var/disable_away_missions = 0 // disable away missions
+
 /datum/configuration/New()
 	var/list/L = subtypesof(/datum/game_mode)
 	for (var/T in L)
@@ -264,6 +267,9 @@
 
 				if ("log_pda")
 					config.log_pda = 1
+
+				if ("log_world_output")
+					config.log_world_output = 1
 
 				if ("log_hrefs")
 					config.log_hrefs = 1
@@ -517,6 +523,9 @@
 				if("overflow_server_url")
 					config.overflow_server_url = value
 
+				if("disable_away_missions")
+					config.disable_away_missions = 1
+
 				else
 					diary << "Unknown setting in configuration: '[name]'"
 
@@ -625,6 +634,8 @@
 				sqlfdbklogin = value
 			if ("feedback_password")
 				sqlfdbkpass = value
+			if("feedback_tableprefix")
+				sqlfdbktableprefix = value
 			if ("enable_stat_tracking")
 				sqllogging = 1
 			else

@@ -757,6 +757,8 @@ datum
 				if(volume > 200)
 					M << "<span class = 'danger'>You pass out from hyperglycemic shock!</span>"
 					M.Paralyse(1)
+					if(prob(8))
+						M.adjustToxLoss(rand(1,2))
 				..()
 				return
 
@@ -770,7 +772,6 @@ datum
 
 			on_mob_life(var/mob/living/M as mob)
 				if(!M) M = holder.my_atom
-				M.adjustToxLoss(1*REM)
 				M.adjustFireLoss(1)
 				..()
 				return
@@ -1176,7 +1177,9 @@ datum
 
 			on_mob_life(var/mob/living/M as mob)
 				if(!M) M = holder.my_atom
-				M.adjustToxLoss(3*REM)
+				M.adjustToxLoss(1*REM)
+				if(holder.has_reagent("epinephrine"))
+					holder.remove_reagent("epinephrine", 2)
 				..()
 				return
 
@@ -1270,6 +1273,8 @@ datum
 				M.AdjustParalysis(-1)
 				M.AdjustStunned(-1)
 				M.AdjustWeakened(-1)
+				if(prob(50))
+					M.adjustBrainLoss(-1.0)
 				..()
 				return
 
@@ -1746,6 +1751,15 @@ datum
 			reagent_state = SOLID
 			color = "#B1B0B0"
 
+			overdose_process(var/mob/living/M as mob)
+				if(volume > 100)
+					if(prob(70))
+						M.adjustBrainLoss(1)
+					if(prob(8))
+						M.adjustToxLoss(rand(1,2))
+				..()
+				return
+
 		blackpepper
 			name = "Black Pepper"
 			id = "blackpepper"
@@ -2217,15 +2231,22 @@ datum
 				adj_drowsy = -3
 				adj_sleepy = -2
 				adj_temp = 25
+				overdose_threshold = 45
 
 				on_mob_life(var/mob/living/M as mob)
-					M.Jitter(5)
 					if(adj_temp > 0 && holder.has_reagent("frostoil"))
 						holder.remove_reagent("frostoil", 10*REAGENTS_METABOLISM)
 					if(prob(50))
 						M.AdjustParalysis(-1)
 						M.AdjustStunned(-1)
 						M.AdjustWeakened(-1)
+					..()
+					return
+					
+				overdose_process(var/mob/living/M as mob)
+					if(volume > 45)
+						M.Jitter(5)
+						
 					..()
 					return
 

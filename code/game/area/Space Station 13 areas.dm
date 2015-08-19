@@ -54,14 +54,12 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	var/air_doors_activated = 0
 
 	var/tele_proof = 0
-
+	
 /*Adding a wizard area teleport list because motherfucking lag -- Urist*/
 /*I am far too lazy to make it a proper list of areas so I'll just make it run the usual telepot routine at the start of the game*/
 var/list/teleportlocs = list()
-
-/hook/startup/proc/setupTeleportLocs()
+/hook/startup/proc/process_teleport_locs()
 	for(var/area/AR in world)
-		if(istype(AR, /area/shuttle) || istype(AR, /area/syndicate_station) || istype(AR, /area/wizard_station)) continue
 		if(teleportlocs.Find(AR.name)) continue
 		var/list/turfs = get_area_turfs(AR.type)
 		if(turfs.len)
@@ -73,21 +71,15 @@ var/list/teleportlocs = list()
 	teleportlocs = sortAssoc(teleportlocs)
 
 	return 1
-
+	
 var/list/ghostteleportlocs = list()
-
-/hook/startup/proc/setupGhostTeleportLocs()
+/hook/startup/proc/process_ghost_teleport_locs()
 	for(var/area/AR in world)
 		if(ghostteleportlocs.Find(AR.name)) continue
-		if(istype(AR, /area/tdome))
-			ghostteleportlocs += AR.name
-			ghostteleportlocs[AR.name] = AR
 		var/list/turfs = get_area_turfs(AR.type)
 		if(turfs.len)
-			var/turf/picked = pick(turfs)
-			if ((picked.z in config.player_levels))
-				ghostteleportlocs += AR.name
-				ghostteleportlocs[AR.name] = AR
+			ghostteleportlocs += AR.name
+			ghostteleportlocs[AR.name] = AR
 
 	ghostteleportlocs = sortAssoc(ghostteleportlocs)
 
@@ -2250,12 +2242,12 @@ area/security/podbay
 	ambientsounds = list('sound/ambience/ambisin2.ogg', 'sound/ambience/signal.ogg', 'sound/ambience/signal.ogg', 'sound/ambience/ambigen10.ogg')
 
 /area/turret_protected/tcomwest
-	name = "\improper Telecommunications Satellite West Wing"
+	name = "\improper Telecoms West Wing"
 	icon_state = "tcomsatwest"
 	ambientsounds = list('sound/ambience/ambisin2.ogg', 'sound/ambience/signal.ogg', 'sound/ambience/signal.ogg', 'sound/ambience/ambigen10.ogg')
 
 /area/turret_protected/tcomeast
-	name = "\improper Telecommunications Satellite East Wing"
+	name = "\improper Telecoms East Wing"
 	icon_state = "tcomsateast"
 	ambientsounds = list('sound/ambience/ambisin2.ogg', 'sound/ambience/signal.ogg', 'sound/ambience/signal.ogg', 'sound/ambience/ambigen10.ogg')
 
@@ -2268,10 +2260,12 @@ area/security/podbay
 	icon_state = "tcomsatcham"
 
 /area/tcommsat/lounge
-	name = "\improper Telecommunications Satellite Lounge"
+	name = "\improper Telecoms Lounge"
 	icon_state = "tcomsatlounge"
 
-
+/area/tcommsat/powercontrol
+	name = "\improper Telecoms Power Control"
+	icon_state = "tcomsatwest"
 
 // Away Missions
 /area/awaymission

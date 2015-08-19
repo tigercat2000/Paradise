@@ -16,6 +16,8 @@
 		return 0
 	if(iscultist(mind.current))	
 		return 1 //If they're already in the cult, assume they are convertable
+	if(jobban_isbanned(mind.current, "cultist") || jobban_isbanned(mind.current, "Syndicate"))
+		return 0
 	if(ishuman(mind.current) && (mind.assigned_role in list("Captain", "Chaplain")))	
 		return 0
 	if(ishuman(mind.current))
@@ -80,7 +82,7 @@
 		cultists_possible -= cultist
 		cult += cultist
 		cultist.restricted_roles = restricted_jobs
-
+		cultist.special_role = "Cultist"
 	return (cult.len>0)
 
 
@@ -102,7 +104,6 @@
 		update_cult_icons_added(cult_mind)
 		cult_mind.current << "\blue You are a member of the cult!"
 		memorize_cult_objectives(cult_mind)
-		cult_mind.special_role = "Cultist"
 
 	spawn (rand(waittime_l, waittime_h))
 		send_intercept()

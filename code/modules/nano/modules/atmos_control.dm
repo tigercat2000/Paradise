@@ -27,18 +27,10 @@
 			if(alarm)
 				var/datum/topic_state/TS = generate_state(alarm)
 				alarm.ui_interact(usr, master_ui = ui_ref, state = TS)
-		return 1
 
 /datum/nano_module/atmos_control/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1, var/master_ui = null, var/datum/topic_state/state = default_state)
 	var/data[0]
-	var/alarms[0]
-
-	// TODO: Move these to a cache, similar to cameras
-	for(var/obj/machinery/alarm/alarm in sortAtom((monitored_alarms.len ? monitored_alarms : machines)))
-		if(!monitored_alarms.len && alarm.z != ZLEVEL_STATION && alarm.z != ZLEVEL_ASTEROID)
-			continue
-		alarms[++alarms.len] = alarm.get_nano_data_console()
-	data["alarms"] = alarms
+	data["alarms"] = air_alarm_repository.air_alarm_data(monitored_alarms)
 
 	ui = nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if(!ui)
@@ -76,4 +68,4 @@
 	return extra_href
 
 /datum/topic_state/air_alarm/proc/has_access(var/mob/user)
-	return user && (isAI(user) || atmos_control.access.allowed(user) || atmos_control.emagged || air_alarm.rcon_setting == RCON_YES || (air_alarm.alarm_area.atmosalm && air_alarm.rcon_setting == RCON_AUTO))
+	return user && (isAI(user) || atmos_control.access.allowed(user) || atmos_control.emagged || air_alarm.rcon_setting == RCON_YES || air_alarm.emagged || (air_alarm.alarm_area.atmosalm && air_alarm.rcon_setting == RCON_AUTO))
