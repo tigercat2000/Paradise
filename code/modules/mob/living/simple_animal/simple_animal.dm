@@ -51,7 +51,7 @@
 	var/max_co2 = 5
 	var/min_n2 = 0
 	var/max_n2 = 0
-	var/unsuitable_atoms_damage = 2	//This damage is taken when atmos doesn't fit all the requirements above
+	var/unsuitable_atmos_damage = 2	//This damage is taken when atmos doesn't fit all the requirements above
 
 
 	//LETTING SIMPLE ANIMALS ATTACK? WHAT COULD GO WRONG. Defaults to zero so Ian can still be cuddly
@@ -87,9 +87,9 @@
 	return
 
 /mob/living/simple_animal/Life()
-	if(paralysis || stunned || weakened || buckled || resting) 
+	if(paralysis || stunned || weakened || buckled || resting)
 		canmove = 0
-	else 
+	else
 		canmove = 1
 
 	//Health
@@ -107,7 +107,7 @@
 
 	if(health > maxHealth)
 		health = maxHealth
-		
+
 	if(resting && icon_resting && stat != DEAD)
 		icon_state = icon_resting
 	else if(icon_resting && stat != DEAD)
@@ -180,7 +180,7 @@
 
 		if(Environment)
 
-			if( abs(Environment.temperature - bodytemperature) > 40 && !(flags & IS_SYNTHETIC))
+			if( abs(Environment.temperature - bodytemperature) > 40 && !(flags & NO_BREATHE))
 				bodytemperature += ((Environment.temperature - bodytemperature) / 5)
 
 			if(min_oxy)
@@ -213,7 +213,7 @@
 			if(max_co2)
 				if(Environment.carbon_dioxide > max_co2)
 					atmos_suitable = 0
-			if(flags & NO_BREATHE || flags & IS_SYNTHETIC)
+			if(flags & NO_BREATHE)
 				atmos_suitable = 1
 
 	//Atmos effect
@@ -227,7 +227,7 @@
 		fire_alert = 0
 
 	if(!atmos_suitable)
-		adjustBruteLoss(unsuitable_atoms_damage)
+		adjustBruteLoss(unsuitable_atmos_damage)
 	return 1
 
 /mob/living/simple_animal/Bumped(AM as mob|obj)
@@ -292,12 +292,12 @@
 
 	switch(M.a_intent)
 
-		if("help")
+		if(I_HELP)
 			if (health > 0)
 				visible_message("<span class='notice'> [M] [response_help] [src].</span>")
 				playsound(loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
 
-		if("grab")
+		if(I_GRAB)
 			if (M == src || anchored)
 				return
 			if (!(status_flags & CANPUSH))
@@ -314,7 +314,7 @@
 			visible_message("<span class='warning'>[M] has grabbed [src] passively!</span>")
 			playsound(loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
 
-		if("harm", "disarm")
+		if(I_HARM, I_DISARM)
 			M.do_attack_animation(src)
 			visible_message("<span class='danger'>[M] [response_harm] [src]!</span>")
 			playsound(loc, "punch", 25, 1, -1)
@@ -326,26 +326,13 @@
 
 	switch(M.a_intent)
 
-		if ("help")
+		if (I_HELP)
 
 			visible_message("<span class='notice'>[M] caresses [src] with its scythe like arm.</span>")
-		if ("grab")
-			if(M == src || anchored)
-				return
-			if(!(status_flags & CANPUSH))
-				return
+		if (I_GRAB)
+			grabbedby(M)
 
-			var/obj/item/weapon/grab/G = new /obj/item/weapon/grab(M, src )
-
-			M.put_in_active_hand(G)
-
-			G.synch()
-			LAssailant = M
-
-			playsound(loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
-			visible_message("<span class='warning'>[M] has grabbed [src] passively!</span>")
-
-		if("harm", "disarm")
+		if(I_HARM, I_DISARM)
 			M.do_attack_animation(src)
 			var/damage = rand(15, 30)
 			visible_message("<span class='danger'>[M] has slashed at [src]!</span>", \
@@ -358,7 +345,7 @@
 /mob/living/simple_animal/attack_larva(mob/living/carbon/alien/larva/L as mob)
 
 	switch(L.a_intent)
-		if("help")
+		if(I_HELP)
 			visible_message("<span class='notice'>[L] rubs its head against [src].</span>")
 
 

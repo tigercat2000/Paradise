@@ -9,6 +9,22 @@
 	if(ticker.mode && ticker.mode.check_antagonists_topic(href, href_list))
 		check_antagonists()
 		return
+		
+	if(href_list["rejectadminhelp"])
+		if(!check_rights(R_MOD))
+			return
+		var/client/C = locate(href_list["rejectadminhelp"])
+		if(!C)
+			return
+
+		C << 'sound/effects/adminhelp.ogg'
+
+		C << "<font color='red' size='4'><b>- AdminHelp Rejected! -</b></font>"
+		C << "<font color='red'><b>Your admin help was rejected.</b></font>"
+		C << "Please try to be calm, clear, and descriptive in admin helps, do not assume the admin has seen any related events, and clearly state the names of anybody you are reporting. If you asked a question, please ensure it was clear what you were asking."
+
+		message_admins("[key_name_admin(usr)] rejected [key_name_admin(C.mob)]'s admin help")
+		log_admin("[key_name(usr)] rejected [key_name(C.mob)]'s admin help")
 
 	if(href_list["makeAntag"])
 		switch(href_list["makeAntag"])
@@ -370,12 +386,12 @@
 				mins = min(525599,mins)
 				minutes = CMinutes + mins
 				duration = GetExp(minutes)
-				reason = input(usr,"Reason?","reason",reason2) as text|null
+				reason = input(usr,"Please state the reason","Reason",reason2) as message|null
 				if(!reason)	return
 			if("No")
 				temp = 0
 				duration = "Perma"
-				reason = input(usr,"Reason?","reason",reason2) as text|null
+				reason = input(usr,"Please state the reason","Reason",reason2) as message|null
 				if(!reason)	return
 
 		log_admin("[key_name(usr)] edited [banned_key]'s ban. Reason: [reason] Duration: [duration]")
@@ -421,7 +437,7 @@
 
 		else switch(alert("Appearance ban [M.ckey]?",,"Yes","No", "Cancel"))
 			if("Yes")
-				var/reason = input(usr,"Reason?","reason","Metafriender") as text|null
+				var/reason = input(usr,"Please state the reason","Reason") as message|null
 				if(!reason)
 					return
 				ban_unban_log_save("[key_name(usr)] appearance banned [key_name(M)]. reason: [reason]")
@@ -854,7 +870,7 @@
 					var/mins = input(usr,"How long (in minutes)?","Ban time",1440) as num|null
 					if(!mins)
 						return
-					var/reason = input(usr,"Reason?","Please State Reason","") as text|null
+					var/reason = input(usr,"Please state the reason","Reason","") as message|null
 					if(!reason)
 						return
 
@@ -878,7 +894,7 @@
 					href_list["jobban2"] = 1 // lets it fall through and refresh
 					return 1
 				if("No")
-					var/reason = input(usr,"Reason?","Please State Reason","") as text|null
+					var/reason = input(usr,"Please state the reason","Reason","") as message|null
 					if(reason)
 						var/msg
 						for(var/job in notbannedlist)
@@ -988,7 +1004,7 @@
 				if(!mins)
 					return
 				if(mins >= 525600) mins = 525599
-				var/reason = input(usr,"Reason?","reason","Griefer") as text|null
+				var/reason = input(usr,"Please state the reason","Reason") as message|null
 				if(!reason)
 					return
 				AddBan(M.ckey, M.computer_id, reason, usr.ckey, 1, mins)
@@ -1008,7 +1024,7 @@
 				del(M.client)
 				//del(M)	// See no reason why to delete mob. Important stuff can be lost. And ban can be lifted before round ends.
 			if("No")
-				var/reason = input(usr,"Reason?","reason","Griefer") as text|null
+				var/reason = input(usr,"Please state the reason","Reason") as message|null
 				if(!reason)
 					return
 				switch(alert(usr,"IP ban?",,"Yes","No","Cancel"))
@@ -1034,62 +1050,50 @@
 			if("Cancel")
 				return
 
+
 	//Watchlist
-	else if(href_list["watchlist"])
-		if(!check_rights(R_ADMIN))	return
-		var/mob/M = locate(href_list["watchlist"])
-		if(!dbcon.IsConnected())
-			usr << "<span class='danger'>Failed to establish database connection.</span>"
+	else if(href_list["watchadd"])
+		var/target_ckey = locate(href_list["watchadd"])
+		usr.client.watchlist_add(target_ckey)
+
+	else if(href_list["watchremove"])
+		var/target_ckey = href_list["watchremove"]
+		var/confirm = alert("Are you sure you want to remove [target_ckey] from the watchlist?", "Confirm Watchlist Removal", "Yes", "No")
+		if(confirm == "Yes")	
+			usr.client.watchlist_remove(target_ckey)
+
+	else if(href_list["watchedit"])
+		var/target_ckey = href_list["watchedit"]
+		usr.client.watchlist_edit(target_ckey)
+
+	else if(href_list["watchaddbrowse"])
+		usr.client.watchlist_add(null, 1)
+
+	else if(href_list["watchremovebrowse"])
+		var/target_ckey = href_list["watchremovebrowse"]
+		usr.client.watchlist_remove(target_ckey, 1)
+
+	else if(href_list["watcheditbrowse"])
+		var/target_ckey = href_list["watcheditbrowse"]
+		usr.client.watchlist_edit(target_ckey, 1)
+
+	else if(href_list["watchsearch"])
+		var/target_ckey = href_list["watchsearch"]
+		usr.client.watchlist_show(target_ckey)
+
+	else if(href_list["watchshow"])
+		usr.client.watchlist_show()
+
+	else if(href_list["watcheditlog"])
+		var/target_ckey = sanitizeSQL("[href_list["watcheditlog"]]")
+		var/DBQuery/query_watchedits = dbcon.NewQuery("SELECT edits FROM [format_table_name("watch")] WHERE ckey = '[target_ckey]'")
+		if(!query_watchedits.Execute())
+			var/err = query_watchedits.ErrorMsg()
+			log_game("SQL ERROR obtaining edits from watch table. Error : \[[err]\]\n")
 			return
-		if(!ismob(M))
-			usr << "This can only be used on instances of type /mob"
-			return
-		if(!M.ckey)
-			usr << "This mob has no ckey"
-			return
-		var/sql_ckey = sanitizeSQL(M.ckey)
-		var/DBQuery/query = dbcon.NewQuery("SELECT ckey FROM [format_table_name("watch")] WHERE (ckey = '[sql_ckey]')")
-		query.Execute()
-		if(query.NextRow())
-			switch(alert(usr, "Ckey already flagged", "[sql_ckey] is already on the watchlist, do you want to:", "Remove", "Edit reason", "Cancel"))
-				if("Cancel")
-					return
-				if("Remove")
-					var/DBQuery/query_watchdel = dbcon.NewQuery("DELETE FROM [format_table_name("watch")] WHERE ckey = '[sql_ckey]'")
-					if(!query_watchdel.Execute())
-						var/err = query_watchdel.ErrorMsg()
-						log_game("SQL ERROR during removing watch entry. Error : \[[err]\]\n")
-						return
-					log_admin("[key_name_admin(usr)] has removed [key_name_admin(M)] from the watchlist")
-					message_admins("[key_name_admin(usr)] has removed [key_name_admin(M)] from the watchlist", 1)
-				if("Edit reason")
-					var/DBQuery/query_reason = dbcon.NewQuery("SELECT ckey, reason FROM [format_table_name("watch")] WHERE (ckey = '[sql_ckey]')")
-					query_reason.Execute()
-					if(query_reason.NextRow())
-						var/watch_reason = query_reason.item[2]
-						var/new_reason = input("Insert new reason", "New Reason", "[watch_reason]", null) as null|text
-						new_reason = sanitizeSQL(new_reason)
-						if(!new_reason)
-							return
-						var/DBQuery/update_query = dbcon.NewQuery("UPDATE [format_table_name("watch")] SET reason = '[new_reason]' WHERE (ckey = '[sql_ckey]')")
-						if(!update_query.Execute())
-							var/err = update_query.ErrorMsg()
-							log_game("SQL ERROR during edit watch entry reason. Error : \[[err]\]\n")
-							return
-						log_admin("[key_name_admin(usr)] has edited [sql_ckey]'s reason from [watch_reason] to [new_reason]",1)
-						message_admins("[key_name_admin(usr)] has edited [sql_ckey]'s reason from [watch_reason] to [new_reason]",1)
-		else
-			var/reason = input(usr,"Reason?","reason","Metagaming") as text|null
-			if(!reason)
-				return
-			reason = sanitizeSQL(reason)
-			var/DBQuery/query_watchadd = dbcon.NewQuery("INSERT INTO [format_table_name("watch")] (ckey, reason) VALUES ('[sql_ckey]', '[reason]')")
-			if(!query_watchadd.Execute())
-				var/err = query_watchadd.ErrorMsg()
-				log_game("SQL ERROR during adding new watch entry. Error : \[[err]\]\n")
-				return
-			log_admin("[key_name_admin(usr)] has added [key_name_admin(M)] to the watchlist - Reason: [reason]")
-			message_admins("[key_name_admin(usr)] has added [key_name_admin(M)] to the watchlist - Reason: [reason]", 1)				
+		if(query_watchedits.NextRow())
+			var/edit_log = query_watchedits.item[1]
+			usr << browse(edit_log,"window=watchedits")		
 				
 	else if(href_list["mute"])
 		if(!check_rights(R_MOD))
@@ -1778,10 +1782,10 @@
 
 		if (istype(bundle.contents[page], /obj/item/weapon/paper))
 			var/obj/item/weapon/paper/P = bundle.contents[page]
-			P.show_content(src.owner, 1)
+			P.show_content(usr, 1)
 		else if (istype(bundle.contents[page], /obj/item/weapon/photo))
 			var/obj/item/weapon/photo/H = bundle.contents[page]
-			H.show(src.owner)
+			H.show(usr)
 		return
 
 	else if(href_list["AdminFaxCreate"])
@@ -1833,10 +1837,12 @@
 			if("Administrator")
 				stamptype = input(src.owner, "Pick a stamp type.", "Stamp Type") as null|anything in list("icon","text","none")
 				if(stamptype == "icon")
-					stampname = input(src.owner, "Pick a stamp icon.", "Stamp Icon") as null|anything in list("centcom","granted","denied","clown")
+					stampname = input(src.owner, "Pick a stamp icon.", "Stamp Icon") as null|anything in list("centcom","syndicate","granted","denied","clown")
 					switch(stampname)
 						if("centcom")
 							stampvalue = "cent"
+						if("syndicate")
+							stampvalue = "syndicate"
 						if("granted")
 							stampvalue = "ok"
 						if("denied")
@@ -2105,6 +2111,23 @@
 					message_admins("[key_name_admin(usr)] created [number]ea [english_list(paths)]")
 					break
 		return
+		
+	else if(href_list["kick_all_from_lobby"])
+		if(!check_rights(R_ADMIN))
+			return
+		if(ticker && ticker.current_state == GAME_STATE_PLAYING)
+			var/afkonly = text2num(href_list["afkonly"])
+			if(alert("Are you sure you want to kick all [afkonly ? "AFK" : ""] clients from the lobby?","Confirmation","Yes","Cancel") != "Yes")
+				return
+			var/list/listkicked = kick_clients_in_lobby("<span class='danger'>You were kicked from the lobby by an Administrator.</span>", afkonly)
+
+			var/strkicked = ""
+			for(var/name in listkicked)
+				strkicked += "[name], "
+			message_admins("[key_name_admin(usr)] has kicked [afkonly ? "all AFK" : "all"] clients from the lobby. [length(listkicked)] clients kicked: [strkicked ? strkicked : "--"]")
+			log_admin("[key_name(usr)] has kicked [afkonly ? "all AFK" : "all"] clients from the lobby. [length(listkicked)] clients kicked: [strkicked ? strkicked : "--"]")
+		else
+			usr << "You may only use this when the game is running."
 
 	else if(href_list["secretsfun"])
 		if(!check_rights(R_SERVER|R_EVENT))	return

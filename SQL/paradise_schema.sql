@@ -78,6 +78,7 @@ CREATE TABLE `characters` (
   `rlimb_data` mediumtext NOT NULL,
   `nanotrasen_relation` varchar(45) NOT NULL,
   `speciesprefs` int(1) NOT NULL,
+  `socks` mediumtext NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18747 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -446,10 +447,13 @@ DROP TABLE IF EXISTS `erro_watch`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `erro_watch` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `ckey` varchar(32) NOT NULL,
   `reason` text NOT NULL,
-  PRIMARY KEY (`id`)
+  `timestamp` datetime NOT NULL,
+  `adminckey` varchar(32) NOT NULL,
+  `last_editor` varchar(32),
+  `edits` text,
+  PRIMARY KEY (`ckey`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

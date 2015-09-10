@@ -16,7 +16,8 @@ var/list/admin_verbs_admin = list(
 	/datum/admins/proc/toggleenter,		/*toggles whether people can join the current game*/
 	/datum/admins/proc/toggleguests,	/*toggles whether guests can join the current game*/
 	/datum/admins/proc/announce,		/*priority announce something to all clients.*/
-	/client/proc/colorooc,				/*allows us to set a custom colour for everythign we say in ooc*/
+	/client/proc/colorooc,				/*allows us to set a custom colour for everything we say in ooc*/
+	/client/proc/resetcolorooc,			/*allows us to set a reset our ooc color*/
 	/client/proc/admin_ghost,			/*allows us to ghost/reenter body at will*/
 	/client/proc/toggle_view_range,		/*changes how far we can see*/
 	/datum/admins/proc/view_txt_log,	/*shows the server log (diary) for today*/
@@ -41,6 +42,7 @@ var/list/admin_verbs_admin = list(
 	/client/proc/admin_cancel_shuttle,	/*allows us to cancel the emergency shuttle, sending it back to centcomm*/
 	/client/proc/check_words,			/*displays cult-words*/
 	/client/proc/check_ai_laws,			/*shows AI and borg laws*/
+	/client/proc/manage_silicon_laws,	/* Allows viewing and editing silicon laws. */
 	/client/proc/admin_memo,			/*admin memo system. show/delete/write. +SERVER needed to delete admin memos of others*/
 	/client/proc/dsay,					/*talk in deadchat using our ckey/fakekey*/
 	/client/proc/toggleprayers,			/*toggles prayers on/off*/
@@ -118,7 +120,6 @@ var/list/admin_verbs_server = list(
 	/datum/admins/proc/delay,
 	/datum/admins/proc/toggleaban,
 	/client/proc/toggle_log_hrefs,
-	/datum/admins/proc/immreboot,
 	/client/proc/everyone_random,
 	/datum/admins/proc/toggleAI,
 	/client/proc/cmd_admin_delete,		/*delete an instance/object/mob/etc*/
@@ -127,7 +128,8 @@ var/list/admin_verbs_server = list(
 	/client/proc/delbook,
 	/client/proc/toggle_antagHUD_use,
 	/client/proc/toggle_antagHUD_restrictions,
-	/client/proc/set_ooc
+	/client/proc/set_ooc,
+	/client/proc/reset_ooc
 	)
 var/list/admin_verbs_debug = list(
 	/client/proc/cmd_admin_list_open_jobs,
@@ -150,7 +152,9 @@ var/list/admin_verbs_debug = list(
 	/client/proc/debugNatureMapGenerator,
 	/client/proc/check_bomb_impacts,
 	/client/proc/test_movable_UI,
-	/client/proc/test_snap_UI
+	/client/proc/test_snap_UI,
+	/client/proc/cinematic,
+	/proc/machine_upgrade
 	)
 var/list/admin_verbs_possess = list(
 	/proc/possess,
@@ -203,7 +207,7 @@ var/list/admin_verbs_mentor = list(
 		if(holder.rights & R_SPAWN)			verbs += admin_verbs_spawn
 		if(holder.rights & R_MOD)			verbs += admin_verbs_mod
 		if(holder.rights & R_MENTOR)		verbs += admin_verbs_mentor
-		
+
 /client/proc/remove_admin_verbs()
 	verbs.Remove(
 		admin_verbs_default,
@@ -244,7 +248,7 @@ var/list/admin_verbs_mentor = list(
 	add_admin_verbs()
 
 	src << "<span class='interface'>All of your adminverbs are now visible.</span>"
-	feedback_add_details("admin_verb","TAVVS") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!		
+	feedback_add_details("admin_verb","TAVVS") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/admin_ghost()
 	set category = "Admin"
@@ -342,17 +346,6 @@ var/list/admin_verbs_mentor = list(
 	if (holder)
 		holder.Secrets()
 	feedback_add_details("admin_verb","S") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-	return
-
-/client/proc/colorooc()
-	set category = "Admin"
-	set name = "Personal OOC Text Color"
-	if(!holder)	return
-	var/new_ooccolor = input(src, "Please select your OOC colour.", "OOC colour") as color|null
-	if(new_ooccolor)
-		prefs.ooccolor = new_ooccolor
-		prefs.save_preferences(src)
-	feedback_add_details("admin_verb","OC") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	return
 
 /client/proc/stealth()
@@ -576,7 +569,7 @@ var/list/admin_verbs_mentor = list(
 		deadmins += ckey
 		src << "<span class='interface'>You are now a normal player.</span>"
 	feedback_add_details("admin_verb","DAS") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-	
+
 /client/proc/readmin()
 	set name = "Re-admin self"
 	set category = "Admin"
@@ -595,8 +588,8 @@ var/list/admin_verbs_mentor = list(
 			continue
 	else
 		if(!dbcon.IsConnected())
-			message_admins("Warning, mysql database is not connected.")
-			src << "Warning, mysql database is not connected."
+			message_admins("Warning, MySQL database is not connected.")
+			src << "Warning, MYSQL database is not connected."
 			return
 		var/sql_ckey = sanitizeSQL(ckey)
 		var/DBQuery/query = dbcon.NewQuery("SELECT rank FROM [format_table_name("admin")] WHERE ckey = '[sql_ckey]'")
@@ -604,14 +597,32 @@ var/list/admin_verbs_mentor = list(
 		while(query.NextRow())
 			rank = ckeyEx(query.item[1])
 	if(!D)
-		if(admin_ranks[rank] == null)
-			var/error_extra = ""
-			if(!config.admin_legacy_system)
-				error_extra = " Check mysql DB connection."
-			error("Error while re-adminning [src], admin rank ([rank]) does not exist.[error_extra]")
-			src << "Error while re-adminning, admin rank ([rank]) does not exist.[error_extra]"
-			return
-		D = new(rank,admin_ranks[rank],ckey)
+		if(config.admin_legacy_system)
+			if(admin_ranks[rank] == null)
+				error("Error while re-adminning [src], admin rank ([rank]) does not exist.")
+				src << "Error while re-adminning, admin rank ([rank]) does not exist."
+				return
+
+			D = new(rank, admin_ranks[rank], ckey)
+		else
+			var/sql_ckey = sanitizeSQL(ckey)
+			var/DBQuery/query = dbcon.NewQuery("SELECT ckey, rank, flags FROM [format_table_name("admin")] WHERE ckey = '[sql_ckey]'")
+			query.Execute()
+			while(query.NextRow())
+				var/admin_ckey = query.item[1]
+				var/admin_rank = query.item[2]
+				var/flags = query.item[3]
+				if(!admin_ckey)
+					src << "Error while re-adminning, ckey [admin_ckey] was not found in the admin database."
+					return
+				if(admin_rank == "Removed") //This person was de-adminned. They are only in the admin list for archive purposes.
+					src << "Error while re-adminning, ckey [admin_ckey] is not an admin."
+					return
+
+				if(istext(flags))
+					flags = text2num(flags)
+				D = new(admin_rank, flags, ckey)
+
 		var/client/C = directory[ckey]
 		D.associate(C)
 		message_admins("[key_name_admin(usr)] re-adminned themselves.")
@@ -640,10 +651,27 @@ var/list/admin_verbs_mentor = list(
 /client/proc/check_ai_laws()
 	set name = "Check AI Laws"
 	set category = "Admin"
+
+	if(!check_rights(R_ADMIN)) return
+
 	if(holder)
 		src.holder.output_ai_laws()
 
-/client/proc/change_human_appearance_admin(mob/living/carbon/human/H in world)
+/client/proc/manage_silicon_laws()
+	set name = "Manage Silicon Laws"
+	set category = "Admin"
+
+	if(!check_rights(R_ADMIN)) return
+
+	var/mob/living/silicon/S = input("Select silicon.", "Manage Silicon Laws") as null|anything in silicon_mob_list
+	if(!S) return
+
+	var/datum/nano_module/law_manager/L = new(S)
+	L.ui_interact(usr, state = admin_state)
+	log_and_message_admins("has opened [S]'s law manager.")
+	feedback_add_details("admin_verb","MSL") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+/client/proc/change_human_appearance_admin(mob/living/carbon/human/H in mob_list)
 	set name = "C.M.A. - Admin"
 	set desc = "Allows you to change the mob appearance"
 	set category = "Admin"
@@ -656,7 +684,7 @@ var/list/admin_verbs_mentor = list(
 		H.change_appearance(APPEARANCE_ALL, usr, usr, check_species_whitelist = 0)
 	feedback_add_details("admin_verb","CHAA") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
-/client/proc/change_human_appearance_self(mob/living/carbon/human/H in world)
+/client/proc/change_human_appearance_self(mob/living/carbon/human/H in mob_list)
 	set name = "C.M.A. - Self"
 	set desc = "Allows the mob to change its appearance"
 	set category = "Admin"
@@ -828,9 +856,12 @@ var/list/admin_verbs_mentor = list(
 	set name = "Man Up Global"
 	set desc = "Tells everyone to man up and deal with it."
 
-	for (var/mob/T as mob in mob_list)
-		T << "<br><center><span class='notice'><b><font size=4>Man up.<br> Deal with it.</font></b><br>Move on.</span></center><br>"
-		T << 'sound/voice/ManUp1.ogg'
+	var/confirm = alert("Are you sure you want to send the global message?", "Confirm Man Up Global", "Yes", "No")
 
-	log_admin("[key_name(usr)] told everyone to man up and deal with it.")
-	message_admins("\blue [key_name_admin(usr)] told everyone to man up and deal with it.", 1)
+	if(confirm == "Yes")
+		for (var/mob/T as mob in mob_list)
+			T << "<br><center><span class='notice'><b><font size=4>Man up.<br> Deal with it.</font></b><br>Move on.</span></center><br>"
+			T << 'sound/voice/ManUp1.ogg'
+
+		log_admin("[key_name(usr)] told everyone to man up and deal with it.")
+		message_admins("\blue [key_name_admin(usr)] told everyone to man up and deal with it.", 1)

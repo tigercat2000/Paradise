@@ -329,7 +329,7 @@
 			var/mob/living/carbon/human/affected = affecting
 			var/mob/living/carbon/human/attacker = assailant
 			switch(assailant.a_intent)
-				if("help")
+				if(I_HELP)
 					if(force_down)
 						assailant << "<span class='warning'>You no longer pin [affecting] to the ground.</span>"
 						force_down = 0
@@ -337,10 +337,10 @@
 								//This specific example would allow you to stop pinning people to the floor without moving away from them.
 					return
 
-				if("grab")
+				if(I_GRAB)
 					return
 
-				if("harm") //This checks that the user is on harm intent.
+				if(I_HARM) //This checks that the user is on harm intent.
 					if(last_hit_zone == "head") //This checks the hitzone the user has selected. In this specific case, they have the head selected.
 						if(affecting.lying)
 							return
@@ -380,7 +380,7 @@
 								M << "\red You go blind!"*///This is a demonstration of adding a new damaging type based on intent as well as hitzone.
 															//This specific example would allow you to squish people's eyes with a GRAB_NECK.
 
-				if("disarm") //This checks that the user is on disarm intent.
+				if(I_DISARM) //This checks that the user is on disarm intent.
 					if(state < GRAB_AGGRESSIVE)
 						assailant << "<span class='warning'>You require a better grab to do this.</span>"
 						return
@@ -410,9 +410,10 @@
 
 			user.visible_message("<span class='danger'>[user] is attempting to [dev_verb] \the [affecting][extra]</span>")
 
-			if(!do_mob(user, affecting) || !do_after(user, check_time(user, affecting))) return
+			if(!do_after(user, check_time(user, affecting))) return
 
 			user.visible_message("<span class='danger'>[user] [dev_verb]s \the [affecting][extra]</span>")
+
 
 			affecting.loc = user //add the mob to the user
 			switch(endloc)

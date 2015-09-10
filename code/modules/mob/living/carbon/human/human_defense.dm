@@ -36,12 +36,12 @@ emp_act
 		P.on_hit(src, 100, def_zone)
 		return 2
 
+	var/obj/item/organ/external/organ = get_organ(check_zone(def_zone))
+	if(isnull(organ))
+		return
 
 	//Shrapnel
 	if (P.damage_type == BRUTE)
-		var/obj/item/organ/external/organ = get_organ(check_zone(def_zone))
-		if(!organ)
-			return
 		var/armor = getarmor_organ(organ, "bullet")
 		if((P.embed && prob(20 + max(P.damage - armor, -10))))
 			var/obj/item/weapon/shard/shrapnel/SP = new()
@@ -50,9 +50,7 @@ emp_act
 			(SP.loc) = organ
 			organ.embed(SP)
 
-	var/mob/living/carbon/human/M = src
-	var/obj/item/organ/external/affected = M.get_organ(def_zone)
-	affected.add_autopsy_data(P.name, P.damage) // Add the bullet's name to the autopsy data
+	organ.add_autopsy_data(P.name, P.damage) // Add the bullet's name to the autopsy data
 
 	return (..(P , def_zone))
 
@@ -204,11 +202,6 @@ emp_act
 	for(var/obj/O in src)
 		if(!O)	continue
 		O.emp_act(severity)
-	for(var/obj/item/organ/external/O  in organs)
-		if(O.status & ORGAN_DESTROYED)	continue
-		O.emp_act(severity)
-		for(var/obj/item/organ/I  in O.internal_organs)
-			I.emp_act(severity)
 	..()
 
 /mob/living/carbon/human/emag_act(user as mob, var/obj/item/organ/external/affecting)
@@ -228,7 +221,7 @@ emp_act
 /mob/living/carbon/human/proc/attacked_by(var/obj/item/I, var/mob/living/user, var/def_zone)
 	if(!I || !user)	return 0
 
-	if((istype(I, /obj/item/weapon/butch/meatcleaver) || istype(I, /obj/item/weapon/twohanded/chainsaw)) && src.stat == DEAD && user.a_intent == "harm")
+	if((istype(I, /obj/item/weapon/butch/meatcleaver) || istype(I, /obj/item/weapon/twohanded/chainsaw)) && src.stat == DEAD && user.a_intent == I_HARM)
 		var/obj/item/weapon/reagent_containers/food/snacks/meat/human/newmeat = new /obj/item/weapon/reagent_containers/food/snacks/meat/human(get_turf(src.loc))
 		newmeat.name = src.real_name + newmeat.name
 		newmeat.subjectname = src.real_name
@@ -472,7 +465,7 @@ emp_act
 	if(penetrated_dam) SS.create_breaches(damtype, penetrated_dam)
 
 /mob/living/carbon/human/mech_melee_attack(obj/mecha/M)
-	if(M.occupant.a_intent == "harm")
+	if(M.occupant.a_intent == I_HARM)
 		if(M.damtype == "brute")
 			step_away(src,M,15)
 		var/obj/item/organ/external/affecting = get_organ(pick("chest", "chest", "chest", "head"))
@@ -500,7 +493,7 @@ emp_act
 		attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been attacked by \the [M] controlled by [key_name(M.occupant)] (INTENT: [uppertext(M.occupant.a_intent)])</font>")
 		M.occupant.attack_log += text("\[[time_stamp()]\] <font color='red'>Attacked [src] with \the [M] (INTENT: [uppertext(M.occupant.a_intent)])</font>")
 		msg_admin_attack("[key_name_admin(M.occupant)] attacked [key_name_admin(src)] with \the [M] (INTENT: [uppertext(M.occupant.a_intent)])")
-			
+
 	else
 		..()
 

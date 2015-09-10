@@ -30,8 +30,8 @@
 
 			if(istype(M,/mob/living/carbon/human))
 				var/mob/living/carbon/human/H = M
-				if(H.species.flags & IS_SYNTHETIC)
-					H << "\red You have a monitor for a head, where do you think you're going to put that?"
+				if(!H.check_has_mouth())
+					user << "Where do you intend to put \the [src]? You don't have a mouth!"
 					return
 
 			M << "\blue You swallow a gulp of [src]."
@@ -45,8 +45,8 @@
 		else if( istype(M, /mob/living/carbon/human) )
 
 			var/mob/living/carbon/human/H = M
-			if(H.species.flags & IS_SYNTHETIC)
-				user << "\red They have a monitor for a head, where do you think you're going to put that?"
+			if(!H.check_has_mouth())
+				user << "Where do you intend to put \the [src]? \The [H] doesn't have a mouth!"
 				return
 
 			for(var/mob/O in viewers(world.view, user))
@@ -175,6 +175,7 @@
 	force = 14
 	throwforce = 10
 	amount_per_transfer_from_this = 20
+	materials = list(MAT_GOLD=800)
 	possible_transfer_amounts = null
 	volume = 150
 	flags = CONDUCT | OPENCONTAINER
@@ -203,7 +204,7 @@
 /obj/item/weapon/reagent_containers/food/drinks/flour
 	name = "flour sack"
 	desc = "A big bag of flour. Good for baking!"
-	icon = 'icons/obj/food.dmi'
+	icon = 'icons/obj/food/food.dmi'
 	icon_state = "flour"
 	item_state = "flour"
 	New()
@@ -357,12 +358,14 @@
 	name = "Captain's Flask"
 	desc = "A metal flask belonging to the captain"
 	icon_state = "flask"
+	materials = list(MAT_SILVER=300)
 	volume = 60
 
 /obj/item/weapon/reagent_containers/food/drinks/flask/detflask
 	name = "Detective's Flask"
 	desc = "A metal flask with a leather band and golden badge belonging to the detective."
 	icon_state = "detflask"
+	materials = list(MAT_METAL=200)
 	volume = 60
 
 /obj/item/weapon/reagent_containers/food/drinks/flask/barflask

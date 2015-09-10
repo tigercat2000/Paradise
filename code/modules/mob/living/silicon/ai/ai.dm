@@ -14,7 +14,6 @@ var/list/ai_verbs_default = list(
 	/mob/living/silicon/ai/proc/ai_roster,
 	/mob/living/silicon/ai/proc/ai_statuschange,
 	/mob/living/silicon/ai/proc/ai_store_location,
-	/mob/living/silicon/ai/proc/checklaws,
 	/mob/living/silicon/ai/proc/control_integrated_radio,
 	/mob/living/silicon/ai/proc/core,
 	/mob/living/silicon/ai/proc/pick_icon,
@@ -51,10 +50,8 @@ var/list/ai_verbs_default = list(
 	//var/list/laws = list()
 	var/alarms = list("Motion"=list(), "Fire"=list(), "Atmosphere"=list(), "Power"=list(), "Camera"=list())
 	var/viewalerts = 0
-	var/lawcheck[1]
-	var/ioncheck[1]
-	var/lawchannel = "Common" // Default channel on which to state laws
 	var/icon/holo_icon//Default is assigned when AI is created.
+	var/obj/mecha/controlled_mech //For controlled_mech a mech, to determine whether to relaymove or use the AI eye.
 	var/obj/item/device/pda/ai/aiPDA = null
 	var/obj/item/device/multitool/aiMulti = null
 	var/custom_sprite = 0 //For our custom sprites
@@ -66,7 +63,7 @@ var/list/ai_verbs_default = list(
 	var/processing_time = 100
 	var/list/datum/AI_Module/current_modules = list()
 	var/fire_res_on_core = 0
-
+	var/can_dominate_mechs = 0
 	var/control_disabled = 0 // Set to 1 to stop AI from interacting via Click() -- TLE
 	var/malfhacking = 0 // More or less a copy of the above var, so that malf AIs can hack and still get new cyborgs -- NeoFite
 	var/malf_cooldown = 0 //Cooldown var for malf modules
@@ -94,7 +91,7 @@ var/list/ai_verbs_default = list(
 /mob/living/silicon/ai/proc/add_ai_verbs()
 	src.verbs |= ai_verbs_default
 	src.verbs |= silicon_subsystems
-	
+
 /mob/living/silicon/ai/proc/remove_ai_verbs()
 	src.verbs -= ai_verbs_default
 	src.verbs -= silicon_subsystems
@@ -209,9 +206,9 @@ var/list/ai_verbs_default = list(
 
 	job = "AI"
 
-/mob/living/silicon/ai/proc/SetName(pickedName as text)
-	real_name = pickedName
-	name = pickedName
+/mob/living/silicon/ai/SetName(pickedName as text)
+	..()
+
 	if(eyeobj)
 		eyeobj.name = "[pickedName] (AI Eye)"
 
@@ -472,32 +469,6 @@ var/list/ai_verbs_default = list(
 			else
 				src << "<span class='notice'>Unable to locate the holopad.</span>"
 
-	if (href_list["lawc"]) // Toggling whether or not a law gets stated by the State Laws verb --NeoFite
-		var/L = text2num(href_list["lawc"])
-		switch(lawcheck[L+1])
-			if ("Yes") lawcheck[L+1] = "No"
-			if ("No") lawcheck[L+1] = "Yes"
-//		src << text ("Switching Law [L]'s report status to []", lawcheck[L+1])
-		checklaws()
-
-	if (href_list["lawr"]) // Selects on which channel to state laws
-		var/setchannel = input(usr, "Specify channel.", "Channel selection") in list("State","Common","Science","Command","Medical","Engineering","Security","Supply","Binary","Holopad", "Cancel")
-		if(setchannel == "Cancel")
-			return
-		lawchannel = setchannel
-		checklaws()
-
-	if (href_list["lawi"]) // Toggling whether or not a law gets stated by the State Laws verb --NeoFite
-		var/L = text2num(href_list["lawi"])
-		switch(ioncheck[L])
-			if ("Yes") ioncheck[L] = "No"
-			if ("No") ioncheck[L] = "Yes"
-//		src << text ("Switching Law [L]'s report status to []", lawcheck[L+1])
-		checklaws()
-
-	if (href_list["laws"]) // With how my law selection code works, I changed statelaws from a verb to a proc, and call it through my law selection panel. --NeoFite
-		statelaws()
-
 	if(href_list["say_word"])
 		play_vox_word(href_list["say_word"], null, src)
 		return
@@ -536,6 +507,14 @@ var/list/ai_verbs_default = list(
 		botcall()
 		return
 
+	if (href_list["ai_take_control"]) //Mech domination
+		var/obj/mecha/M = locate(href_list["ai_take_control"])
+		if(controlled_mech)
+			src << "You are already loaded into an onboard computer!"
+			return
+		if(M)
+			M.transfer_ai(AI_MECH_HACK,src, usr) //Called om the mech itself.
+
 	else if (href_list["faketrack"])
 		var/mob/target = locate(href_list["track"]) in mob_list
 		var/mob/living/silicon/ai/A = locate(href_list["track2"]) in mob_list
@@ -572,7 +551,7 @@ var/list/ai_verbs_default = list(
 
 	switch(M.a_intent)
 
-		if ("help")
+		if (I_HELP)
 			visible_message("<span class='notice'>[M] caresses [src]'s plating with its scythe like arm.</span>")
 
 		else //harm
@@ -891,7 +870,7 @@ var/list/ai_verbs_default = list(
 	if(istype(W, /obj/item/weapon/wrench))
 		if(anchored)
 			user.visible_message("\blue \The [user] starts to unbolt \the [src] from the plating...")
-			if(!do_after(user,40))
+			if(!do_after(user,40, target = src))
 				user.visible_message("\blue \The [user] decides not to unbolt \the [src].")
 				return
 			user.visible_message("\blue \The [user] finishes unfastening \the [src]!")
@@ -899,7 +878,7 @@ var/list/ai_verbs_default = list(
 			return
 		else
 			user.visible_message("\blue \The [user] starts to bolt \the [src] to the plating...")
-			if(!do_after(user,40))
+			if(!do_after(user,40, target = src))
 				user.visible_message("\blue \The [user] decides not to bolt \the [src].")
 				return
 			user.visible_message("\blue \The [user] finishes fastening down \the [src]!")
@@ -981,6 +960,24 @@ var/list/ai_verbs_default = list(
 
 /mob/living/silicon/ai/proc/is_in_chassis()
 	return istype(loc, /turf)
+
+/mob/living/silicon/ai/transfer_ai(var/interaction, var/mob/user, var/mob/living/silicon/ai/AI, var/obj/item/device/aicard/card)
+	if(!..())
+		return
+	if(interaction == AI_TRANS_TO_CARD)//The only possible interaction. Upload AI mob to a card.
+		if(!mind)
+			user << "<span class='warning'>No intelligence patterns detected.</span>"    //No more magical carding of empty cores, AI RETURN TO BODY!!!11
+			return
+		if (mind.special_role == "malfunction") //AI MALF!!
+			user << "<span class='boldannounce'>ERROR</span>: Remote transfer interface disabled."//Do ho ho ho~
+			return
+		new /obj/structure/AIcore/deactivated(loc)//Spawns a deactivated terminal at AI location.
+		aiRestorePowerRoutine = 0//So the AI initially has power.
+		control_disabled = 1//Can't control things remotely if you're stuck in a card!
+		aiRadio.disabledAi = 1 	//No talking on the built-in radio for you either!
+		loc = card//Throw AI into the card.
+		src << "You have been downloaded to a mobile storage device. Remote device connection severed."
+		user << "<span class='boldnotice'>Transfer successful</span>: [name] ([rand(1000,9999)].exe) removed from host terminal and stored within local memory."
 
 #undef AI_CHECK_WIRELESS
 #undef AI_CHECK_RADIO

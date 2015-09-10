@@ -343,7 +343,7 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 			visible_message("<span class='notice'>[src] begins climbing into the ventilation system...</span>", \
 							"<span class='notice'>You begin climbing into the ventilation system...</span>")
 
-			if(!do_after(src, 45))
+			if(!do_after(src, 45, target = src))
 				return
 
 			if(!client)
@@ -694,3 +694,11 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 		return -6
 	else
 		return initial(pixel_y)
+		
+/mob/living/carbon/get_all_slots()
+	return list(l_hand,
+				r_hand,
+				handcuffed,
+				legcuffed,
+				back,
+				wear_mask)

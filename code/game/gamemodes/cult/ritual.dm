@@ -349,6 +349,12 @@ var/engwords = list("travel", "blood", "join", "hell", "destroy", "technology", 
 		if(!iscultist(user))
 			return ..()
 		if(iscultist(M))
+			if(M.reagents && M.reagents.has_reagent("holywater")) //allows cultists to be rescued from the clutches of ordained religion
+				user << "<span class='notice'>You remove the taint from [M].</span>"
+				var/holy2unholy = M.reagents.get_reagent_amount("holywater")
+				M.reagents.del_reagent("holywater")
+				M.reagents.add_reagent("unholywater",holy2unholy)
+				add_logs(M, user, "smacked", src, " removing the holy water from them")
 			return
 		M.take_organ_damage(0,rand(5,20)) //really lucky - 5 hits for a crit
 		for(var/mob/O in viewers(M, null))
@@ -469,7 +475,7 @@ var/engwords = list("travel", "blood", "join", "hell", "destroy", "technology", 
 				V.show_message("\red [user] slices open a finger and begins to chant and paint symbols on the floor.", 3, "\red You hear chanting.", 2)
 			user << "\red You slice open one of your fingers and begin drawing a rune on the floor whilst chanting the ritual that binds your life essence with the dark arcane energies flowing through the surrounding world."
 			user.take_overall_damage((rand(9)+1)/10) // 0.1 to 1.0 damage
-			if(do_after(user, 50))
+			if(do_after(user, 50, target = user))
 				if(usr.get_active_hand() != src)
 					return
 				var/mob/living/carbon/human/H = user

@@ -327,6 +327,13 @@ var/global/list/damage_icon_parts = list()
 		if(U2)
 			stand_icon.Blend(new /icon(U2.icon, "us_[U2.icon_state]_s"), ICON_OVERLAY)
 
+
+	if(socks)
+		var/datum/sprite_accessory/socks/U3 = socks_list[socks]
+		if(U3)
+			stand_icon.Blend(new /icon(U3.icon, "sk_[U3.icon_state]_s"), ICON_OVERLAY)
+
+
 	if(update_icons)
 		update_icons()
 
@@ -369,7 +376,7 @@ var/global/list/damage_icon_parts = list()
 		else
 			//warning("Invalid f_style for [species.name]: [f_style]")
 
-	if(h_style && !(head && (head.flags & BLOCKHEADHAIR) && !(species.flags & IS_SYNTHETIC)))
+	if(h_style && !(head && (head.flags & BLOCKHEADHAIR) && !(isSynthetic())))
 		var/datum/sprite_accessory/hair_style = hair_styles_list[h_style]
 		if(hair_style && hair_style.species_allowed)
 			if(src.species.name in hair_style.species_allowed)
