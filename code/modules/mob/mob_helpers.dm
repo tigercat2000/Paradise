@@ -465,6 +465,13 @@ var/list/intents = list(I_HELP,I_DISARM,I_GRAB,I_HARM)
 	resting = !resting
 	src << "\blue You are now [resting ? "resting" : "getting up"]"
 
+/proc/is_blind(A)
+	if(iscarbon(A))
+		var/mob/living/carbon/C = A
+		if(C.sdisabilities & BLIND || C.blinded)
+			return 1
+	return 0
+
 /proc/get_multitool(mob/user as mob)
 	// Get tool
 	var/obj/item/device/multitool/P
@@ -516,7 +523,7 @@ var/list/intents = list(I_HELP,I_DISARM,I_GRAB,I_HARM)
 				var/mob/dead/observer/DM
 				if(istype(subject, /mob/dead/observer))
 					DM = subject
-				if(check_rights(R_MOD,0,M)) 							// What admins see
+				if(check_rights(R_ADMIN|R_MOD,0,M)) 							// What admins see
 					lname = "[keyname][(DM && DM.anonsay) ? "*" : (DM ? "" : "^")] ([name])"
 				else
 					if(DM && DM.anonsay)						// If the person is actually observer they have the option to be anonymous

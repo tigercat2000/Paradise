@@ -45,6 +45,12 @@ LINEN BINS
 	icon_state = "sheetpurple"
 	_color = "purple"
 
+/obj/item/weapon/bedsheet/patriot
+	name = "patriotic bedsheet"
+	desc = "You've never felt more free than when sleeping on this."
+	icon_state = "sheetUSA"
+	_color = "sheetUSA"
+
 /obj/item/weapon/bedsheet/rainbow
 	name = "rainbow bedsheet"
 	desc = "A multi_colored blanket.  It's actually several different sheets cut up and sewn together."
@@ -160,15 +166,15 @@ LINEN BINS
 	var/obj/item/hidden = null
 
 
-/obj/structure/bedsheetbin/examine()
-	usr << desc
+/obj/structure/bedsheetbin/examine(mob/user)
+	..(user)
 	if(amount < 1)
-		usr << "There are no bed sheets in the bin."
+		user << "There are no bed sheets in the bin."
 		return
 	if(amount == 1)
-		usr << "There is one bed sheet in the bin."
+		user << "There is one bed sheet in the bin."
 		return
-	usr << "There are [amount] bed sheets in the bin."
+	user << "There are [amount] bed sheets in the bin."
 
 
 /obj/structure/bedsheetbin/update_icon()

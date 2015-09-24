@@ -272,7 +272,7 @@
 
 	if(holder)
 		add_admin_verbs()
-		admin_memo_show()
+		admin_memo_output("Show", 0)
 
 	// Forcibly enable hardware-accelerated graphics, as we need them for the lighting overlays.
 	// (but turn them off first, since sometimes BYOND doesn't turn them on properly otherwise)
@@ -283,6 +283,9 @@
 
 	log_client_to_db()
 
+	if (config && config.autoconvert_notes)
+		convert_notes_sql(ckey)	
+	
 	send_resources()
 
 	//////////////

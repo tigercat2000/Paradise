@@ -475,6 +475,7 @@
 /obj/item/weapon/grab/dropped()
 	qdel(src)
 
+
 /obj/item/weapon/grab/Destroy()
 	if(affecting)
 		affecting.pixel_x = 0
@@ -483,6 +484,7 @@
 		affecting.grabbed_by -= src
 	qdel(hud)
 	return ..()
+
 
 #undef EAT_TIME_XENO
 #undef EAT_TIME_FAT

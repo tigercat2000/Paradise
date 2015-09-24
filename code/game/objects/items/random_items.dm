@@ -61,7 +61,7 @@
 //	identify_probability = 0
 	New()
 		..()
-		var/global/list/chems_only = list("slimejelly","blood","water","lube","charcoal","toxin","cyanide","morphine","epinephrine","space_drugs","serotrotium","oxygen","copper","nitrogen","hydrogen","potassium","mercury","sulfur","carbon","chlorine","fluorine","sodium","phosphorus","lithium","sugar","sacid","facid","glycerol","radium","mutadone","thermite","mutagen","virusfood","iron","gold","silver","uranium","aluminum","silicon","fuel","cleaner","atrazine","plasma","teporone","lexorin","silver_sulfadiazine","salbutamol","perfluorodecalin","omnizine","synaptizine","haloperidol","potass_iodide","pen_acid","mannitol","oculine","styptic_powder","methamphetamine","cryoxadone","spaceacillin","carpotoxin","mindbreaker","fluorosurfactant","fluorosurfactant","ethanol","ammonia","diethylamine","antihol","pancuronium","lipolicide","condensedcapsaicin","frostoil","amanitin","psilocybin","enzyme","nothing","salglu_solution","antifreeze","neurotoxin")
+		var/global/list/chems_only = list("slimejelly","blood","water","lube","charcoal","toxin","cyanide","morphine","epinephrine","space_drugs","serotrotium","oxygen","copper","nitrogen","hydrogen","potassium","mercury","sulfur","carbon","chlorine","fluorine","sodium","phosphorus","lithium","sugar","sacid","facid","glycerol","radium","mutadone","thermite","mutagen","virusfood","iron","gold","silver","uranium","aluminum","silicon","fuel","cleaner","atrazine","plasma","teporone","lexorin","silver_sulfadiazine","salbutamol","perfluorodecalin","omnizine","synaptizine","haloperidol","potass_iodide","pen_acid","mannitol","oculine","styptic_powder","methamphetamine","cryoxadone","spaceacillin","carpotoxin","lsd","fluorosurfactant","fluorosurfactant","ethanol","ammonia","diethylamine","antihol","pancuronium","lipolicide","condensedcapsaicin","frostoil","amanitin","psilocybin","enzyme","nothing","salglu_solution","antifreeze","neurotoxin")
 		var/global/list/rare_chems = list("minttoxin","nanites","xenomicrobes","adminordrazine")
 
 		var/datum/reagent/R = pick(chems_only + rare_chems)
@@ -89,9 +89,9 @@
 	icon = 'icons/obj/drinks.dmi'
 	New()
 		..()
-		var/list/drinks_only = list("beer2","hot_coco","orangejuice","tomatojuice","limejuice","carrotjuice","berryjuice","poisonberryjuice","watermelonjuice","lemonjuice","banana","nothing","potato","milk","soymilk","cream","coffee","tea","icecoffee","icetea","cola","nuka_cola","spacemountainwind","thirteenloko","dr_gibb","space_up","lemon_lime","beer","whiskey","gin","rum","vodka","holywater","tequilla","vermouth","wine","tonic","kahlua","cognac","hooch","ale","sodawater","ice","bilk","atomicbomb","threemileisland","goldschlager","patron","gintonic","cubalibre","whiskeycola","martini","vodkamartini","whiterussian","screwdrivercocktail","booger","bloodymary","gargleblaster","bravebull","tequillasunrise","toxinsspecial","beepskysmash","salglu_solution","irishcream","manlydorf","longislandicedtea","moonshine","b52","irishcoffee","margarita","blackrussian","manhattan","manhattan_proj","whiskeysoda","antifreeze","barefoot","snowwhite","demonsblood","vodkatonic","ginfizz","bahama_mama","singulo","sbiten","devilskiss","red_mead","mead","iced_beer","grog","aloe","andalusia","alliescocktail","soy_latte","cafe_latte","acidspit","amasec","neurotoxin","hippiesdelight","bananahonk","silencer","changelingsting","irishcarbomb","syndicatebomb","erikasurprise","driestmartini")
+		var/list/drinks_only = list("beer2","hot_coco","orangejuice","tomatojuice","limejuice","carrotjuice","berryjuice","poisonberryjuice","watermelonjuice","lemonjuice","banana","nothing","potato","milk","soymilk","cream","coffee","tea","icecoffee","icetea","cola","nuka_cola","spacemountainwind","thirteenloko","dr_gibb","space_up","lemon_lime","beer","whiskey","gin","rum","vodka","holywater","tequilla","vermouth","wine","tonic","kahlua","cognac","ale","sodawater","ice","bilk","atomicbomb","threemileisland","goldschlager","patron","gintonic","cubalibre","whiskeycola","martini","vodkamartini","whiterussian","screwdrivercocktail","booger","bloodymary","gargleblaster","bravebull","tequillasunrise","toxinsspecial","beepskysmash","salglu_solution","irishcream","manlydorf","longislandicedtea","moonshine","b52","irishcoffee","margarita","blackrussian","manhattan","manhattan_proj","whiskeysoda","antifreeze","barefoot","snowwhite","demonsblood","vodkatonic","ginfizz","bahama_mama","singulo","sbiten","devilskiss","red_mead","mead","iced_beer","grog","aloe","andalusia","alliescocktail","soy_latte","cafe_latte","acidspit","amasec","neurotoxin","hippiesdelight","bananahonk","silencer","changelingsting","irishcarbomb","syndicatebomb","erikasurprise","driestmartini")
 		if(prob(50))
-			drinks_only += list("pancuronium","adminordrazine","mindbreaker","omnizine","blood")
+			drinks_only += list("pancuronium","adminordrazine","lsd","omnizine","blood")
 
 		var/datum/reagent/R = pick(drinks_only)
 		reagents.add_reagent(R,volume)
@@ -123,7 +123,7 @@
 
 	New()
 		..()
-		var/global/list/meds_only = list("charcoal","toxin","cyanide","morphine","epinephrine","space_drugs","serotrotium","mutadone","mutagen","teporone","lexorin","silver_sulfadiazine","salbutamol","perfluorodecalin","omnizine","synaptizine","haloperidol","potass_iodide","pen_acid","mannitol","oculine","styptic_powder","methamphetamine","spaceacillin","carpotoxin","mindbreaker","ethanol","ammonia","diethylamine","antihol","pancuronium","lipolicide","condensedcapsaicin","frostoil","amanitin","psilocybin","nothing","salglu_solution","neurotoxin")
+		var/global/list/meds_only = list("charcoal","toxin","cyanide","morphine","epinephrine","space_drugs","serotrotium","mutadone","mutagen","teporone","lexorin","silver_sulfadiazine","salbutamol","perfluorodecalin","omnizine","synaptizine","haloperidol","potass_iodide","pen_acid","mannitol","oculine","styptic_powder","methamphetamine","spaceacillin","carpotoxin","lsd","ethanol","ammonia","diethylamine","antihol","pancuronium","lipolicide","condensedcapsaicin","frostoil","amanitin","psilocybin","nothing","salglu_solution","neurotoxin")
 		var/global/list/rare_meds = list("nanites","xenomicrobes","minttoxin","adminordrazine","blood")
 
 		var/i = 1
@@ -276,7 +276,7 @@
 									/mob/living/simple_animal/hostile/hivebot,/mob/living/simple_animal/hostile/viscerator,/mob/living/simple_animal/hostile/pirate)
 
 			visible_message("\red Something falls out of the [src]!")
-			var/obj/item/weapon/grenade/flashbang/clusterbang/C = new(src.loc)
+			var/obj/item/weapon/grenade/clusterbuster/C = new(src.loc)
 			C.prime()
 			spawn(10)
 				new menace(src.loc)

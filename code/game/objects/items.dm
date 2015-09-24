@@ -6,6 +6,14 @@
 	var/image/blood_overlay = null //this saves our blood splatter overlay, which will be processed not to go over the edges of the sprite
 	var/blood_overlay_color = null
 	var/item_state = null
+	var/lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
+	var/righthand_file = 'icons/mob/inhands/items_righthand.dmi'
+	
+	//Dimensions of the lefthand_file and righthand_file vars
+	//eg: 32x32 sprite, 64x64 sprite, etc.
+	var/inhand_x_dimension = 32
+	var/inhand_y_dimension = 32	
+	
 	var/r_speed = 1.0
 	var/health = null
 	var/hitsound = null
@@ -37,6 +45,7 @@
 	var/siemens_coefficient = 1 // for electrical admittance/conductance (electrocution checks and shit)
 	var/slowdown = 0 // How much clothing is slowing you down. Negative values speeds you up
 	var/armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
+	var/armour_penetration = 0 //percentage of armour effectiveness to remove
 	var/list/allowed = null //suit storage stuff.
 	var/obj/item/device/uplink/hidden/hidden_uplink = null // All items can have an uplink hidden inside, just remember to add the triggers.
 
@@ -110,9 +119,7 @@
 
 	src.loc = T
 
-/obj/item/examine()
-	set src in view()
-
+/obj/item/examine(mob/user, var/distance = -1)
 	var/size
 	switch(src.w_class)
 		if(1.0)
@@ -125,12 +132,9 @@
 			size = "bulky"
 		if(5.0)
 			size = "huge"
-		else
-	//if ((CLUMSY in usr.mutations) && prob(50)) t = "funny-looking"
-	usr << "This is a [src.blood_DNA ? "bloody " : ""]\icon[src][src.name]. It is a [size] item."
-	if(src.desc)
-		usr << src.desc
-	return
+
+	return ..(user, distance, "", "It is a [size] item.")
+
 
 /obj/item/attack_hand(mob/user as mob)
 	if (!user) return 0
@@ -709,3 +713,13 @@
 
 /obj/item/proc/pwr_drain()
 	return 0 // Process Kill
+	
+/obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/weapon/storage
+	if(!newLoc)
+		return 0
+	if(istype(loc,/obj/item/weapon/storage))
+		var/obj/item/weapon/storage/S = loc
+		S.remove_from_storage(src,newLoc)
+		return 1
+	return 0
+	

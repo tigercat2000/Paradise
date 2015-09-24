@@ -136,6 +136,11 @@ var/global/datum/controller/process/garbage_collector/garbageCollector
 					garbageCollector.dels_count++
 			if (QDEL_HINT_PUTINPOOL)  //qdel will put this object in the pool.
 				PlaceInPool(D,0)
+			if (QDEL_HINT_FINDREFERENCE)//qdel will, if TESTING is enabled, display all references to this object, then queue the object for deletion.
+				#ifdef TESTING
+				D.find_references(remove_from_queue = FALSE)
+				#endif
+				garbageCollector.addTrash(D)
 			else
 				// world << "WARNING GC DID NOT GET A RETURN VALUE FOR [D], [D.type]!"
 				garbageCollector.addTrash(D)
@@ -176,3 +181,4 @@ var/global/datum/controller/process/garbage_collector/garbageCollector
 
 /proc/gcwarning(msg)
 	log_to_dd("## GC WARNING: [msg]")
+	

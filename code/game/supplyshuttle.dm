@@ -138,6 +138,7 @@ var/list/mechtoys = list(
 	var/ordernum
 	var/datum/supply_packs/object = null
 	var/orderedby = null
+	var/orderedrank = null
 	var/comment = null
 
 /datum/controller/supply
@@ -152,6 +153,7 @@ var/list/mechtoys = list(
 	var/points_per_intel = 250			//points gained per intel returned
 	var/points_per_design = 25			//points gained per max reliability research design returned (only for initilally unreliable designs)
 
+	var/list/discoveredPlants = list()	//Typepaths for unusual plants we've already sent CentComm, associated with their potencies
 	var/list/techLevels = list()
 	var/list/researchDesigns = list()
 	//control
@@ -259,6 +261,18 @@ var/list/mechtoys = list(
 						points += points_per_design
 						researchDesigns += design.id
 
+				// Sell exotic plants
+				if(istype(A, /obj/item/seeds))
+					var/obj/item/seeds/S = A
+					if(discoveredPlants[S.type]) // This species has already been sent to CentComm
+						var/potDiff = S.seed.get_trait(TRAIT_POTENCY) - discoveredPlants[S.type] // Compare it to the previous best
+						if(potDiff > 0) // This sample is better
+							discoveredPlants[S.type] = S.seed.get_trait(TRAIT_POTENCY)
+							points += potDiff
+					else // This is a new discovery!
+						discoveredPlants[S.type] = S.seed.get_trait(TRAIT_POTENCY)
+						points += S.seed.get_trait(TRAIT_RARITY) // That's right, no bonus for potency.  Send a crappy sample first to "show improvement" later
+
 				// If you send something in a crate, centcom's keeping it! - fixes secure crates being sent to centom to open them
 				qdel(A)
 		qdel(MA)
@@ -300,14 +314,19 @@ var/list/mechtoys = list(
 		var/datum/supply_packs/SP = SO.object
 
 		var/atom/A = new SP.containertype(pickedloc)
-		A.name = "[SP.containername]"// [SO.comment ? "([SO.comment])":"" ]"
+		A.name = "[SP.containername]"
 
 		//supply manifest generation begin
-
 		var/obj/item/weapon/paper/manifest/slip = new /obj/item/weapon/paper/manifest(A)
+		slip.name = "Shipping Manifest - '[SP.name]' for [SO.orderedby]"
 		slip.info = "<h3>[command_name()] Shipping Manifest</h3><hr><br>"
-		slip.info +="Order #[SO.ordernum]<br>"
+		slip.info +="Order: #[SO.ordernum]<br>"
 		slip.info +="Destination: [station_name]<br>"
+		slip.info +="Requested By: [SO.orderedby]<br>"
+		slip.info +="Rank: [SO.orderedrank]<br>"
+		slip.info +="Reason: [SO.comment]<br>"
+		slip.info +="Supply Crate Type: [SP.name]<br>"
+		slip.info +="Access Restriction: [replacetext(get_access_desc(SP.access))]<br>"
 		slip.info +="[shoppinglist.len] PACKAGES IN THIS SHIPMENT<br>"
 		slip.info +="CONTENTS:<br><ul>"
 
@@ -482,6 +501,7 @@ var/list/mechtoys = list(
 			O.ordernum = supply_controller.ordernum
 			O.object = P
 			O.orderedby = idname
+			O.orderedrank = idrank
 			O.comment = reason
 			supply_controller.requestlist += O
 
@@ -691,6 +711,7 @@ var/list/mechtoys = list(
 			O.ordernum = supply_controller.ordernum
 			O.object = P
 			O.orderedby = idname
+			O.orderedrank = idrank
 			O.comment = reason
 			supply_controller.requestlist += O
 

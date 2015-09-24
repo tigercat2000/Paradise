@@ -73,6 +73,8 @@
 
 /mob/visible_message(var/message, var/self_message, var/blind_message)
 	for(var/mob/M in viewers(src))
+		if(M.see_invisible < invisibility)
+			continue //can't view the invisible
 		var/msg = message
 		if(self_message && M==src)
 			msg = self_message
@@ -478,6 +480,46 @@ var/list/slot_equipment_priority = list( \
 	onclose(user, "mob\ref[src]")
 	return
 
+//mob verbs are faster than object verbs. See http://www.byond.com/forum/?post=1326139&page=2#comment8198716 for why this isn't atom/verb/examine()
+/mob/verb/examinate(atom/A as mob|obj|turf in view())
+	set name = "Examine"
+	set category = "IC"
+
+	if((is_blind(src) || usr.stat) && !isobserver(src))
+		src << "<span class='notice'>Something is there but you can't see it.</span>"
+		return 1
+
+	face_atom(A)
+	A.examine(src)
+
+//same as above
+//note: ghosts can point, this is intended
+//visible_message will handle invisibility properly
+//overriden here and in /mob/dead/observer for different point span classes and sanity checks
+/mob/verb/pointed(atom/A as mob|obj|turf in view())
+	set name = "Point To"
+	set category = "Object"
+
+	if(next_move >= world.time)
+		return
+	if(!src || !isturf(src.loc))
+		return 0
+	if(istype(A, /obj/effect/decal/point))
+		return 0
+
+	var/tile = get_turf(A)
+	if (!tile)
+		return 0
+
+	changeNext_move(CLICK_CD_POINT)
+	var/obj/P = new /obj/effect/decal/point(tile)
+	P.invisibility = invisibility
+	spawn (20)
+		if(P)
+			qdel(P)
+
+	return 1
+
 /mob/proc/ret_grab(obj/effect/list_container/mobl/L as obj, flag)
 	if ((!( istype(l_hand, /obj/item/weapon/grab) ) && !( istype(r_hand, /obj/item/weapon/grab) )))
 		if (!( L ))
@@ -595,13 +637,13 @@ var/list/slot_equipment_priority = list( \
 		src << "<h2 class='alert'>OOC Warning:</h2>"
 		src << "<span class='alert'>Your flavor text is likely out of date! <a href='byond://?src=\ref[src];flavor_change=1'>Change</a></span>"
 
-/mob/proc/print_flavor_text()
+/mob/proc/print_flavor_text(var/shrink = 1)
 	if (flavor_text && flavor_text != "")
 		var/msg = replacetext(flavor_text, "\n", " ")
-		if(lentext(msg) <= 40)
-			return "\blue [msg]"
+		if(lentext(msg) <= 40 || !shrink)
+			return "<span class='notice'>[msg]</span>"
 		else
-			return "\blue [copytext_preserve_html(msg, 1, 37)]... <a href='byond://?src=\ref[src];flavor_more=1'>More...</a>"
+			return "<span class='notice'>[copytext_preserve_html(msg, 1, 37)]... <a href='byond://?src=\ref[src];flavor_more=1'>More...</a></span>"
 
 /mob/proc/is_dead()
 	return stat == DEAD
@@ -616,7 +658,7 @@ var/list/slot_equipment_priority = list( \
 	if (!abandon_allowed)
 		usr << "<span class='warning'>Respawning is disabled.</span>"
 		return
-		
+
 	if (stat != DEAD || !ticker)
 		usr << "<span class='boldnotice'>You must be dead to use this!</span>"
 		return
@@ -629,7 +671,7 @@ var/list/slot_equipment_priority = list( \
 		log_game("[key_name(usr)] respawn failed due to disconnect.")
 		return
 	client.screen.Cut()
-	
+
 	if(!client)
 		log_game("[key_name(usr)] respawn failed due to disconnect.")
 		return
@@ -789,6 +831,7 @@ var/list/slot_equipment_priority = list( \
 		return
 
 	if (AM.anchored)
+		usr << "<span class='notice'>It won't budge!</span>"
 		return
 
 	var/mob/M = AM
@@ -1231,7 +1274,7 @@ mob/proc/yank_out_object()
 			var/mob/living/carbon/human/human_user = U
 			human_user.bloody_hands(H)
 
-	selection.loc = get_turf(src)
+	selection.forceMove(get_turf(src))
 	if(!(U.l_hand && U.r_hand))
 		U.put_in_hands(selection)
 

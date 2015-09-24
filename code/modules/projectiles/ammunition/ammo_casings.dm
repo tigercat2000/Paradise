@@ -24,7 +24,21 @@
 	desc = "A 9mm bullet casing."
 	caliber = "9mm"
 	projectile_type = "/obj/item/projectile/bullet/weakbullet3"
+	
+/obj/item/ammo_casing/c9mmap
+	desc = "A 9mm bullet casing."
+	caliber = "9mm"
+	projectile_type =/obj/item/projectile/bullet/armourpiercing
 
+/obj/item/ammo_casing/c9mmtox
+	desc = "A 9mm bullet casing."
+	caliber = "9mm"
+	projectile_type = /obj/item/projectile/bullet/toxinbullet
+
+/obj/item/ammo_casing/c9mminc
+	desc = "A 9mm bullet casing."
+	caliber = "9mm"
+	projectile_type = /obj/item/projectile/bullet/incendiary/firebullet
 
 /obj/item/ammo_casing/c45
 	desc = "A .45 bullet casing."
@@ -183,9 +197,9 @@
 	caliber = "a762"
 	projectile_type = "/obj/item/projectile/bullet"
 
-/obj/item/ammo_casing/a545
-	desc = "A 5.45mm bullet casing."
-	caliber = "a545"
+/obj/item/ammo_casing/a556
+	desc = "A 5.56mm bullet casing."
+	caliber = "a556"
 	projectile_type = "/obj/item/projectile/bullet/heavybullet"
 
 /obj/item/ammo_casing/rocket

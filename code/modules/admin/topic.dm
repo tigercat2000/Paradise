@@ -11,7 +11,7 @@
 		return
 		
 	if(href_list["rejectadminhelp"])
-		if(!check_rights(R_MOD))
+		if(!check_rights(R_ADMIN|R_MOD))
 			return
 		var/client/C = locate(href_list["rejectadminhelp"])
 		if(!C)
@@ -445,7 +445,7 @@
 				feedback_inc("ban_appearance",1)
 				DB_ban_record(BANTYPE_APPEARANCE, M, -1, reason)
 				appearance_fullban(M, "[reason]; By [usr.ckey] on [time2text(world.realtime)]")
-				notes_add(M.ckey, "Appearance banned - [reason]")
+				add_note(M.ckey, "Appearance banned - [reason]", null, usr, 0)
 				message_admins("\blue [key_name_admin(usr)] appearance banned [key_name_admin(M)]", 1)
 				M << "\red<BIG><B>You have been appearance banned by [usr.client.ckey].</B></BIG>"
 				M << "\red <B>The reason is: [reason]</B>"
@@ -886,7 +886,7 @@
 							msg = job
 						else
 							msg += ", [job]"
-					notes_add(M.ckey, "Banned  from [msg] - [reason]")
+					add_note(M.ckey, "Banned  from [msg] - [reason]", null, usr, 0)
 					message_admins("\blue [key_name_admin(usr)] banned [key_name_admin(M)] from [msg] for [mins] minutes", 1)
 					M << "\red<BIG><B>You have been jobbanned by [usr.client.ckey] from: [msg].</B></BIG>"
 					M << "\red <B>The reason is: [reason]</B>"
@@ -905,8 +905,8 @@
 							feedback_add_details("ban_job","- [job]")
 							jobban_fullban(M, job, "[reason]; By [usr.ckey] on [time2text(world.realtime)]")
 							if(!msg)	msg = job
-							else		msg += ", [job]"
-						notes_add(M.ckey, "Banned  from [msg] - [reason]")
+							else		msg += ", [job]"						
+						add_note(M.ckey, "Banned  from [msg] - [reason]", null, usr, 0)
 						message_admins("\blue [key_name_admin(usr)] banned [key_name_admin(M)] from [msg]", 1)
 						M << "\red<BIG><B>You have been jobbanned by [usr.client.ckey] from: [msg].</B></BIG>"
 						M << "\red <B>The reason is: [reason]</B>"
@@ -956,25 +956,51 @@
 			message_admins("\blue [key_name_admin(usr)] booted [key_name_admin(M)].", 1)
 			//M.client = null
 			del(M.client)
-/*
-	//Player Notes
-	else if(href_list["notes"])
-		var/ckey = href_list["ckey"]
-		if(!ckey)
-			var/mob/M = locate(href_list["mob"])
-			if(ismob(M))
-				ckey = M.ckey
 
-		switch(href_list["notes"])
-			if("show")
-				notes_show(ckey)
-			if("add")
-				notes_add(ckey,href_list["text"])
-				notes_show(ckey)
-			if("remove")
-				notes_remove(ckey,text2num(href_list["from"]),text2num(href_list["to"]))
-				notes_show(ckey)
-*/
+	//Player Notes
+	else if(href_list["addnote"])
+		var/target_ckey = href_list["addnote"]
+		add_note(target_ckey)
+
+	else if(href_list["addnoteempty"])
+		add_note()
+
+	else if(href_list["removenote"])
+		var/note_id = href_list["removenote"]
+		remove_note(note_id)
+
+	else if(href_list["editnote"])
+		var/note_id = href_list["editnote"]
+		edit_note(note_id)
+
+	else if(href_list["shownote"])
+		var/target = href_list["shownote"]
+		show_note(index = target)
+
+	else if(href_list["nonalpha"])
+		var/target = href_list["nonalpha"]
+		target = text2num(target)
+		show_note(index = target)
+
+	else if(href_list["shownoteckey"])
+		var/target_ckey = href_list["shownoteckey"]
+		show_note(target_ckey)
+
+	else if(href_list["notessearch"])
+		var/target = href_list["notessearch"]
+		show_note(index = target)
+
+	else if(href_list["noteedits"])
+		var/note_id = sanitizeSQL("[href_list["noteedits"]]")
+		var/DBQuery/query_noteedits = dbcon.NewQuery("SELECT edits FROM [format_table_name("notes")] WHERE id = '[note_id]'")
+		if(!query_noteedits.Execute())
+			var/err = query_noteedits.ErrorMsg()
+			log_game("SQL ERROR obtaining edits from notes table. Error : \[[err]\]\n")
+			return
+		if(query_noteedits.NextRow())
+			var/edit_log = query_noteedits.item[1]
+			usr << browse(edit_log,"window=noteedits")
+			
 	else if(href_list["removejobban"])
 		if(!check_rights(R_BAN))	return
 
@@ -1096,7 +1122,7 @@
 			usr << browse(edit_log,"window=watchedits")		
 				
 	else if(href_list["mute"])
-		if(!check_rights(R_MOD))
+		if(!check_rights(R_ADMIN|R_MOD))
 			return
 
 		var/mob/M = locate(href_list["mute"])
@@ -1507,7 +1533,8 @@
 		show_player_panel(M)
 
 	else if(href_list["adminplayerobservejump"])
-		if(!check_rights(R_MOD,0) && !check_rights(R_ADMIN))	return
+		if(!check_rights(R_ADMIN|R_MOD))
+			return
 
 		var/mob/M = locate(href_list["adminplayerobservejump"])
 
@@ -1517,7 +1544,8 @@
 		C.jumptomob(M)
 		
 	else if(href_list["adminplayerobservefollow"])
-		if(!check_rights(R_MOD,0) && !check_rights(R_ADMIN))	return
+		if(!check_rights(R_ADMIN|R_MOD))
+			return
 
 		var/mob/M = locate(href_list["adminplayerobservefollow"])
 
@@ -1833,6 +1861,8 @@
 				stampvalue = "cent"
 				sendername = command_name()
 			if("Syndicate")
+				stamptype = "icon"
+				stampvalue = "syndicate"
 				sendername = "UNKNOWN"
 			if("Administrator")
 				stamptype = input(src.owner, "Pick a stamp type.", "Stamp Type") as null|anything in list("icon","text","none")
@@ -1904,8 +1934,9 @@
 		else
 			for(var/obj/machinery/photocopier/faxmachine/F in allfaxes)
 				if((F.z in config.station_levels))
-					if(!F.receivefax(P))
-						src.owner << "\red Message transmission to [F.department] failed."
+					spawn(0)
+						if(!F.receivefax(P))
+							src.owner << "\red Message transmission to [F.department] failed."
 
 		var/datum/fax/admin/A = new /datum/fax/admin()
 		A.name = P.name
@@ -1923,7 +1954,7 @@
 		src.owner << "\blue Message transmitted successfully."
 		if(notify == "Yes")
 			var/mob/living/carbon/human/H = sender
-			if(istype(H) && H.stat == 1 && (istype(H.l_ear, /obj/item/device/radio/headset) || istype(H.r_ear, /obj/item/device/radio/headset)))
+			if(istype(H) && H.stat == CONSCIOUS && (istype(H.l_ear, /obj/item/device/radio/headset) || istype(H.r_ear, /obj/item/device/radio/headset)))
 				sender << "Your headset pings, notifying you that a reply to your fax has arrived."
 		if(sender)
 			log_admin("[key_name(src.owner)] replied to a fax message from [key_name(sender)]: [input]")
@@ -2128,6 +2159,18 @@
 			log_admin("[key_name(usr)] has kicked [afkonly ? "all AFK" : "all"] clients from the lobby. [length(listkicked)] clients kicked: [strkicked ? strkicked : "--"]")
 		else
 			usr << "You may only use this when the game is running."
+			
+	else if(href_list["memoeditlist"])
+		if(!check_rights(R_SERVER)) return
+		var/sql_key = sanitizeSQL("[href_list["memoeditlist"]]")
+		var/DBQuery/query_memoedits = dbcon.NewQuery("SELECT edits FROM [format_table_name("memo")] WHERE (ckey = '[sql_key]')")
+		if(!query_memoedits.Execute())
+			var/err = query_memoedits.ErrorMsg()
+			log_game("SQL ERROR obtaining edits from memo table. Error : \[[err]\]\n")
+			return
+		if(query_memoedits.NextRow())
+			var/edit_log = query_memoedits.item[1]
+			usr << browse(edit_log,"window=memoeditlist")
 
 	else if(href_list["secretsfun"])
 		if(!check_rights(R_SERVER|R_EVENT))	return
@@ -3027,35 +3070,6 @@
 	else if(href_list["ac_set_signature"])
 		src.admincaster_signature = adminscrub(input(usr, "Provide your desired signature", "Network Identity Handler", ""))
 		src.access_news_network()
-
-	if(href_list["add_player_info"])
-		var/key = href_list["add_player_info"]
-		var/add = input("Add Player Info") as null|text
-		if(!add) return
-
-		notes_add(key,add,usr)
-		show_player_info(key)
-
-	if(href_list["remove_player_info"])
-		var/key = href_list["remove_player_info"]
-		var/index = text2num(href_list["remove_index"])
-
-		notes_del(key, index)
-		show_player_info(key)
-
-	if(href_list["notes"])
-		var/ckey = href_list["ckey"]
-		if(!ckey)
-			var/mob/M = locate(href_list["mob"])
-			if(ismob(M))
-				ckey = M.ckey
-
-		switch(href_list["notes"])
-			if("show")
-				show_player_info(ckey)
-			if("list")
-				PlayerNotesPage(text2num(href_list["index"]))
-		return
 
 	if(href_list["secretsmenu"])
 		switch(href_list["secretsmenu"])

@@ -10,6 +10,8 @@
 		while sprite_sheets should be used for "flexible" clothing items that do not need to be refitted (e.g. vox wearing jumpsuits).
 	*/
 	var/list/sprite_sheets_refit = null
+	lefthand_file = 'icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/clothing_righthand.dmi'
 
 //BS12: Species-restricted clothing check.
 /obj/item/clothing/mob_can_equip(M as mob, slot)
@@ -163,6 +165,10 @@ BLIND     // can't see anything
 	var/pickpocket = 0 //Master pickpocket?
 	var/clipped = 0
 	species_restricted = list("exclude","Unathi","Tajaran","Wryn")
+	species_fit = list("Vox")
+	sprite_sheets = list(
+		"Vox" = 'icons/mob/species/vox/gloves.dmi'
+		)
 
 /obj/item/clothing/gloves/attackby(obj/item/weapon/W, mob/user, params)
 	if(istype(W, /obj/item/weapon/wirecutters))
@@ -182,11 +188,6 @@ BLIND     // can't see anything
 		..()
 
 /obj/item/clothing/gloves/proc/Touch()
-	return
-
-/obj/item/clothing/gloves/examine()
-	set src in usr
-	..()
 	return
 
 /obj/item/clothing/under/proc/set_sensors(mob/usr as mob)
@@ -303,9 +304,15 @@ BLIND     // can't see anything
 	body_parts_covered = FEET
 	slot_flags = SLOT_FEET
 
+
 	permeability_coefficient = 0.50
 	slowdown = SHOES_SLOWDOWN
 	species_restricted = list("exclude","Unathi","Tajaran","Wryn")
+	species_fit = list("Vox")
+	sprite_sheets = list(
+		"Vox" = 'icons/mob/species/vox/shoes.dmi'
+		)
+
 
 /obj/item/proc/negates_gravity()
 	return 0
@@ -450,21 +457,20 @@ BLIND     // can't see anything
 			return
 	return
 
-/obj/item/clothing/under/examine()
-	set src in view()
-	..()
+/obj/item/clothing/under/examine(mob/user)
+	..(user)
 	switch(src.sensor_mode)
 		if(0)
-			usr << "Its sensors appear to be disabled."
+			user << "Its sensors appear to be disabled."
 		if(1)
-			usr << "Its binary life sensors appear to be enabled."
+			user << "Its binary life sensors appear to be enabled."
 		if(2)
-			usr << "Its vital tracker appears to be enabled."
+			user << "Its vital tracker appears to be enabled."
 		if(3)
-			usr << "Its vital tracker and tracking beacon appear to be enabled."
+			user << "Its vital tracker and tracking beacon appear to be enabled."
 	if(accessories.len)
 		for(var/obj/item/clothing/accessory/A in accessories)
-			usr << "\A [A] is attached to it."
+			user << "\A [A] is attached to it."
 
 
 /obj/item/clothing/under/verb/rollsuit()

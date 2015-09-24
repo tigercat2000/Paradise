@@ -47,7 +47,7 @@
 	var/internal_tank_valve = ONE_ATMOSPHERE
 	var/obj/machinery/portable_atmospherics/canister/internal_tank
 	var/datum/gas_mixture/cabin_air
-	var/obj/machinery/atmospherics/portables_connector/connected_port = null
+	var/obj/machinery/atmospherics/unary/portables_connector/connected_port = null
 
 	var/obj/item/device/radio/radio = null
 
@@ -166,25 +166,24 @@
 	else
 		return 0
 
-/obj/mecha/examine()
-	set src in view()
-	..()
+/obj/mecha/examine(mob/user)
+	..(user)
 	var/integrity = health/initial(health)*100
 	switch(integrity)
 		if(85 to 100)
-			usr << "It's fully intact."
+			user << "It's fully intact."
 		if(65 to 85)
-			usr << "It's slightly damaged."
+			user << "It's slightly damaged."
 		if(45 to 65)
-			usr << "It's badly damaged."
+			user << "It's badly damaged."
 		if(25 to 45)
-			usr << "It's heavily damaged."
+			user << "It's heavily damaged."
 		else
-			usr << "It's falling apart."
+			user << "It's falling apart."
 	if(equipment && equipment.len)
-		usr << "It's equipped with:"
+		user << "It's equipped with:"
 		for(var/obj/item/mecha_parts/mecha_equipment/ME in equipment)
-			usr << "\icon[ME] [ME]"
+			user << "\icon[ME] [ME]"
 	return
 
 
@@ -1058,7 +1057,7 @@
 			. = t_air.return_temperature()
 	return
 
-/obj/mecha/proc/connect(obj/machinery/atmospherics/portables_connector/new_port)
+/obj/mecha/proc/connect(obj/machinery/atmospherics/unary/portables_connector/new_port)
 	//Make sure not already connected to something else
 	if(connected_port || !new_port || new_port.connected_device)
 		return 0
@@ -1070,12 +1069,8 @@
 	//Perform the connection
 	connected_port = new_port
 	connected_port.connected_device = src
-
-	//Actually enforce the air sharing
-	var/datum/pipe_network/network = connected_port.return_network(src)
-	if(network && !(internal_tank.return_air() in network.gases))
-		network.gases += internal_tank.return_air()
-		network.update = 1
+	connected_port.parent.reconcile_air()
+	
 	log_message("Connected to gas port.")
 	return 1
 
@@ -1083,14 +1078,13 @@
 	if(!connected_port)
 		return 0
 
-	var/datum/pipe_network/network = connected_port.return_network(src)
-	if(network)
-		network.gases -= internal_tank.return_air()
-
 	connected_port.connected_device = null
 	connected_port = null
 	src.log_message("Disconnected from gas port.")
 	return 1
+	
+/obj/mecha/portableConnectorReturnAir()
+	return internal_tank.return_air()
 
 
 /////////////////////////
@@ -1106,7 +1100,7 @@
 	if(!src.occupant) return
 	if(usr!=src.occupant)
 		return
-	var/obj/machinery/atmospherics/portables_connector/possible_port = locate(/obj/machinery/atmospherics/portables_connector/) in loc
+	var/obj/machinery/atmospherics/unary/portables_connector/possible_port = locate(/obj/machinery/atmospherics/unary/portables_connector/) in loc
 	if(possible_port)
 		if(connect(possible_port))
 			src.occupant_message("\blue [name] connects to the port.")

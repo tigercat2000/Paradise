@@ -126,10 +126,9 @@
 	update_icon()
 	return
 
-/obj/item/weapon/gun/projectile/examine()
-	..()
-	usr << "Has [get_ammo()] round\s remaining."
-	return
+/obj/item/weapon/gun/projectile/examine(mob/user)
+	..(user)
+	user << "Has [get_ammo()] round\s remaining."
 
 /obj/item/weapon/gun/projectile/proc/get_ammo(var/countchambered = 1)
 	var/boolets = 0 //mature var names for mature people
@@ -144,6 +143,7 @@
 	desc = "A universal syndicate small-arms suppressor for maximum espionage."
 	icon = 'icons/obj/gun.dmi'
 	icon_state = "suppressor"
+	item_state = "suppressor"
 	w_class = 2
 	var/oldsound = null
 	var/initial_w_class = null

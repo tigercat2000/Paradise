@@ -11,7 +11,6 @@
 	//var/mob/living/carbon/brain/brainmob = null
 	var/list/ghost_volunteers[0]
 	req_access = list(access_robotics)
-	locked = 0
 	mecha = null//This does not appear to be used outside of reference in mecha.dm.
 
 
@@ -130,12 +129,8 @@
 	ghost_volunteers.Add(O)
 
 
-/obj/item/device/mmi/posibrain/examine()
-	set src in oview()
-
-	if(!usr || !src)	return
-	if( (usr.sdisabilities & BLIND || usr.blinded || usr.stat) && !istype(usr,/mob/dead/observer) )
-		usr << "<span class='notice'>Something is there but you can't see it.</span>"
+/obj/item/device/mmi/posibrain/examine(mob/user)
+	if(!..(user))
 		return
 
 	var/msg = "<span class='info'>*---------*\nThis is \icon[src] \a <EM>[src]</EM>!\n[desc]\n"
@@ -150,8 +145,7 @@
 	else
 		msg += "<span class='deadsay'>It appears to be completely inactive.</span>\n"
 	msg += "<span class='info'>*---------*</span>"
-	usr << msg
-	return
+	user << msg
 
 /obj/item/device/mmi/posibrain/emp_act(severity)
 	if(!src.brainmob)
