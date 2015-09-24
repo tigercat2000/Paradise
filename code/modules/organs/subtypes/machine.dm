@@ -5,14 +5,14 @@
 	max_damage = 50 //made same as arm, since it is not vital
 	min_broken_damage = 30
 	encased = null
-	
+
 /obj/item/organ/external/head/ipc/New()
 	robotize("Morpheus Cyberkinetics")
 	..()
 
 /obj/item/organ/external/chest/ipc
 	encased = null
-	
+
 /obj/item/organ/external/chest/ipc/New()
 	robotize("Morpheus Cyberkinetics")
 	..()
@@ -101,7 +101,8 @@
 	icon = stored_mmi.icon
 	icon_state = stored_mmi.icon_state
 
-/obj/item/organ/mmi_holder/removed(var/mob/living/user)
+/obj/item/organ/mmi_holder/removed(var/mob/living/user, var/skip_this = 0)
+	if(skip_this)	return ..()
 	if(stored_mmi)
 		stored_mmi.loc = get_turf(src)
 		if(owner.mind)
