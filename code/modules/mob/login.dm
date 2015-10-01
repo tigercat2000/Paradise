@@ -29,7 +29,7 @@
 	world.update_status()
 
 	client.images = null				//remove the images such as AIs being unable to see runes
-	client.screen = null				//remove hud items just in case
+	client.screen = list()				//remove hud items just in case
 	if(hud_used)	del(hud_used)		//remove the hud objects
 	hud_used = new /datum/hud(src)
 
@@ -46,9 +46,9 @@
 
 
 	if(ckey in deadmins)
-		verbs += /client/proc/readmin		
-		
-//Clear ability list and update from mob.
+		verbs += /client/proc/readmin	
+
+	//Clear ability list and update from mob.
 	client.verbs -= ability_verbs
 
 	if(abilities)
@@ -58,5 +58,33 @@
 		var/mob/living/carbon/human/H = src
 		if(H.species && H.species.abilities)
 			client.verbs |= H.species.abilities
+	
+		client.screen += client.void
+		
 
 	CallHook("Login", list("client" = src.client, "mob" = src))
+	
+// Calling update_interface() in /mob/Login() causes the Cyborg to immediately be ghosted; because of winget().
+// Calling it in the overriden Login, such as /mob/living/Login() doesn't cause this.
+/mob/proc/update_interface()
+	if(client)
+		if(winget(src, "mainwindow.hotkey_toggle", "is-checked") == "true")
+			update_hotkey_mode()
+		else
+			update_normal_mode()
+
+/mob/proc/update_hotkey_mode()
+	var/hotkeyname = "hotkeymode"
+	if(client)
+		var/hotkeys = client.hotkeylist[client.hotkeytype]
+		hotkeyname = hotkeys[client.hotkeyon ? "on" : "off"]
+		client.hotkeyon = 1
+	winset(src, null, "mainwindow.macro=[hotkeyname] hotkey_toggle.is-checked=true mapwindow.map.focus=true input.background-color=#F0F0F0")
+
+/mob/proc/update_normal_mode()
+	var/hotkeyname = "macro"
+	if(client)
+		var/hotkeys = client.hotkeylist[client.hotkeytype]//get the list containing the hotkey names
+		hotkeyname = hotkeys[client.hotkeyon ? "on" : "off"]//get the name of the hotkey, to not clutter winset() to much
+		client.hotkeyon = 0
+	winset(src, null, "mainwindow.macro=[hotkeyname] hotkey_toggle.is-checked=false input.focus=true input.background-color=#D3B5B5")

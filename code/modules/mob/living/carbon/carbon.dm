@@ -319,6 +319,10 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 		src << "You can't vent crawl while you're stunned!"
 		return
 
+	if(buckled_mob)
+		src << "You can't vent crawl with [buckled_mob] on you!"
+		return
+
 	var/obj/machinery/atmospherics/unary/vent_found
 
 	if(clicked_on)
@@ -491,19 +495,7 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 		item.layer = initial(item.layer)
 		src.visible_message("\red [src] has thrown [item].")
 
-		if(!src.lastarea)
-			src.lastarea = get_area(src.loc)
-		if((istype(src.loc, /turf/space)) || (src.lastarea.has_gravity == 0))
-			src.inertia_dir = get_dir(target, src)
-			step(src, inertia_dir)
-
-
-/*
-		if(istype(src.loc, /turf/space) || (src.flags & NOGRAV)) //they're in space, move em one space in the opposite direction
-			src.inertia_dir = get_dir(target, src)
-			step(src, inertia_dir)
-*/
-
+		newtonian_move(get_dir(target, src))
 
 		item.throw_at(target, item.throw_range, item.throw_speed, src)
 /*
@@ -539,6 +531,8 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 		update_inv_wear_mask(0)
 	else if(I == handcuffed)
 		handcuffed = null
+		if(buckled && buckled.buckle_requires_restraints)
+			buckled.unbuckle_mob()
 		update_inv_handcuffed(1)
 	else if(I == legcuffed)
 		legcuffed = null
@@ -687,6 +681,9 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 /mob/living/carbon/proc/canBeHandcuffed()
 	return 0
 
+/mob/living/carbon/fall(forced)
+    loc.handle_fall(src, forced)//it's loc so it doesn't call the mob's handle_fall which does nothing
+
 /mob/living/carbon/is_muzzled()
 	return(istype(src.wear_mask, /obj/item/clothing/mask/muzzle))
 
@@ -696,7 +693,7 @@ var/list/ventcrawl_machinery = list(/obj/machinery/atmospherics/unary/vent_pump,
 		return -6
 	else
 		return initial(pixel_y)
-		
+
 /mob/living/carbon/get_all_slots()
 	return list(l_hand,
 				r_hand,

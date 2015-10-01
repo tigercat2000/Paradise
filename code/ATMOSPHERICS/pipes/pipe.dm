@@ -7,13 +7,19 @@
 	use_power = 0
 	can_unwrench = 1
 	var/alert_pressure = 80*ONE_ATMOSPHERE //minimum pressure before check_pressure(...) should be called
-		
+
+	//Buckling
+	can_buckle = 1
+	buckle_requires_restraints = 1
+	buckle_lying = -1
+
+
 /obj/machinery/atmospherics/pipe/New()
 	..()
 	//so pipes under walls are hidden
 	if(istype(get_turf(src), /turf/simulated/wall) || istype(get_turf(src), /turf/simulated/shuttle/wall) || istype(get_turf(src), /turf/unsimulated/wall))
 		level = 1
-		
+
 /obj/machinery/atmospherics/pipe/Destroy()
 	releaseAirToTurf()
 	qdel(air_temporary)
@@ -30,6 +36,16 @@
 	if(parent && isnull(parent.gcDestroyed))
 		qdel(parent)
 	parent = null
+	
+/obj/machinery/atmospherics/pipe/attackby(obj/item/weapon/W, mob/user, params)
+	if(istype(W, /obj/item/device/analyzer))
+		atmosanalyzer_scan(parent.air, user)
+		return
+
+	if(istype(W,/obj/item/device/pipe_painter))
+		return
+
+	return ..()
 
 /obj/machinery/atmospherics/proc/pipeline_expansion()
 	return null
@@ -39,7 +55,7 @@
 	//Return null if parent should stop checking other pipes. Recall: del(src) will by default return null
 
 	return 1
-	
+
 /obj/machinery/atmospherics/pipe/proc/releaseAirToTurf()
 	if(air_temporary)
 		var/turf/T = loc
@@ -55,7 +71,7 @@
 	if(!parent)
 		parent = new /datum/pipeline()
 		parent.build_pipeline(src)
-		
+
 /obj/machinery/atmospherics/pipe/setPipenet(datum/pipeline/P)
 	parent = P
 
@@ -69,4 +85,3 @@
 		return node.pipe_color
 	else
 		return pipe_color
-		

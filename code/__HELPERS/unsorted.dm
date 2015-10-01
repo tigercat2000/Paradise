@@ -334,7 +334,7 @@ Turf and target are seperate in case you want to teleport some distance from a t
 
 /obj/proc/atmosanalyzer_scan(var/datum/gas_mixture/air_contents, mob/user, var/obj/target = src)
 	var/obj/icon = target
-	user.visible_message("[user] has used the analyzer on \icon[icon] [target].", "<span class='notice'>You use the analyzer on \icon[icon] [target].</span>")
+	user.visible_message("[user] has used the analyzer on [target].", "<span class='notice'>You use the analyzer on [target].</span>")
 	var/pressure = air_contents.return_pressure()
 	var/total_moles = air_contents.total_moles()
 
@@ -1807,4 +1807,16 @@ var/mob/dview/dview_mob = new
 		if(A.simulated)
 			return 0
 	return 1
+	
+/proc/screen_loc2turf(scr_loc, turf/origin)
+	var/tX = text2list(scr_loc, ",")
+	var/tY = text2list(tX[2], ":")
+	var/tZ = origin.z
+	tY = tY[1]
+	tX = text2list(tX[1], ":")
+	tX = tX[1]
+	tX = max(1, min(world.maxx, origin.x + (text2num(tX) - (world.view + 1))))
+	tY = max(1, min(world.maxy, origin.y + (text2num(tY) - (world.view + 1))))
+	return locate(tX, tY, tZ)
+
 	

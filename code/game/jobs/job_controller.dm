@@ -498,7 +498,7 @@ var/global/datum/controller/occupations/job_master
 				if(istype(G) && !G.prescription)
 					G.prescription = 1
 					G.name = "prescription [G.name]"
-//		H.update_icons()
+		H.regenerate_icons()
 
 		H.hud_updateflag |= (1 << ID_HUD)
 		H.hud_updateflag |= (1 << IMPLOYAL_HUD)
@@ -546,7 +546,6 @@ var/global/datum/controller/occupations/job_master
 			pda.ownjob = C.assignment
 			pda.ownrank = C.rank
 			pda.name = "PDA-[H.real_name] ([pda.ownjob])"
-			pda.JFLOG("Created")
 
 		return 1
 
