@@ -3,12 +3,12 @@
 /obj/item/clothing/suit/space/eva/plasmaman
 	name = "plasmaman suit"
 	desc = "A special containment suit designed to protect a plasmaman's volatile body from outside exposure and quickly extinguish it in emergencies."
-	allowed = list(/obj/item/weapon/gun,/obj/item/ammo_casing,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/melee/energy/sword,/obj/item/weapon/restraints/handcuffs,/obj/item/weapon/tank)
+	allowed = list(/obj/item/weapon/gun,/obj/item/ammo_casing,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/melee/energy/sword/saber,/obj/item/weapon/restraints/handcuffs,/obj/item/weapon/tank)
 	slowdown = 0
 	armor = list(melee = 0, bullet = 0, laser = 0 ,energy = 0, bomb = 0, bio = 100, rad = 20)
 	heat_protection = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
+	flags_inv = HIDEGLOVES|HIDESHOES
 	max_heat_protection_temperature = SPACE_SUIT_MAX_TEMP_PROTECT
 	species_restricted = list("Plasmaman")
 	flags = STOPSPRESSUREDMAGE  | PLASMAGUARD
@@ -53,19 +53,19 @@
 		user << "<span class='warning'>You cannot turn the light on while in this [user.loc].</span>" //To prevent some lighting anomalities.
 		return
 	toggle_light(user)
-	
-/obj/item/clothing/head/helmet/space/eva/plasmaman/proc/toggle_light(mob/user)		
+
+/obj/item/clothing/head/helmet/space/eva/plasmaman/proc/toggle_light(mob/user)
 	on = !on
 	icon_state = "[base_state][on]"
 
-	if(on)	
+	if(on)
 		set_light(brightness_on)
-	else	
+	else
 		set_light(0)
 
 	if(istype(user,/mob/living/carbon/human))
 		var/mob/living/carbon/human/H = user
-		H.update_inv_head()	
+		H.update_inv_head()
 
 // ENGINEERING
 /obj/item/clothing/suit/space/eva/plasmaman/assistant
@@ -297,7 +297,7 @@
 	name = "blood red plasmaman suit"
 	icon_state = "plasmaman_Nukeops"
 	armor = list(melee = 60, bullet = 50, laser = 30, energy = 15, bomb = 35, bio = 100, rad = 50)
-	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank,/obj/item/weapon/gun,/obj/item/ammo_casing,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/melee/energy/sword,/obj/item/weapon/restraints/handcuffs)
+	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank,/obj/item/weapon/gun,/obj/item/ammo_casing,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/melee/energy/sword/saber,/obj/item/weapon/restraints/handcuffs)
 	siemens_coefficient = 0.6
 
 /obj/item/clothing/head/helmet/space/eva/plasmaman/nuclear

@@ -8,7 +8,7 @@
 	var/implanted = null
 	var/mob/living/imp_in = null
 	var/obj/item/organ/external/part = null
-	_color = "b"
+	item_color = "b"
 	var/allow_reagents = 0
 	var/malfunction = 0
 
@@ -115,7 +115,6 @@ Implant Specifics:<BR>"}
 <b>Special Features:</b> Explodes<BR>
 <b>Integrity:</b> Implant will occasionally be degraded by the body's immune system and thus will occasionally malfunction."}
 	return dat
-
 
 /obj/item/weapon/implant/dexplosive/trigger(emote, source as mob)
 	if(emote == "deathgasp")
