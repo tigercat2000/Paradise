@@ -5,6 +5,13 @@
 		return 1
 	return 0
 
+/proc/ishumanslime(A)
+	if(istype(A, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = A
+		if(H.get_species() == "Slime People")
+			return 1
+	return 0
+
 /proc/issmall(A)
 	if(A && istype(A, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = A

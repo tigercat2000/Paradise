@@ -79,6 +79,8 @@
 
 	var/lastFart = 0 // Toxic fart cooldown.
 
+	var/should_absorb = 0 //slime people lulz
+
 	var/fire_dmi = 'icons/mob/OnFire.dmi'
 	var/fire_sprite = "Standing"
 

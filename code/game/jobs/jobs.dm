@@ -56,6 +56,7 @@ var/const/JUDGE				=(1<<6)
 var/const/PILOT				=(1<<7)
 
 var/list/assistant_occupations = list(
+	"Larkens"
 )
 
 

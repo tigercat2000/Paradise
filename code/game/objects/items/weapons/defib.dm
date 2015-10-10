@@ -475,7 +475,7 @@
 						for(var/obj/item/organ/external/O in H.organs)
 							total_brute	+= O.brute_dam
 							total_burn	+= O.burn_dam
-						if(H.health <= config.health_threshold_dead && total_burn <= 180 && total_brute <= 180 && !H.suiciding && !ghost && tplus < tlimit && !(NOCLONE in H.mutations))
+						if(total_burn <= 180 && total_brute <= 180 && !H.suiciding && !ghost && tplus < tlimit)
 							tobehealed = health + threshold
 							tobehealed -= 5 //They get 5 of each type of damage healed so excessive combined damage will not immediately kill them after they get revived
 							H.adjustOxyLoss(tobehealed)
