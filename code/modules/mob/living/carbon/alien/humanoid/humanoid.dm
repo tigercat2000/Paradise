@@ -191,6 +191,10 @@
 		M << "No attacking people at spawn, you jackass."
 		return
 
+	if(M.loc == src) //no disarming xenomorphs from inside them
+		M << "<span class='warning'>That's not going to work. Find a weapon.</span>"
+		return
+
 	if(..())	//to allow surgery to return properly.
 		return
 

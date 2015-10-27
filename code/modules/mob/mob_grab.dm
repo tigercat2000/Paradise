@@ -19,8 +19,9 @@
 	var/allow_upgrade = 1
 	var/last_upgrade = 0
 	var/last_hit_zone = 0
-//	var/force_down //determines if the affecting mob will be pinned to the ground //disabled due to balance, kept for an example for any new things.
+	var/force_down //determines if the affecting mob will be pinned to the ground
 	var/dancing //determines if assailant and affecting keep looking at each other. Basically a wrestling position
+	var/kissing
 
 	layer = 21
 	item_state = "nothing"
@@ -103,12 +104,31 @@
 		assailant.client.screen += hud
 
 	var/hit_zone = assailant.zone_sel.selecting
+	var/announce = 0
+	if(hit_zone != last_hit_zone)
+		announce = 1
 	last_hit_zone = hit_zone
 
 	if(assailant.pulling == affecting)
 		assailant.stop_pulling()
 
+
+
 	if(state <= GRAB_AGGRESSIVE)
+
+		if(state < GRAB_AGGRESSIVE)
+			if(dancing && ishuman(affecting))
+				if(hit_zone == "mouth")
+					var/obj/item/weapon/grab/otherdancer
+					if(assailant.grabbed_by)
+						for(var/obj/item/weapon/grab/G in assailant.grabbed_by)
+							if(G.assailant == affecting && G.affecting == assailant)
+								otherdancer = G
+					if(announce)
+						assailant.visible_message("<span class='notice'>[assailant] [otherdancer.kissing ? "returns [affecting]'s kiss" : "leans in and kisses [affecting]"].</span>") //why not
+						kissing = 1
+
+
 		allow_upgrade = 1
 		//disallow upgrading if we're grabbing more than one person
 		if((assailant.l_hand && assailant.l_hand != src && istype(assailant.l_hand, /obj/item/weapon/grab)))
@@ -143,12 +163,9 @@
 		affecting.hand = h
 
 
-		//var/announce = 0
-		//(hit_zone != last_hit_zone)
-			//announce = 1
-	/*	if(ishuman(affecting))
+		if(ishuman(affecting))
 			switch(hit_zone)
-				/*if("mouth")
+				if("mouth")
 					if(announce)
 						assailant.visible_message("<span class='warning'>[assailant] covers [affecting]'s mouth!</span>")
 					if(affecting.silent < 3)
@@ -157,15 +174,14 @@
 					if(announce)
 						assailant.visible_message("<span class='warning'>[assailant] covers [affecting]'s eyes!</span>")
 					if(affecting.eye_blind < 3)
-						affecting.eye_blind = 3*///These are being left in the code as an example for adding new hit-zone based things.
+						affecting.eye_blind = 3
 
 		if(force_down)
 			if(affecting.loc != assailant.loc)
 				force_down = 0
 			else
-				affecting.Weaken(3) //This is being left in the code as an example of adding a new variable to do something in grab code.
+				affecting.Weaken(3)
 
-*/
 
 	if(state >= GRAB_NECK)
 		affecting.Stun(5)  //It will hamper your voice, being choked and all.
@@ -192,9 +208,10 @@
 		return
 	if(affecting.lying && state != GRAB_KILL)
 		animate(affecting, pixel_x = 0, pixel_y = 0, 5, 1, LINEAR_EASING)
-		return //KJK
-	/*	if(force_down) //THIS GOES ABOVE THE RETURN LABELED KJK
-			affecting.set_dir(SOUTH)*///This shows how you can apply special directions based on a variable. //face up
+		if(force_down)
+			affecting.set_dir(SOUTH)//face up
+		return
+
 
 	var/shift = 0
 	var/adir = get_dir(assailant, affecting)
@@ -247,16 +264,16 @@
 	if(state < GRAB_AGGRESSIVE)
 		if(!allow_upgrade)
 			return
-		//if(!affecting.lying)
-		assailant.visible_message("<span class='warning'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
-		/* else
+		if(!affecting.lying)
+			assailant.visible_message("<span class='warning'>[assailant] has grabbed [affecting] aggressively (now hands)!</span>")
+		else
 			assailant.visible_message("<span class='warning'>[assailant] pins [affecting] down to the ground (now hands)!</span>")
 			force_down = 1
 			affecting.Weaken(3)
 			step_to(assailant, affecting)
 			assailant.set_dir(EAST) //face the victim
 			affecting.set_dir(SOUTH) //face up  //This is an example of a new feature based on the context of the location of the victim.
-			*/									//It means that upgrading while someone is lying on the ground would cause you to go into pin mode.
+												//It means that upgrading while someone is lying on the ground would cause you to go into pin mode.
 		state = GRAB_AGGRESSIVE
 		icon_state = "grabbed1"
 		hud.icon_state = "reinforce1"
@@ -317,10 +334,10 @@
 			var/mob/living/carbon/human/attacker = assailant
 			switch(assailant.a_intent)
 				if(I_HELP)
-					/*if(force_down)
+					if(force_down)
 						assailant << "<span class='warning'>You no longer pin [affecting] to the ground.</span>"
 						force_down = 0
-						return*///This is a very basic demonstration of a new feature based on attacking someone with the grab, based on intent.
+						return//This is a very basic demonstration of a new feature based on attacking someone with the grab, based on intent.
 								//This specific example would allow you to stop pinning people to the floor without moving away from them.
 					return
 
@@ -368,7 +385,7 @@
 															//This specific example would allow you to squish people's eyes with a GRAB_NECK.
 
 				if(I_DISARM) //This checks that the user is on disarm intent.
-				/*	if(state < GRAB_AGGRESSIVE)
+					if(state < GRAB_AGGRESSIVE)
 						assailant << "<span class='warning'>You require a better grab to do this.</span>"
 						return
 					if(!force_down)
@@ -382,25 +399,38 @@
 						return
 					else
 						assailant << "<span class='warning'>You are already pinning [affecting] to the ground.</span>"
-						return*///This is an example of something being done with an agressive grab + disarm intent.
+						return//This is an example of something being done with an agressive grab + disarm intent.
 					return
 
 
+
 	if(M == assailant && state >= GRAB_AGGRESSIVE) //no eatin unless you have an agressive grab
-		if(checkvalid(user, affecting)) //wut
+		if(check_valid(user, affecting)) //wut
+
 			var/mob/living/carbon/attacker = user
-			user.visible_message("<span class='danger'>[user] is attempting to devour \the [affecting]!</span>")
 
-			if(!do_after(user, checktime(user, affecting), target = affecting)) return
+			var/dev_verb = check_devour_verb(attacker, affecting)
+			var/extra = check_extra_message(attacker, affecting)
+			var/endloc = check_end_location(attacker, affecting)
 
-			user.visible_message("<span class='danger'>[user] devours \the [affecting]!</span>")
+			user.visible_message("<span class='danger'>[user] is attempting to [dev_verb] \the [affecting][extra]</span>")
 
-			affecting.loc = user
-			attacker.stomach_contents.Add(affecting)
+			if(!do_after(user, check_time(user, affecting))) return
+
+			user.visible_message("<span class='danger'>[user] [dev_verb]s \the [affecting][extra]</span>")
+
+
+			affecting.loc = user //add the mob to the user
+			switch(endloc)
+				if("slime")
+					attacker.slime_contents.Add(affecting) //list keeping
+				if("stomach")
+					attacker.stomach_contents.Add(affecting) //list keeping
+
 			qdel(src)
 
-/obj/item/weapon/grab/proc/checkvalid(var/mob/attacker, var/mob/prey) //does all the checking for the attack proc to see if a mob can eat another with the grab
-	if(ishuman(attacker) && (FAT in attacker.mutations) && iscarbon(prey) && !isalien(prey)) //Fat people eating carbon mobs but not xenos
+/obj/item/weapon/grab/proc/check_valid(var/mob/attacker, var/mob/prey) //does all the checking for the attack proc to see if a mob can eat another with the grab
+	if(ishuman(attacker) && (FAT in attacker.mutations) && iscarbon(prey)) //Fat people eating carbon mobs
 		return 1
 
 	if(isalien(attacker) && iscarbon(prey)) //Xenomorphs eating carbon mobs
@@ -412,9 +442,12 @@
 	if(ishuman(attacker) && attacker.get_species() == "Tajaran"  && istype(prey,/mob/living/simple_animal/mouse)) //Tajaran eating mice. Meow!
 		return 1
 
+	if(ishuman(attacker) && attacker.get_species() == "Slime People" && iscarbon(prey))
+		return 1
+
 	return 0
 
-/obj/item/weapon/grab/proc/checktime(var/mob/attacker, var/mob/prey) //Returns the time the attacker has to wait before they eat the prey
+/obj/item/weapon/grab/proc/check_time(var/mob/attacker, var/mob/prey) //Returns the time the attacker has to wait before they eat the prey
 	if(isalien(attacker))
 		return EAT_TIME_XENO //xenos get a speed boost
 
@@ -422,6 +455,27 @@
 		return EAT_TIME_MOUSE
 
 	return EAT_TIME_FAT //if it doesn't fit into the above, it's probably a fat guy, take EAT_TIME_FAT to do it
+
+/obj/item/weapon/grab/proc/check_devour_verb(var/mob/attacker, var/mob/prey)
+	if(ishumanslime(attacker))
+		return "coat"
+
+	else
+		return "devour"
+
+/obj/item/weapon/grab/proc/check_extra_message(var/mob/attacker, var/mob/prey)
+	if(ishumanslime(attacker))
+		return " in their slime!"
+
+	else
+		return "!"
+
+/obj/item/weapon/grab/proc/check_end_location(var/mob/attacker, var/mob/prey)
+	if(ishumanslime(attacker))
+		return "slime"
+
+	else
+		return "stomach"
 
 /obj/item/weapon/grab/dropped()
 	qdel(src)

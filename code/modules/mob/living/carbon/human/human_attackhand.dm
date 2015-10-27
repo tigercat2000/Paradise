@@ -7,6 +7,10 @@
 		M << "\red Do not touch Admin-Frozen people."
 		return
 
+	if(M.loc == src) //lolno
+		M << "<span class='warning'>That's not going to work. Find a weapon.</span>"
+		return 0
+
 	var/mob/living/carbon/human/H = M
 	if(istype(H))
 		var/obj/item/organ/external/temp = H.organs_by_name["r_hand"]

@@ -10,7 +10,7 @@
 #define DEBUG
 // END_PREFERENCES
 // BEGIN_INCLUDE
-#include "_maps\cyberiad.dm"
+#include "_maps\LarkensMeteorHideout.dm"
 #include "code\_compile_options.dm"
 #include "code\hub.dm"
 #include "code\stylesheet.dm"
@@ -537,6 +537,11 @@
 #include "code\game\machinery\kitchen\monkeyrecycler.dm"
 #include "code\game\machinery\kitchen\processor.dm"
 #include "code\game\machinery\kitchen\smartfridge.dm"
+#include "code\game\machinery\larkens\larkens.dm"
+#include "code\game\machinery\larkens\machines\compresser.dm"
+#include "code\game\machinery\larkens\machines\larkensautostripper.dm"
+#include "code\game\machinery\larkens\machines\larkensgibber.dm"
+#include "code\game\machinery\larkens\machines\oven.dm"
 #include "code\game\machinery\pipe\construction.dm"
 #include "code\game\machinery\pipe\pipe_dispenser.dm"
 #include "code\game\machinery\telecomms\broadcaster.dm"
@@ -1325,6 +1330,7 @@
 #include "code\modules\mob\living\carbon\brain\emote.dm"
 #include "code\modules\mob\living\carbon\brain\life.dm"
 #include "code\modules\mob\living\carbon\brain\login.dm"
+#include "code\modules\mob\living\carbon\brain\MaMI.dm"
 #include "code\modules\mob\living\carbon\brain\MMI.dm"
 #include "code\modules\mob\living\carbon\brain\posibrain.dm"
 #include "code\modules\mob\living\carbon\brain\say.dm"

@@ -5,6 +5,7 @@
 	anchored = 1.0
 	density = 1
 	var/moving = 0
+	var/jumped = 0
 	var/datum/gas_mixture/air_contents = new()
 
 
@@ -49,6 +50,11 @@
 		for(var/obj/structure/transit_tube/tube in loc)
 			if(tube.has_exit(dir))
 				current_tube = tube
+				break
+
+			if(jumped)//huehuehue
+				current_tube = tube
+				jumped = 0
 				break
 
 		while(current_tube)

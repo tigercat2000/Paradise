@@ -12,7 +12,9 @@
 /obj/machinery/mineral/stacking_unit_console/New()
 	..()
 	spawn(7)
-		src.machine = locate(/obj/machinery/mineral/stacking_machine, get_step(src, machinedir))
+		for(var/obj/machinery/mineral/stacking_machine/SM in orange(5,src))
+			src.machine = SM
+			break
 		if (machine)
 			machine.CONSOLE = src
 		else
