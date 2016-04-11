@@ -118,3 +118,30 @@
 				/obj/item/weapon/relic = 3,
 				"" = 11
 				)
+
+/obj/effect/spawner/lootdrop/science
+	name = "science loot spawner"
+
+	loot = list(
+				/obj/item/clothing/gloves/color/latex = 2,
+				/obj/item/stack/cable_coil{amount = 10} = 5,
+				/obj/item/stack/cable_coil{amount = 20} = 3,
+				/obj/item/stack/cable_coil{amount = 30} = 1,
+				/obj/item/weapon/pen = 4,
+				/obj/item/weapon/hand_labeler = 2,
+				/obj/item/stack/sheet/metal{amount = 20} = 5,
+				/obj/item/stack/sheet/metal{amount = 50} = 1,
+				/obj/item/stack/sheet/glass{amount = 20} = 5,
+				/obj/item/stack/sheet/glass{amount = 50} = 1,
+				/obj/item/stack/rods{amount = 10} = 5,
+				/obj/item/stack/rods{amount = 23} = 3,
+				/obj/item/stack/rods{amount = 50} = 1,
+				/obj/item/weapon/clipboard = 4,
+				/obj/item/weapon/stock_parts/cell/high/empty = 4,
+				/obj/item/weapon/stock_parts/cell/high = 2,
+				/obj/item/weapon/stock_parts/matter_bin = 2,
+				/obj/item/weapon/stock_parts/manipulator = 2,
+				/obj/item/weapon/stock_parts/micro_laser = 2,
+				/obj/item/weapon/stock_parts/capacitor = 2,
+				/obj/item/clothing/glasses/science = 2
+				)

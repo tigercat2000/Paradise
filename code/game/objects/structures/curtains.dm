@@ -58,5 +58,8 @@
 /obj/structure/curtain/open/shower/centcom
 	color = "#000066"
 
+/obj/structure/curtain/open/shower/science
+	color = "#BEA2BA"
+
 #undef SHOWER_OPEN_LAYER
 #undef SHOWER_CLOSED_LAYER

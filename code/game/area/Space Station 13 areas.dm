@@ -2315,6 +2315,48 @@ area/security/podbay
 	name = "\improper Telecoms Power Control"
 	icon_state = "tcomsatwest"
 
+// Engi/Sci Satellite
+/area/engiscisat
+
+/area/engiscisat/primary
+	name = "\improper EngiSci Sat Primary Hallway"
+	icon_state = "engiscisat_prim"
+
+/area/engiscisat/cafeteria
+	name = "\improper EngiSci Sat Cafeteria"
+	icon_state = "engiscisat_cafe"
+
+/area/engiscisat/science/primary
+	name = "\improper EngiSci Sat Science Primary Hallway"
+	icon_state = "engiscisat_sci_prim"
+/area/engiscisat/science/bathroom
+	name = "\improper EngiSci Sat Science Bathroom"
+	icon_state = "engiscisat_sci_bath"
+
+/area/engiscisat/engineering/primary
+	name = "\improper EngiSci Sat Engineering Primary Hallway"
+	icon_state = "engiscisat_eng_prim"
+/area/engiscisat/engineering/bathroom
+	name = "\improper EngiSci Sat Engineering Bathroom"
+	icon_state = "engiscisat_eng_bath"
+/area/engiscisat/engineering/drivers
+	name = "\improper EngiSci Sat Engineering Construction Access"
+	icon_state = "engiscisat_eng_mass"
+/area/engiscisat/engineering/solars
+	name = "\improper EngiSci Sat Solars"
+	icon_state = "engiscisat_eng_solar"
+/area/engiscisat/engineering/equipment
+	name = "\improper EngiSci Sat Engineering Equipment"
+	icon_state = "engiscisat_eng_ee"
+/area/engiscisat/engineering/atmospherics
+	name = "\improper EngiSci Sat Atmospherics"
+	icon_state = "engiscisat_eng_atmos"
+/area/engiscisat/engineering/power_control
+	name = "\improper EngiSci Sat Power Control"
+	icon_state = "engiscisat_eng_power"
+/area/engiscisat/engineering/maint
+	name = "\improper EngiSci Sat Engineering Maintenance"
+
 // Away Missions
 /area/awaymission
 	name = "\improper Strange Location"
