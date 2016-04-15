@@ -2326,36 +2326,81 @@ area/security/podbay
 	name = "\improper EngiSci Sat Cafeteria"
 	icon_state = "engiscisat_cafe"
 
+/area/engiscisat/maint
+	name = "\improper EngiSci Sat Maintenance"
+	icon_state = "engiscisat_maint"
+
+/area/engiscisat/cryo
+	name = "\improper EngiSci Sat Cryodorms"
+	icon_state = "engiscisat_cryo"
+
+/area/engiscisat/observ
+	name = "\improper EngiSci Sat Observation Lounge"
+	icon_state = "engiscisat_cafe"
+
 /area/engiscisat/science/primary
 	name = "\improper EngiSci Sat Science Primary Hallway"
 	icon_state = "engiscisat_sci_prim"
+
 /area/engiscisat/science/bathroom
 	name = "\improper EngiSci Sat Science Bathroom"
 	icon_state = "engiscisat_sci_bath"
 
+/area/engiscisat/science/supply
+	name = "\improper EngiSci Sat Science Supply Room"
+	icon_state = "engiscisat_sci_ee"
+
+/area/engiscisat/science/rd
+	name = "\improper EngiSci Sat Science Research Room"
+	icon_state = "engiscisat_sci_rd"
+
+/area/engiscisat/science/robo
+	name = "\improper EngiSci Sat Science Robotics"
+	icon_state = "engiscisat_sci_robo"
+
+/area/engiscisat/science/dorm
+	name = "\improper EngiSci Sat Science Dorms"
+	icon_state = "engiscisat_sci_dorm"
+
+/area/engiscisat/science/maint
+	name = "\improper EngiSci Sat Science Maintenance"
+	icon_state = "engiscisat_sci_maint"
+
 /area/engiscisat/engineering/primary
 	name = "\improper EngiSci Sat Engineering Primary Hallway"
 	icon_state = "engiscisat_eng_prim"
+
 /area/engiscisat/engineering/bathroom
 	name = "\improper EngiSci Sat Engineering Bathroom"
 	icon_state = "engiscisat_eng_bath"
+
 /area/engiscisat/engineering/drivers
 	name = "\improper EngiSci Sat Engineering Construction Access"
 	icon_state = "engiscisat_eng_mass"
+
 /area/engiscisat/engineering/solars
 	name = "\improper EngiSci Sat Solars"
 	icon_state = "engiscisat_eng_solar"
+
 /area/engiscisat/engineering/equipment
 	name = "\improper EngiSci Sat Engineering Equipment"
 	icon_state = "engiscisat_eng_ee"
+
 /area/engiscisat/engineering/atmospherics
 	name = "\improper EngiSci Sat Atmospherics"
 	icon_state = "engiscisat_eng_atmos"
+
 /area/engiscisat/engineering/power_control
 	name = "\improper EngiSci Sat Power Control"
 	icon_state = "engiscisat_eng_power"
+
+/area/engiscisat/engineering/dorms
+	name = "\improper EngiSci Sat Engineering Dorms"
+	icon_state = "engiscisat_eng_dorm"
+
 /area/engiscisat/engineering/maint
 	name = "\improper EngiSci Sat Engineering Maintenance"
+	icon_state = "engiscisat_eng_maint"
 
 // Away Missions
 /area/awaymission
