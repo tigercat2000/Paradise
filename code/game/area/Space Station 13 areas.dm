@@ -2338,6 +2338,14 @@ area/security/podbay
 	name = "\improper EngiSci Sat Observation Lounge"
 	icon_state = "engiscisat_cafe"
 
+/area/engiscisat/podbay
+	name = "\improper EngiSci Sat Podbay"
+	icon_state = "engiscisat_pod"
+
+/area/engiscisat/medbay
+	name = "\improper EngiSci Sat Medbay"
+	icon_state = "engiscisat_med"
+
 /area/engiscisat/science/primary
 	name = "\improper EngiSci Sat Science Primary Hallway"
 	icon_state = "engiscisat_sci_prim"
