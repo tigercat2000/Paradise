@@ -20,6 +20,7 @@
 	flying = 1
 	universal_speak = 1
 	var/list/construct_spells = list()
+	loot = list(/obj/item/weapon/reagent_containers/food/snacks/ectoplasm)
 
 /mob/living/simple_animal/construct/New()
 	..()
@@ -31,7 +32,6 @@
 
 /mob/living/simple_animal/construct/death()
 	..()
-	new /obj/item/weapon/reagent_containers/food/snacks/ectoplasm (src.loc)
 	for(var/mob/M in viewers(src, null))
 		if((M.client && !( M.blinded )))
 			M.show_message("\red [src] collapses in a shattered heap. ")
@@ -40,9 +40,10 @@
 	return
 
 /mob/living/simple_animal/construct/examine(mob/user)
+	to_chat(user, "<span class='info'>*---------*</span>")
 	..(user)
 
-	var/msg = ""
+	var/msg = "<span class='info'>"
 	if (src.health < src.maxHealth)
 		msg += "<span class='warning'>"
 		if (src.health >= src.maxHealth/2)

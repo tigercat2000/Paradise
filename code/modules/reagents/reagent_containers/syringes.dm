@@ -8,7 +8,7 @@
 /obj/item/weapon/reagent_containers/syringe
 	name = "Syringe"
 	desc = "A syringe."
-	icon = 'icons/obj/syringe.dmi'
+	icon = 'icons/goonstation/objects/syringe.dmi'
 	item_state = "syringe_0"
 	icon_state = "0"
 	amount_per_transfer_from_this = 5
@@ -17,6 +17,7 @@
 	w_class = 1
 	sharp = 1
 	var/mode = SYRINGE_DRAW
+	var/projectile_type = /obj/item/projectile/bullet/dart/syringe
 
 /obj/item/weapon/reagent_containers/syringe/on_reagent_change()
 	update_icon()
@@ -96,14 +97,12 @@
 						return
 
 
-					var/time = 30 //Injecting through a hardsuit takes longer due to needing to find a port.
+					var/time = 30
 					if(istype(target,/mob/living/carbon/human))
 						var/mob/living/carbon/human/H = T
 						if(H.species.flags & NO_BLOOD)
 							to_chat(usr, "<span class='warning'>You are unable to locate any blood.</span>")
 							return
-						if(H.wear_suit && istype(H.wear_suit,/obj/item/clothing/suit/space))
-							time = 60
 					if(target == user)
 						time = 0
 					else
@@ -185,18 +184,10 @@
 					return */
 
 			if(ismob(target) && target != user)
-				var/time = 30 //Injecting through a hardsuit takes longer due to needing to find a port.
-				if(istype(target,/mob/living/carbon/human))
-					if(H.wear_suit && istype(H.wear_suit,/obj/item/clothing/suit/space))
-						time = 60
-
 				for(var/mob/O in viewers(world.view, user))
-					if(time == 30)
-						O.show_message(text("\red <B>[] is trying to inject []!</B>", user, target), 1)
-					else
-						O.show_message(text("\red <B>[] begins hunting for an injection port on []'s suit!</B>", user, target), 1)
+					O.show_message(text("\red <B>[] is trying to inject []!</B>", user, target), 1)
 
-				if(!do_mob(user, target, time)) return
+				if(!do_mob(user, target, 30)) return
 
 				for(var/mob/O in viewers(world.view, user))
 					O.show_message(text("\red [] injects [] with the syringe!", user, target), 1)
@@ -228,7 +219,7 @@
 						if(reagents.has_reagent(bad_reagent))
 							badshit += reagents_to_log[bad_reagent]
 					if(badshit.len)
-						var/hl="\red <b>([english_list(badshit)])</b> \black"
+						var/hl = "<span class='danger'>([english_list(badshit)])</span>"
 						message_admins("[key_name_admin(user)] added [reagents.get_reagent_ids(1)] to \a [target] with [src].[hl] ")
 						log_game("[key_name(user)] added [reagents.get_reagent_ids(1)] to \a [target] with [src].")
 
@@ -257,6 +248,12 @@
 				else
 					trans = src.reagents.trans_to(target, amount_per_transfer_from_this)
 					to_chat(user, "\blue You inject [trans] units of the solution. The syringe now contains [src.reagents.total_volume] units.")
+					if(istype(target, /obj/item/weapon/reagent_containers/food/pill/patch))
+						var/obj/item/weapon/reagent_containers/food/pill/patch/P = target
+						if(P.instant_application)
+							to_chat(user, "<span class=warning>You break the medical seal on the [P]!</span>")
+							P.instant_application = 0
+
 				if (reagents.total_volume <= 0 && mode==SYRINGE_INJECT)
 					mode = SYRINGE_DRAW
 					update_icon()
@@ -346,7 +343,7 @@
 /obj/item/weapon/reagent_containers/ld50_syringe
 	name = "Lethal Injection Syringe"
 	desc = "A syringe used for lethal injections."
-	icon = 'icons/obj/syringe.dmi'
+	icon = 'icons/goonstation/objects/syringe.dmi'
 	item_state = "syringe_0"
 	icon_state = "0"
 	amount_per_transfer_from_this = 50

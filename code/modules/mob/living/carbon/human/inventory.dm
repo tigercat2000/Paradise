@@ -145,6 +145,7 @@
 		if(I.flags & BLOCKHAIR || I.flags & BLOCKHEADHAIR)
 			update_hair()	//rebuild hair
 			update_fhair()
+			update_head_accessory()
 		update_inv_head()
 	else if(I == r_ear)
 		r_ear = null
@@ -163,6 +164,7 @@
 		if(I.flags & BLOCKHAIR || I.flags & BLOCKHEADHAIR)
 			update_hair()	//rebuild hair
 			update_fhair()
+			update_head_accessory()
 		if(internal)
 			if(internals)
 				internals.icon_state = "internal0"
@@ -216,6 +218,7 @@
 	W.loc = src
 	W.equipped(src, slot)
 	W.layer = 20
+	W.plane = HUD_PLANE
 
 	switch(slot)
 		if(slot_back)
@@ -225,6 +228,8 @@
 			wear_mask = W
 			if((wear_mask.flags & BLOCKHAIR) || (wear_mask.flags & BLOCKHEADHAIR))
 				update_hair(redraw_mob)	//rebuild hair
+				update_fhair(redraw_mob)
+				update_head_accessory(redraw_mob)
 			sec_hud_set_ID()
 			update_inv_wear_mask(redraw_mob)
 		if(slot_handcuffed)
@@ -256,6 +261,7 @@
 				O.loc = src
 				r_ear = O
 				O.layer = 20
+				O.plane = HUD_PLANE
 			update_inv_ears(redraw_mob)
 		if(slot_r_ear)
 			r_ear = W
@@ -264,6 +270,7 @@
 				O.loc = src
 				l_ear = O
 				O.layer = 20
+				O.plane = HUD_PLANE
 			update_inv_ears(redraw_mob)
 		if(slot_glasses)
 			glasses = W
@@ -275,6 +282,8 @@
 			head = W
 			if((head.flags & BLOCKHAIR) || (head.flags & BLOCKHEADHAIR))
 				update_hair(redraw_mob)	//rebuild hair
+				update_fhair(redraw_mob)
+				update_head_accessory(redraw_mob)
 			update_inv_head(redraw_mob)
 		if(slot_shoes)
 			shoes = W

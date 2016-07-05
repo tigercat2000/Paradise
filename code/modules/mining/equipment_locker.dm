@@ -49,11 +49,11 @@
 	var/point_upgrade_temp = 1
 	var/sheet_per_ore_temp = 1
 	for(var/obj/item/weapon/stock_parts/matter_bin/B in component_parts)
-		sheet_per_ore_temp = B.rating
+		sheet_per_ore_temp = 0.65 + (0.35 * B.rating)
 	for(var/obj/item/weapon/stock_parts/manipulator/M in component_parts)
 		ore_pickup_rate_temp = 15 * M.rating
 	for(var/obj/item/weapon/stock_parts/micro_laser/L in component_parts)
-		point_upgrade_temp = L.rating
+		point_upgrade_temp = 0.65 + (0.35 * L.rating)
 	ore_pickup_rate = ore_pickup_rate_temp
 	point_upgrade = point_upgrade_temp
 	sheet_per_ore = sheet_per_ore_temp
@@ -225,7 +225,7 @@
 			var/obj/item/stack/sheet/inp = stack_list[text2path(href_list["release"])]
 			var/obj/item/stack/sheet/out = new inp.type()
 			var/desired = input("How much?", "How much to eject?", 1) as num
-			out.amount = min(desired,50,inp.amount)
+			out.amount = round(min(desired,50,inp.amount))
 			if(out.amount >= 1)
 				inp.amount -= out.amount
 				unload_mineral(out)
@@ -242,7 +242,7 @@
 
 			var/desired = input("How much?", "How much would you like to smelt?", 1) as num
 			var/obj/item/stack/sheet/plasteel/plasteelout = new
-			plasteelout.amount = min(desired,50,metalstack.amount,plasmastack.amount)
+			plasteelout.amount = round(min(desired,50,metalstack.amount,plasmastack.amount))
 			if(plasteelout.amount >= 1)
 				metalstack.amount -= plasteelout.amount
 				plasmastack.amount -= plasteelout.amount
@@ -258,7 +258,7 @@
 
 			var/desired = input("How much?", "How much would you like to smelt?", 1) as num
 			var/obj/item/stack/sheet/plasmaglass/plasglassout = new
-			plasglassout.amount = min(desired, 50, glassstack.amount, plasmastack.amount)
+			plasglassout.amount = round(min(desired, 50, glassstack.amount, plasmastack.amount))
 			if(plasglassout.amount >= 1)
 				glassstack.amount -= plasglassout.amount
 				plasmastack.amount -= plasglassout.amount
@@ -292,6 +292,7 @@
 			s.use(s.max_amount)
 		s.forceMove(loc)
 		s.layer = initial(s.layer)
+		s.plane = initial(s.plane)
 
 /obj/machinery/mineral/ore_redemption/power_change()
 	..()
@@ -326,6 +327,10 @@
 		new /datum/data/mining_equipment("Advanced Scanner",	/obj/item/device/t_scanner/adv_mining_scanner,                     400),
 		new /datum/data/mining_equipment("Hivelord Stabilizer",	/obj/item/weapon/hivelordstabilizer,                               400),
 		new /datum/data/mining_equipment("Mining Drone",        /obj/item/weapon/mining_drone_cube,                                500),
+		new /datum/data/mining_equipment("Drone Melee Upgrade", /obj/item/device/mine_bot_ugprade,      			   			   400),
+		new /datum/data/mining_equipment("Drone Health Upgrade",/obj/item/device/mine_bot_ugprade/health,      			   	       400),
+		new /datum/data/mining_equipment("Drone Ranged Upgrade",/obj/item/device/mine_bot_ugprade/cooldown,      			   	   600),
+		new /datum/data/mining_equipment("Drone AI Upgrade",    /obj/item/slimepotion/sentience/mining,      			   	      1000),
 		new /datum/data/mining_equipment("GAR mesons",			/obj/item/clothing/glasses/meson/gar,							   500),
 		new /datum/data/mining_equipment("Brute First-Aid Kit",	/obj/item/weapon/storage/firstaid/brute,						   600),
 		new /datum/data/mining_equipment("Jaunter",             /obj/item/device/wormhole_jaunter,                                 600),
@@ -708,9 +713,11 @@
 	melee_damage_lower = 15
 	melee_damage_upper = 15
 	environment_smash = 0
+	check_friendly_fire = 1
 	attacktext = "drills"
 	attack_sound = 'sound/weapons/circsawhit.ogg'
 	ranged = 1
+	sentience_type = SENTIENCE_MINEBOT
 	ranged_message = "shoots"
 	ranged_cooldown_cap = 3
 	projectiletype = /obj/item/projectile/kinetic
@@ -724,13 +731,13 @@
 	if(istype(I, /obj/item/weapon/weldingtool))
 		var/obj/item/weapon/weldingtool/W = I
 		if(W.welding && !stat)
-			if(stance != HOSTILE_STANCE_IDLE)
+			if(FindTarget())//if the bot has anything to shoot at, to prevent combat repair cheesing
 				to_chat(user, "<span class='info'>[src] is moving around too much to repair!</span>")
 				return
 			if(maxHealth == health)
 				to_chat(user, "<span class='info'>[src] is at full integrity.</span>")
 			else
-				health += 10
+				adjustHealth(-10)//actually repairs the bot, not damages it
 				to_chat(user, "<span class='info'>You repair some of the armor on [src].</span>")
 			return
 	if(istype(I, /obj/item/device/mining_scanner) || istype(I, /obj/item/device/t_scanner/adv_mining_scanner))
@@ -805,11 +812,71 @@
 		O.forceMove(loc)
 	return
 
-/mob/living/simple_animal/hostile/mining_drone/adjustBruteLoss()
+/mob/living/simple_animal/hostile/mining_drone/adjustHealth()
 	if(search_objects)
 		SetOffenseBehavior()
 	..()
 
+
+/**********************Minebot Upgrades**********************/
+
+//Melee
+
+/obj/item/device/mine_bot_ugprade
+	name = "minebot melee upgrade"
+	desc = "A minebot upgrade."
+	icon_state = "door_electronics"
+	icon = 'icons/obj/doors/door_assembly.dmi'
+
+/obj/item/device/mine_bot_ugprade/afterattack(mob/living/simple_animal/hostile/mining_drone/M, mob/user)
+	if(!istype(M))
+		return
+	upgrade_bot(M, user)
+
+/obj/item/device/mine_bot_ugprade/proc/upgrade_bot(mob/living/simple_animal/hostile/mining_drone/M, mob/user)
+	if(M.melee_damage_upper != initial(M.melee_damage_upper))
+		to_chat(user, "[M] already has a combat upgrade installed!")
+		return
+	M.melee_damage_lower = 22
+	M.melee_damage_upper = 22
+	to_chat(user, "You upgrade [M]'s combat module.")
+	qdel(src)
+
+//Health
+
+/obj/item/device/mine_bot_ugprade/health
+	name = "minebot chassis upgrade"
+
+/obj/item/device/mine_bot_ugprade/health/upgrade_bot(mob/living/simple_animal/hostile/mining_drone/M, mob/user)
+	if(M.maxHealth != initial(M.maxHealth))
+		to_chat(user, "[M] already has a reinforced chassis!")
+		return
+	M.maxHealth = 170
+	to_chat(user, "You reinforce [M]'s chassis.")
+	qdel(src)
+
+
+//Cooldown
+
+/obj/item/device/mine_bot_ugprade/cooldown
+	name = "minebot cooldown upgrade"
+
+/obj/item/device/mine_bot_ugprade/cooldown/upgrade_bot(mob/living/simple_animal/hostile/mining_drone/M, mob/user)
+	if(M.ranged_cooldown_cap != initial(M.ranged_cooldown_cap))
+		to_chat(user, "[M] already has a decreased weapon cooldown!")
+		return
+	M.ranged_cooldown_cap = 1
+	to_chat(user, "You upgrade [M]'s ranged weaponry, reducing its cooldown.")
+	qdel(src)
+
+
+//AI
+/obj/item/slimepotion/sentience/mining
+	name = "minebot AI upgrade"
+	desc = "Can be used to grant sentience to minebots."
+	icon_state = "door_electronics"
+	icon = 'icons/obj/doors/door_assembly.dmi'
+	sentience_type = SENTIENCE_MINEBOT
 
 /**********************Mining drone kit**********************/
 
@@ -831,7 +898,7 @@
 /obj/item/weapon/lazarus_injector
 	name = "lazarus injector"
 	desc = "An injector with a cocktail of nanomachines and chemicals, this device can seemingly raise animals from the dead, making them become friendly to the user. Unfortunately, the process is useless on higher forms of life and incredibly costly, so these were hidden in storage until an executive thought they'd be great motivation for some of their employees."
-	icon = 'icons/obj/syringe.dmi'
+	icon = 'icons/obj/hypo.dmi'
 	icon_state = "lazarus_hypo"
 	item_state = "hypo"
 	throwforce = 0
@@ -850,6 +917,7 @@
 			if(M.stat == DEAD)
 				M.faction = list("neutral")
 				M.revive()
+				M.can_collar = 1
 				if(istype(target, /mob/living/simple_animal/hostile))
 					var/mob/living/simple_animal/hostile/H = M
 					if(malfunctioning)

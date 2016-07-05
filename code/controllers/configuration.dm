@@ -68,6 +68,8 @@
 	var/assistantlimit = 0 //enables assistant limiting
 	var/assistantratio = 2 //how many assistants to security members
 
+	var/traitor_objectives_amount = 2
+
 	var/max_maint_drones = 5				//This many drones can spawn,
 	var/allow_drone_spawn = 1				//assuming the admin allow them to.
 	var/drone_build_time = 1200				//A drone will become available every X ticks since last drone spawn. Default is 2 minutes.
@@ -174,6 +176,8 @@
 
 	var/disable_lobby_music = 0 // Disables the lobby music
 	var/disable_cid_warn_popup = 0 //disables the annoying "You have already logged in this round, disconnect or be banned" popup, because it annoys the shit out of me when testing.
+
+	var/max_loadout_points = 5 // How many points can be spent on extra items in character setup
 
 /datum/configuration/New()
 	var/list/L = subtypesof(/datum/game_mode)
@@ -550,6 +554,9 @@
 				if("disable_cid_warn_popup")
 					config.disable_cid_warn_popup = 1
 
+				if("max_loadout_points")
+					config.max_loadout_points = text2num(value)
+
 				else
 					diary << "Unknown setting in configuration: '[name]'"
 
@@ -598,6 +605,8 @@
 					config.limbs_can_break = value
 				if("shuttle_refuel_delay")
 					config.shuttle_refuel_delay     = text2num(value)
+				if("traitor_objectives_amount")
+					config.traitor_objectives_amount = text2num(value)
 				if("reactionary_explosions")
 					config.reactionary_explosions	= 1
 				if("bombcap")

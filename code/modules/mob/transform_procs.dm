@@ -28,7 +28,7 @@
 
 /mob/proc/AIize()
 	if(client)
-		to_chat(src, sound(null, repeat = 0, wait = 0, volume = 85, channel = 1))// stop the jams for AIs
+		src << sound(null, repeat = 0, wait = 0, volume = 85, channel = 1)// stop the jams for AIs
 
 	var/mob/living/silicon/ai/O = new (loc,,,1)//No MMI but safety is in effect.
 	O.invisibility = 0
@@ -319,6 +319,35 @@
 
 	qdel(src)
 
+
+/mob/living/carbon/human/proc/paize(var/name)
+	if(notransform)
+		return
+	for(var/obj/item/W in src)
+		unEquip(W)
+	regenerate_icons()
+	notransform = 1
+	canmove = 0
+	icon = null
+	invisibility = 101
+	for(var/t in organs)	//this really should not be necessary
+		qdel(t)
+
+	var/obj/item/device/paicard/card = new(loc)
+	var/mob/living/silicon/pai/pai = new(card)
+	pai.key = key
+	card.setPersonality(pai)
+
+	pai.name = name
+	pai.real_name = name
+	card.name = name
+
+	to_chat(pai, "<B>You have become a pAI! Your name is [pai.name].</B>")
+	pai.update_pipe_vision()
+	spawn(0)//To prevent the proc from returning null.
+		qdel(src)
+	return
+
 /mob/proc/safe_respawn(var/MP)
 	if(!MP)
 		return 0
@@ -346,10 +375,10 @@
 	if(ispath(MP, /mob/living/simple_animal/butterfly))
 		return 1
 
-	if(ispath(MP, /mob/living/simple_animal/borer) && !jobban_isbanned(src, "alien") && !jobban_isbanned(src, "Syndicate"))
+	if(ispath(MP, /mob/living/simple_animal/borer) && !jobban_isbanned(src, ROLE_BORER) && !jobban_isbanned(src, "Syndicate"))
 		return 1
 
-	if(ispath(MP, /mob/living/simple_animal/diona) && !jobban_isbanned(src, "Dionaea"))
+	if(ispath(MP, /mob/living/simple_animal/diona) && !jobban_isbanned(src, ROLE_NYMPH))
 		return 1
 
 	return 0

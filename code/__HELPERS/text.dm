@@ -208,6 +208,14 @@ proc/checkhtml(var/t)
 		t = replacetext(t, char, repl_chars[char])
 	return t
 
+//Strips the first char and returns it and the new string as a list
+/proc/strip_first(t)
+	return list(copytext(t, 1, 2), copytext(t, 2, 0))
+
+//Strips the last char and returns it and the new string as a list
+/proc/strip_last(t)
+	return list(copytext(t, 1, length(t)), copytext(t, length(t)))
+
 //Adds 'u' number of zeros ahead of the text 't'
 /proc/add_zero(t, u)
 	while (length(t) < u)
@@ -364,3 +372,21 @@ proc/checkhtml(var/t)
 //this is a problem of double-encode(when & becomes &amp;), use sanitize() with encode=0, but not the sanitizeSafe()!
 /proc/sanitizeSafe(var/input, var/max_length = MAX_MESSAGE_LEN, var/encode = 1, var/trim = 1, var/extra = 1)
 	return sanitize(replace_characters(input, list(">"=" ","<"=" ", "\""="'")), max_length, encode, trim, extra)
+
+
+//Replaces \red \blue \green \b etc with span classes for to_chat
+/proc/replace_text_macro(match, code, rest)
+    var/regex/text_macro = new("(\\xFF.)(.*)$")
+    switch(code)
+        if("\red")
+            return "<span class='warning'>[text_macro.Replace(rest, /proc/replace_text_macro)]</span>"
+        if("\blue", "\green")
+            return "<span class='notice'>[text_macro.Replace(rest, /proc/replace_text_macro)]</span>"
+        if("\b")
+            return "<b>[text_macro.Replace(rest, /proc/replace_text_macro)]</b>"
+        else
+            return text_macro.Replace(rest, /proc/replace_text_macro)
+
+/proc/macro2html(text)
+    var/static/regex/text_macro = new("(\\xFF.)(.*)$")
+    return text_macro.Replace(text, /proc/replace_text_macro)

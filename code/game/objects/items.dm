@@ -31,7 +31,7 @@
 
 	//If this is set, The item will make an action button on the player's HUD when picked up.
 	var/action_button_name //It is also the text which gets displayed on the action button. If not set it defaults to 'Use [name]'. If it's not set, there'll be no button.
-	var/action_button_is_hands_free = 0 //If 1, bypass the restrained, lying, and stunned checks action buttons normally test for
+	var/action_button_custom_type = null
 	var/datum/action/item_action/action = null
 
 	var/list/materials = list()
@@ -44,7 +44,7 @@
 	var/permeability_coefficient = 1 // for chemicals/diseases
 	var/siemens_coefficient = 1 // for electrical admittance/conductance (electrocution checks and shit)
 	var/slowdown = 0 // How much clothing is slowing you down. Negative values speeds you up
-	var/armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
+	var/armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0)
 	var/armour_penetration = 0 //percentage of armour effectiveness to remove
 	var/list/allowed = null //suit storage stuff.
 	var/obj/item/device/uplink/hidden/hidden_uplink = null // All items can have an uplink hidden inside, just remember to add the triggers.
@@ -53,6 +53,7 @@
 
 	var/strip_delay = DEFAULT_ITEM_STRIP_DELAY
 	var/put_on_delay = DEFAULT_ITEM_PUTON_DELAY
+	var/breakouttime = 0
 
 	/* Species-specific sprites, concept stolen from Paradise//vg/.
 	ex:

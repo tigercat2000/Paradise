@@ -1,8 +1,7 @@
 /datum/game_mode/wizard/raginmages
 	name = "ragin' mages"
 	config_tag = "raginmages"
-	required_players = 1
-	required_players_secret = 15
+	required_players = 20
 	use_huds = 1
 	var/max_mages = 0
 	var/making_mage = 0
@@ -15,7 +14,7 @@
 
 /datum/game_mode/wizard/raginmages/announce()
 	to_chat(world, "<B>The current game mode is - Ragin' Mages!</B>")
-	to_chat(world, "<B>The \red Space Wizard Federation\black is pissed, help defeat all the space wizards!</B>")
+	to_chat(world, "<B>The <font color='red'>Space Wizard Federation</font> is pissed, help defeat all the space wizards!</B>")
 
 
 /datum/game_mode/wizard/raginmages/greet_wizard(var/datum/mind/wizard, var/you_are=1)
@@ -118,8 +117,6 @@
 /datum/game_mode/wizard/raginmages/proc/make_more_mages()
 
 	if(making_mage || shuttle_master.emergency.mode >= SHUTTLE_ESCAPE)
-		return 0
-	if(mages_made >= max_mages)
 		return 0
 	making_mage = 1
 	var/list/candidates = list()

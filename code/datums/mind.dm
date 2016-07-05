@@ -58,6 +58,7 @@
 	var/datum/changeling/changeling		//changeling holder
 	var/datum/vampire/vampire			//vampire holder
 	var/datum/nations/nation			//nation holder
+	var/datum/abductor/abductor			//abductor holder
 
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
@@ -149,9 +150,9 @@
 	if (istype(current, /mob/living/carbon/human))
 		/** Impanted**/
 		if(isloyal(H))
-			text = "Loyalty Implant:<a href='?src=\ref[src];implant=remove'>Remove</a>|<b>Implanted</b></br>"
+			text = "Mindshield Implant:<a href='?src=\ref[src];implant=remove'>Remove</a>|<b>Implanted</b></br>"
 		else
-			text = "Loyalty Implant:<b>No Implant</b>|<a href='?src=\ref[src];implant=add'>Implant him!</a></br>"
+			text = "Mindshield Implant:<b>No Implant</b>|<a href='?src=\ref[src];implant=add'>Implant him!</a></br>"
 		sections["implant"] = text
 		/** REVOLUTION ***/
 		text = "revolution"
@@ -345,6 +346,26 @@
 
 		sections["shadowling"] = text
 
+		/** Abductors **/
+
+		text = "Abductor"
+		if(ticker.mode.config_tag == "abductor")
+			text = uppertext(text)
+		text = "<i><b>[text]</b></i>: "
+		if(src in ticker.mode.abductors)
+			text += "<b>Abductor</b>|<a href='?src=\ref[src];abductor=clear'>human</a>"
+			text += "|<a href='?src=\ref[src];common=undress'>undress</a>|<a href='?src=\ref[src];abductor=equip'>equip</a>"
+		else
+			text += "<a href='?src=\ref[src];abductor=abductor'>Abductor</a>|<b>human</b>"
+
+		if(current && current.client && (ROLE_ABDUCTOR in current.client.prefs.be_special))
+			text += "|Enabled in Prefs"
+		else
+			text += "|Disabled in Prefs"
+
+
+		sections["Abductor"] = text
+
 	/** SILICON ***/
 
 	if (istype(current, /mob/living/silicon))
@@ -464,13 +485,13 @@
 			if(!def_value)//If it's a custom objective, it will be an empty string.
 				def_value = "custom"
 
-		var/new_obj_type = input("Select objective type:", "Objective type", def_value) as null|anything in list("assassinate", "blood", "debrain", "protect", "prevent", "harm", "brig", "hijack", "escape", "survive", "steal", "download", "nuclear", "capture", "absorb", "destroy", "maroon", "identity theft", "custom")
+		var/new_obj_type = input("Select objective type:", "Objective type", def_value) as null|anything in list("assassinate", "blood", "debrain", "protect", "prevent", "brig", "hijack", "escape", "survive", "steal", "download", "nuclear", "capture", "absorb", "destroy", "maroon", "identity theft", "custom")
 		if (!new_obj_type) return
 
 		var/datum/objective/new_objective = null
 
 		switch (new_obj_type)
-			if ("assassinate","protect","debrain", "harm", "brig", "maroon")
+			if ("assassinate","protect","debrain", "brig", "maroon")
 				//To determine what to name the objective in explanation text.
 				var/objective_type_capital = uppertext(copytext(new_obj_type, 1,2))//Capitalize first letter.
 				var/objective_type_text = copytext(new_obj_type, 2)//Leave the rest of the text.
@@ -632,27 +653,27 @@
 					if(I && I.implanted)
 						I.removed(H)
 						qdel(I)
-				to_chat(H, "\blue <Font size =3><B>Your loyalty implant has been deactivated.</B></FONT>")
-				log_admin("[key_name(usr)] has deactivated [key_name(current)]'s loyalty implant")
-				message_admins("[key_name_admin(usr)] has deactivated [key_name_admin(current)]'s loyalty implant")
+				to_chat(H, "\blue <Font size =3><B>Your mindshield implant has been deactivated.</B></FONT>")
+				log_admin("[key_name(usr)] has deactivated [key_name(current)]'s mindshield implant")
+				message_admins("[key_name_admin(usr)] has deactivated [key_name_admin(current)]'s mindshield implant")
 			if("add")
 				var/obj/item/weapon/implant/loyalty/L = new/obj/item/weapon/implant/loyalty(H)
 				L.imp_in = H
 				L.implanted = 1
 				H.sec_hud_set_implants()
 
-				log_admin("[key_name(usr)] has given [key_name(current)] a loyalty implant")
-				message_admins("[key_name_admin(usr)] has given [key_name_admin(current)] a loyalty implant")
+				log_admin("[key_name(usr)] has given [key_name(current)] a mindshield implant")
+				message_admins("[key_name_admin(usr)] has given [key_name_admin(current)] a mindshield implant")
 
-				to_chat(H, "\red <Font size =3><B>You somehow have become the recepient of a loyalty transplant, and it just activated!</B></FONT>")
+				to_chat(H, "\red <Font size =3><B>You somehow have become the recepient of a mindshield transplant, and it just activated!</B></FONT>")
 				if(src in ticker.mode.revolutionaries)
 					special_role = null
 					ticker.mode.revolutionaries -= src
-					to_chat(src, "\red <Font size = 3><B>The nanobots in the loyalty implant remove all thoughts about being a revolutionary.  Get back to work!</B></Font>")
+					to_chat(src, "\red <Font size = 3><B>The nanobots in the mindshield implant remove all thoughts about being a revolutionary.  Get back to work!</B></Font>")
 				if(src in ticker.mode.head_revolutionaries)
 					special_role = null
 					ticker.mode.head_revolutionaries -=src
-					to_chat(src, "\red <Font size = 3><B>The nanobots in the loyalty implant remove all thoughts about being a revolutionary.  Get back to work!</B></Font>")
+					to_chat(src, "\red <Font size = 3><B>The nanobots in the mindshield implant remove all thoughts about being a revolutionary.  Get back to work!</B></Font>")
 				if(src in ticker.mode.cult)
 					ticker.mode.cult -= src
 					ticker.mode.update_cult_icons_removed(src)
@@ -660,7 +681,7 @@
 					var/datum/game_mode/cult/cult = ticker.mode
 					if (istype(cult))
 						cult.memorize_cult_objectives(src)
-					to_chat(current, "\red <FONT size = 3><B>The nanobots in the loyalty implant remove all thoughts about being in a cult.  Have a productive day!</B></FONT>")
+					to_chat(current, "\red <FONT size = 3><B>The nanobots in the mindshield implant remove all thoughts about being in a cult.  Have a productive day!</B></FONT>")
 					memory = ""
 
 	else if (href_list["revolution"])
@@ -771,6 +792,7 @@
 			if("clear")
 				if(src in ticker.mode.cult)
 					ticker.mode.remove_cultist(src)
+					special_role = null
 					log_admin("[key_name(usr)] has de-culted [key_name(current)]")
 					message_admins("[key_name_admin(usr)] has de-culted [key_name_admin(current)]")
 			if("cultist")
@@ -898,6 +920,7 @@
 					if(vampire)
 						vampire.remove_vampire_powers()
 						qdel(vampire)
+						vampire = null
 					ticker.mode.update_vampire_icons_removed(src)
 					to_chat(current, "<FONT color='red' size = 3><B>You grow weak and lose your powers! You are no longer a vampire and are stuck in your current form!</B></FONT>")
 					log_admin("[key_name(usr)] has de-vampired [key_name(current)]")
@@ -1067,6 +1090,28 @@
 				ticker.mode.add_thrall(src)
 				message_admins("[key_name_admin(usr)] has thralled [current].")
 				log_admin("[key_name(usr)] has thralled [current].")
+
+	else if(href_list["abductor"])
+		switch(href_list["abductor"])
+			if("clear")
+				to_chat(usr, "Not implemented yet. Sorry!")
+				//ticker.mode.update_abductor_icons_removed(src)
+			if("abductor")
+				if(!ishuman(current))
+					to_chat(usr, "<span class='warning'>This only works on humans!</span>")
+					return
+				make_Abductor()
+				log_admin("[key_name(usr)] turned [current] into abductor.")
+				ticker.mode.update_abductor_icons_added(src)
+			if("equip")
+				var/gear = alert("Agent or Scientist Gear","Gear","Agent","Scientist")
+				if(gear)
+					var/datum/game_mode/abduction/temp = new
+					temp.equip_common(current)
+					if(gear=="Agent")
+						temp.equip_agent(current)
+					else
+						temp.equip_scientist(current)
 
 	else if (href_list["silicon"])
 		switch(href_list["silicon"])
@@ -1372,6 +1417,57 @@
 //	fail |= !ticker.mode.equip_traitor(current, 1)
 	fail |= !ticker.mode.equip_revolutionary(current)
 
+/datum/mind/proc/make_Abductor()
+	var/role = alert("Abductor Role ?","Role","Agent","Scientist")
+	var/team = input("Abductor Team ?","Team ?") in list(1,2,3,4)
+	var/teleport = alert("Teleport to ship ?","Teleport","Yes","No")
+
+	if(!role || !team || !teleport)
+		return
+
+	if(!ishuman(current))
+		return
+
+	ticker.mode.abductors |= src
+
+	var/datum/objective/experiment/O = new
+	O.owner = src
+	objectives += O
+
+	var/mob/living/carbon/human/H = current
+
+	H.set_species("Abductor")
+
+	switch(role)
+		if("Agent")
+			H.mind.abductor.agent = 1
+		if("Scientist")
+			H.mind.abductor.scientist = 1
+	H.mind.abductor.team = team
+
+	var/list/obj/effect/landmark/abductor/agent_landmarks = new
+	var/list/obj/effect/landmark/abductor/scientist_landmarks = new
+	agent_landmarks.len = 4
+	scientist_landmarks.len = 4
+	for(var/obj/effect/landmark/abductor/A in landmarks_list)
+		if(istype(A,/obj/effect/landmark/abductor/agent))
+			agent_landmarks[text2num(A.team)] = A
+		else if(istype(A,/obj/effect/landmark/abductor/scientist))
+			scientist_landmarks[text2num(A.team)] = A
+
+	var/obj/effect/landmark/L
+	if(teleport=="Yes")
+		switch(role)
+			if("Agent")
+				H.mind.abductor.agent = 1
+				L = agent_landmarks[team]
+				H.loc = L.loc
+			if("Scientist")
+				H.mind.abductor.scientist = 1
+				L = agent_landmarks[team]
+				H.loc = L.loc
+
+
 // check whether this mind's mob has been brigged for the given duration
 // have to call this periodically for the duration to work properly
 /datum/mind/proc/is_brigged(duration)
@@ -1419,6 +1515,19 @@
 			spell.action.background_icon_state = spell.action_background_icon_state
 		spell.action.Grant(new_character)
 	return
+
+/datum/mind/proc/get_ghost(even_if_they_cant_reenter)
+	for(var/mob/dead/observer/G in dead_mob_list)
+		if(G.mind == src)
+			if(G.can_reenter_corpse || even_if_they_cant_reenter)
+				return G
+			break
+
+/datum/mind/proc/grab_ghost(force)
+	var/mob/dead/observer/G = get_ghost(even_if_they_cant_reenter = force)
+	. = G
+	if(G)
+		G.reenter_corpse()
 
 //Initialisation procs
 /mob/proc/mind_initialize()

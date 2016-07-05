@@ -181,7 +181,7 @@
 	if(equipment && equipment.len)
 		to_chat(user, "It's equipped with:")
 		for(var/obj/item/mecha_parts/mecha_equipment/ME in equipment)
-			to_chat(user, "\icon[ME] [ME]")
+			to_chat(user, "[bicon(ME)] [ME]")
 	return
 
 
@@ -219,7 +219,7 @@
 //		return ..()
 */
 
-/obj/mecha/proc/click_action(atom/target,mob/user)
+/obj/mecha/proc/click_action(atom/target, mob/user, params)
 	if(!src.occupant || src.occupant != user ) return
 	if(user.stat || !user.canmove)
 		return
@@ -239,9 +239,9 @@
 			return
 	if(!target.Adjacent(src))
 		if(selected && selected.is_ranged())
-			selected.action(target)
+			selected.action(target, params)
 	else if(selected && selected.is_melee())
-		selected.action(target)
+		selected.action(target, params)
 	else
 		if(internal_damage&MECHA_INT_CONTROL_LOST)
 			target = safepick(oview(1,src))
@@ -458,7 +458,7 @@
 	internal_damage |= int_dam_flag
 	pr_internal_damage.start()
 	log_append_to_last("Internal damage of type [int_dam_flag].",1)
-	to_chat(occupant, sound('sound/machines/warning-buzzer.ogg',wait=0))
+	occupant << sound('sound/machines/warning-buzzer.ogg',wait=0)
 	diag_hud_set_mechstat()
 	return
 
@@ -1015,7 +1015,7 @@
 	icon_state = initial(icon_state)
 	playsound(src, 'sound/machines/windowdoor.ogg', 50, 1)
 	if(!hasInternalDamage())
-		to_chat(occupant, sound('sound/mecha/nominal.ogg',volume=50))
+		occupant << sound('sound/mecha/nominal.ogg',volume=50)
 	AI.cancel_camera()
 	AI.controlled_mech = src
 	AI.remote_control = src
@@ -1643,7 +1643,7 @@
 /obj/mecha/proc/occupant_message(message as text)
 	if(message)
 		if(src.occupant && src.occupant.client)
-			to_chat(src.occupant, "\icon[src] [message]")
+			to_chat(src.occupant, "[bicon(src)] [message]")
 	return
 
 /obj/mecha/proc/log_message(message as text,red=null)

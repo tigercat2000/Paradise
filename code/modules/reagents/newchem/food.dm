@@ -10,8 +10,10 @@ datum/reagent/questionmark/reaction_mob(var/mob/M, var/method=TOUCH, var/volume)
 	if(!istype(M, /mob/living))
 		return
 	if(method == INGEST)
+		M.Stun(2)
 		M.Weaken(2)
 		to_chat(M, "<span class='danger'>Ugh! Eating that was a terrible idea!</span>")
+		M.ForceContractDisease(new /datum/disease/food_poisoning(0))
 
 datum/reagent/egg
 	name = "Egg"
@@ -116,19 +118,16 @@ datum/reagent/vhfcs/on_mob_life(var/mob/living/M as mob)
 	id = "honey"
 	description = "A sweet substance produced by bees through partial digestion. Bee barf."
 	reagent_state = LIQUID
-	color = "#CFCF1F"
+	color = "#d3a308"
 
 datum/reagent/honey/on_mob_life(var/mob/living/M as mob)
-	if(!M) M = holder.my_atom
+	if(!M)
+		M = holder.my_atom
 	M.reagents.add_reagent("sugar", 0.4)
+	if(prob(20))
+		M.heal_organ_damage(3,1)
 	..()
 	return
-
-datum/reagent/honey/reaction_turf(var/turf/T, var/volume)
-	src = null
-	if(volume >= 5)
-		new /obj/item/weapon/reagent_containers/food/snacks/honeycomb(T)
-		return
 
 /datum/reagent/chocolate
 	name = "Chocolate"
@@ -178,15 +177,12 @@ datum/reagent/mugwort/on_mob_life(var/mob/living/M as mob)
 	metabolization_rate = 0.2
 	overdose_threshold = 133
 
-datum/reagent/porktonium/overdose_process(var/mob/living/M as mob)
-	if(volume > 133)
-		if(prob(15))
-			M.reagents.add_reagent("cholesterol", rand(1,3))
-		if(prob(8))
-			M.reagents.add_reagent("radium", 15)
-			M.reagents.add_reagent("cyanide", 10)
-	..()
-	return
+/datum/reagent/porktonium/overdose_process(var/mob/living/M as mob, severity)
+	if(prob(15))
+		M.reagents.add_reagent("cholesterol", rand(1,3))
+	if(prob(8))
+		M.reagents.add_reagent("radium", 15)
+		M.reagents.add_reagent("cyanide", 10)
 
 /datum/reagent/fungus
 	name = "Space fungus"
@@ -205,6 +201,7 @@ datum/reagent/fungus/reaction_mob(var/mob/M, var/method=TOUCH, var/volume)
 			M.reagents.add_reagent("toxin", rand(1,5))
 		else if(ranchance <= 5)
 			to_chat(M, "<span class='warning'>That tasted absolutely FOUL.</span>")
+			M.ForceContractDisease(new /datum/disease/food_poisoning(0))
 		else
 			to_chat(M, "<span class='warning'>Yuck!</span>")
 
@@ -286,11 +283,10 @@ datum/reagent/cheese/reaction_turf(var/turf/T, var/volume)
 	color = "#B2B139"
 	overdose_threshold = 50
 
-/datum/reagent/fake_cheese/overdose_process(var/mob/living/M as mob)
+/datum/reagent/fake_cheese/overdose_process(var/mob/living/M as mob, severity)
 	if(prob(8))
 		to_chat(M, "<span class='warning'>You feel something squirming in your stomach. Your thoughts turn to cheese and you begin to sweat.</span>")
 		M.adjustToxLoss(rand(1,2))
-	..()
 
 /datum/reagent/weird_cheese
 	name = "Weird cheese"
@@ -445,7 +441,7 @@ datum/reagent/ectoplasm/reaction_turf(var/turf/T, var/volume)
 	..()
 	return
 
-/datum/reagent/hydrogenated_soybeanoil/overdose_process(var/mob/living/M as mob)
+/datum/reagent/hydrogenated_soybeanoil/overdose_process(var/mob/living/M as mob, severity)
 	if(prob(33))
 		to_chat(M, "<span class='warning'>You feel horribly weak.</span>")
 	if(prob(10))
@@ -456,7 +452,6 @@ datum/reagent/ectoplasm/reaction_turf(var/turf/T, var/volume)
 		M.adjustOxyLoss(25)
 		M.Stun(5)
 		M.Paralyse(10)
-	..()
 
 /datum/chemical_reaction/hydrogenated_soybeanoil
 	name = "Partially hydrogenated space-soybean oil"

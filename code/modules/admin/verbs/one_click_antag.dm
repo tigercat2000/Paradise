@@ -21,6 +21,7 @@ client/proc/one_click_antag()
 		<a href='?src=\ref[src];makeAntag=6'>Make Wizard (Requires Ghosts)</a><br>
 		<a href='?src=\ref[src];makeAntag=7'>Make Vampires</a><br>
 		<a href='?src=\ref[src];makeAntag=8'>Make Vox Raiders (Requires Ghosts)</a><br>
+		<a href='?src=\ref[src];makeAntag=9'>Make Abductor Team (Requires Ghosts)</a><br>
 		"}
 	usr << browse(dat, "window=oneclickantag;size=400x400")
 	return
@@ -308,8 +309,10 @@ client/proc/one_click_antag()
 	return 1
 
 
-
-
+//Abductors
+/datum/admins/proc/makeAbductorTeam()
+	new /datum/event/abductor
+	return 1
 
 /datum/admins/proc/makeAliens()
 	alien_infestation(3)
@@ -396,7 +399,7 @@ client/proc/one_click_antag()
 	//First we spawn a dude.
 	var/mob/living/carbon/human/new_character = new(pick(latejoin))//The mob being spawned.
 
-	var/datum/preferences/A = new()
+	var/datum/preferences/A = new(G_found.client)
 	A.copy_to(new_character)
 
 	new_character.dna.ready_dna(new_character)
@@ -482,6 +485,8 @@ client/proc/one_click_antag()
 					break
 
 				new_vox.key = theghost.key
+				ticker.mode.traitors += new_vox.mind
+
 				to_chat(new_vox, "\blue You are a Vox Primalis, fresh out of the Shoal. Your ship has arrived at the Tau Ceti system hosting the NSV Exodus... or was it the Luna? NSS? Utopia? Nobody is really sure, but everyong is raring to start pillaging! Your current goal is: \red<B> [input]</B>")
 				to_chat(new_vox, "\red Don't forget to turn on your nitrogen internals!")
 
@@ -494,8 +499,6 @@ client/proc/one_click_antag()
 
 /datum/admins/proc/create_vox_raider(obj/spawn_location, leader_chosen = 0)
 
-	var/mob/living/carbon/human/new_vox = new(spawn_location.loc, "Vox")
-
 	var/sounds = rand(2,8)
 	var/i = 0
 	var/newname = ""
@@ -504,17 +507,21 @@ client/proc/one_click_antag()
 		i++
 		newname += pick(list("ti","hi","ki","ya","ta","ha","ka","ya","chi","cha","kah"))
 
+	var/mob/living/carbon/human/new_vox = new /mob/living/carbon/human/vox(spawn_location.loc)
+
+	new_vox.add_language("Tradeband")
 	new_vox.real_name = capitalize(newname)
+	new_vox.dna.real_name = new_vox.real_name
 	new_vox.name = new_vox.real_name
 	new_vox.age = rand(12,20)
-	new_vox.set_species("Vox")
-	new_vox.languages = list() // Removing language from chargen.
 	new_vox.flavor_text = ""
-	new_vox.add_language("Vox-pidgin")
-	new_vox.add_language("Galactic Common")
-	new_vox.add_language("Tradeband")
-	new_vox.h_style = "Short Vox Quills"
-	new_vox.f_style = "Shaved"
+	new_vox.change_eye_color(rand(1, 255), rand(1, 255), rand(1, 255))
+	new_vox.s_tone = rand(1, 6)
+
+	// Do the initial caching of the player's body icons.
+	new_vox.force_update_limbs()
+	new_vox.update_dna()
+	new_vox.update_eyes()
 
 	for(var/obj/item/organ/external/limb in new_vox.organs)
 		limb.status &= ~(ORGAN_DESTROYED | ORGAN_ROBOT)
@@ -525,8 +532,8 @@ client/proc/one_click_antag()
 	I.implanted = 1
 	cortical_stacks += I
 
-	ticker.mode.traitors += new_vox.mind
 	new_vox.equip_vox_raider()
+	new_vox.regenerate_icons()
 
 	return new_vox
 
@@ -555,7 +562,9 @@ client/proc/one_click_antag()
 
 		for(var/i = 0, i<numVampires, i++)
 			H = pick(candidates)
-			H.make_vampire()
+			ticker.mode.vampires += H.mind
+			ticker.mode.grant_vampire_powers(H)
+			ticker.mode.update_vampire_icons_added(H.mind)
 			candidates.Remove(H)
 
 		return 1

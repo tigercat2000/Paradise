@@ -295,6 +295,10 @@ var/list/ghostteleportlocs = list()
 	name = "\improper Special Ops Shuttle"
 	icon_state = "shuttlered2"
 
+/area/shuttle/syndicate_elite
+	name = "\improper Syndicate Elite Shuttle"
+	icon_state = "shuttlered"
+
 /area/shuttle/syndicate_elite/mothership
 	name = "\improper Syndicate Elite Shuttle"
 	icon_state = "shuttlered"
@@ -437,6 +441,14 @@ var/list/ghostteleportlocs = list()
 /area/shuttle/syndicate
 	name = "Syndicate Infiltrator"
 	icon_state = "shuttle"
+
+/area/shuttle/trade
+	name = "Trade Shuttle"
+	icon_state = "shuttle"
+	requires_power = 0
+
+/area/shuttle/trade/sol
+	name = "Sol Freighter"
 
 /area/airtunnel1/      // referenced in airtunnel.dm:759
 
@@ -618,6 +630,14 @@ var/list/ghostteleportlocs = list()
 	name = "\improper Hyperspace"
 	icon_state = "shuttle"
 
+//Abductors
+/area/abductor_ship
+	name = "\improper Abductor Ship"
+	icon_state = "yellow"
+	requires_power = 0
+	has_gravity = 1
+	lighting_use_dynamic = 0
+
 /area/wizard_station
 	name = "\improper Wizard's Den"
 	icon_state = "yellow"
@@ -666,6 +686,14 @@ var/list/ghostteleportlocs = list()
 	name = "\improper Aft Starboard Solars"
 	icon_state = "southeast"
 	requires_power = 0
+
+/area/trader_station
+	name = "Trade Base"
+	icon_state = "yellow"
+	requires_power = 0
+
+/area/trader_station/sol
+	name = "Jupiter Station 6"
 
 /area/vox_station/mining
 	name = "\improper Nearby Mining Asteroid"
@@ -923,6 +951,10 @@ var/list/ghostteleportlocs = list()
 	power_equip = 0
 	power_light = 0
 	power_environ = 0
+
+/area/maintenance/consarea
+	name = "Alternate Construction Area"
+	icon_state = "yellow"
 
 
 //Hallway
@@ -2414,6 +2446,7 @@ area/security/podbay
 /area/awaymission
 	name = "\improper Strange Location"
 	icon_state = "away"
+	report_alerts = 0
 
 /area/awaymission/example
 	name = "\improper Strange Station"

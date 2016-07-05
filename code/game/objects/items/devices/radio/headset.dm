@@ -20,10 +20,15 @@
 /obj/item/device/radio/headset/New()
 	..()
 	internal_channels.Cut()
+
+/obj/item/device/radio/headset/initialize()
+	..()
+
 	if(ks1type)
 		keyslot1 = new ks1type(src)
 	if(ks2type)
 		keyslot2 = new ks2type(src)
+
 	recalculateChannels(1)
 
 /obj/item/device/radio/headset/Destroy()
@@ -282,6 +287,14 @@
 	icon_state = "com_headset_alt"
 	item_state = "com_headset_alt"
 
+/obj/item/device/radio/headset/centcom
+	name = "\proper centcom officer's bowman headset"
+	desc = "The headset of final authority. Protects ears from flashbangs."
+	flags = EARBANGPROTECT
+	icon_state = "com_headset_alt"
+	item_state = "com_headset_alt"
+	ks2type = /obj/item/device/encryptionkey/ert
+
 /obj/item/device/radio/headset/heads/ai_integrated //No need to care about icons, it should be hidden inside the AI anyway.
 	name = "\improper AI subspace transceiver"
 	desc = "Integrated AI radio transceiver."
@@ -383,8 +396,6 @@
 
 
 	for (var/ch_name in channels)
-		if(!radio_controller)
-			sleep(30) // Waiting for the radio_controller to be created.
 		if(!radio_controller)
 			src.name = "broken radio headset"
 			return

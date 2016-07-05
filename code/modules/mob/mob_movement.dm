@@ -149,11 +149,8 @@
 		winset(src, "mapwindow.map", "icon-size=[src.reset_stretch]")
 		viewingCanvas = 0
 		mob.reset_view()
-		mob.button_pressed_F12()
-		if(!mob.hud_used.hud_shown)
-			mob.button_pressed_F12()
-		mob.update_hud()
-		mob.update_action_buttons()
+		if(mob.hud_used)
+			mob.hud_used.show_hud(HUD_STYLE_STANDARD)
 
 	if(mob.control_object)	Move_object(direct)
 
@@ -184,12 +181,6 @@
 		if(L.incorporeal_move)//Move though walls
 			Process_Incorpmove(direct)
 			return
-		if(mob.client)
-			if(mob.client.view != world.view)
-				if(locate(/obj/item/weapon/gun/energy/sniperrifle, mob.contents))		// If mob moves while zoomed in with sniper rifle, unzoom them.
-					var/obj/item/weapon/gun/energy/sniperrifle/s = locate() in mob
-					if(s.zoom)
-						s.zoom()
 
 	if(Process_Grab())	return
 
@@ -240,7 +231,6 @@
 		move_delay = world.time//set move delay
 		move_delay += T.slowdown
 		mob.last_movement = world.time
-		mob.last_move_intent = world.time + 10
 		switch(mob.m_intent)
 			if("run")
 				if(mob.drowsyness > 0)
@@ -314,26 +304,38 @@
 ///Called by client/Move()
 ///Checks to see if you are being grabbed and if so attemps to break it
 /client/proc/Process_Grab()
-	if(locate(/obj/item/weapon/grab, locate(/obj/item/weapon/grab, mob.grabbed_by.len)))
+	if(mob.grabbed_by.len)
 		var/list/grabbing = list()
+
 		if(istype(mob.l_hand, /obj/item/weapon/grab))
 			var/obj/item/weapon/grab/G = mob.l_hand
 			grabbing += G.affecting
+
 		if(istype(mob.r_hand, /obj/item/weapon/grab))
 			var/obj/item/weapon/grab/G = mob.r_hand
 			grabbing += G.affecting
-		for(var/obj/item/weapon/grab/G in mob.grabbed_by)
-			if((G.state == 1)&&(!grabbing.Find(G.assailant)))	qdel(G)
-			if(G.state == 2)
-				move_delay = world.time + 10
-				if(!prob(25))	return 1
-				mob.visible_message("\red [mob] has broken free of [G.assailant]'s grip!")
-				qdel(G)
-			if(G.state == 3)
-				move_delay = world.time + 10
-				if(!prob(5))	return 1
-				mob.visible_message("\red [mob] has broken free of [G.assailant]'s headlock!")
-				qdel(G)
+
+		for(var/X in mob.grabbed_by)
+			var/obj/item/weapon/grab/G = X
+			switch(G.state)
+
+				if(GRAB_PASSIVE)
+					if(!grabbing.Find(G.assailant)) //moving always breaks a passive grab unless we are also grabbing our grabber.
+						qdel(G)
+
+				if(GRAB_AGGRESSIVE)
+					move_delay = world.time + 10
+					if(!prob(25))
+						return 1
+					mob.visible_message("<span class='danger'>[mob] has broken free of [G.assailant]'s grip!</span>")
+					qdel(G)
+
+				if(GRAB_NECK)
+					move_delay = world.time + 10
+					if(!prob(5))
+						return 1
+					mob.visible_message("<span class='danger'>[mob] has broken free of [G.assailant]'s headlock!</span>")
+					qdel(G)
 	return 0
 
 

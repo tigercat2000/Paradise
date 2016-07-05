@@ -16,22 +16,26 @@
 
 
 	//Placeholder for effect that trigger on eating that aren't tied to reagents.
-/obj/item/weapon/reagent_containers/food/snacks/proc/On_Consume(var/mob/M)
-	if(!usr)	return
+/obj/item/weapon/reagent_containers/food/snacks/proc/On_Consume(mob/M, mob/user)
+	if(!user)
+		return
 	spawn(0)
 		if(!reagents.total_volume)
-			if(M == usr)
-				to_chat(usr, "<span class='notice'>You finish eating \the [src].</span>")
-			usr.visible_message("<span class='notice'>[usr] finishes eating \the [src].</span>")
-			usr.unEquip(src)	//so icons update :[
-
+			if(M == user)
+				to_chat(user, "<span class='notice'>You finish eating \the [src].</span>")
+			user.visible_message("<span class='notice'>[user] finishes eating \the [src].</span>")
+			user.unEquip(src)	//so icons update :[
+			Post_Consume(M)
 			if(trash)
 				if(ispath(trash,/obj/item))
-					var/obj/item/TrashItem = new trash(usr)
-					usr.put_in_hands(TrashItem)
+					var/obj/item/TrashItem = new trash(user)
+					user.put_in_hands(TrashItem)
 				else if(istype(trash,/obj/item))
-					usr.put_in_hands(trash)
+					user.put_in_hands(trash)
 			qdel(src)
+	return
+
+/obj/item/weapon/reagent_containers/food/snacks/proc/Post_Consume(mob/living/M)
 	return
 
 /obj/item/weapon/reagent_containers/food/snacks/attack_self(mob/user as mob)
@@ -48,7 +52,7 @@
 		var/mob/living/carbon/C = M
 		if(C.eat(src, user))
 			bitecount++
-			On_Consume(C)
+			On_Consume(C, user)
 			return 1
 	return 0
 
@@ -755,27 +759,32 @@
 	desc = "The food of choice for the seasoned traitor."
 	icon_state = "donkpocket"
 	filling_color = "#DEDEAB"
+
 	New()
 		..()
 		reagents.add_reagent("nutriment", 4)
-		reagents.add_reagent("omnizine", 4)
+
+	Post_Consume(mob/living/M)
+		M.reagents.add_reagent("omnizine", 15)
 
 /obj/item/weapon/reagent_containers/food/snacks/syndidonkpocket
 	name = "Donk-pocket"
 	desc = "This donk-pocket is emitting a small amount of heat."
 	icon_state = "donkpocket"
 	filling_color = "#DEDEAB"
-	volume = 90
 	bitesize = 100 //nom the whole thing at once.
 
 	New()
 		..()
-		reagents.add_reagent("omnizine", 15)
-		reagents.add_reagent("teporone", 15)
-		reagents.add_reagent("synaptizine", 15)
-		reagents.add_reagent("salglu_solution", 15)
-		reagents.add_reagent("salbutamol", 15)
-		reagents.add_reagent("methamphetamine2", 15)
+		reagents.add_reagent("nutriment", 1)
+
+	Post_Consume(mob/living/M)
+		M.reagents.add_reagent("omnizine", 15)
+		M.reagents.add_reagent("teporone", 15)
+		M.reagents.add_reagent("synaptizine", 15)
+		M.reagents.add_reagent("salglu_solution", 15)
+		M.reagents.add_reagent("salbutamol", 15)
+		M.reagents.add_reagent("methamphetamine", 15)
 
 /obj/item/weapon/reagent_containers/food/snacks/brainburger
 	name = "brainburger"
@@ -786,7 +795,7 @@
 	New()
 		..()
 		reagents.add_reagent("nutriment", 6)
-		reagents.add_reagent("mannitol", 6)
+		reagents.add_reagent("prions", 10)
 		bitesize = 2
 
 /obj/item/weapon/reagent_containers/food/snacks/ghostburger
@@ -1139,9 +1148,9 @@
 		unpopped = rand(1,10)
 		reagents.add_reagent("nutriment", 2)
 		bitesize = 0.1 //this snack is supposed to be eating during looooong time. And this it not dinner food! --rastaf0
-	On_Consume()
+	On_Consume(mob/M, mob/user)
 		if(prob(unpopped))	//lol ...what's the point?
-			to_chat(usr, "\red You bite down on an un-popped kernel!")
+			to_chat(user, "\red You bite down on an un-popped kernel!")
 			unpopped = max(0, unpopped-1)
 		..()
 
@@ -1338,7 +1347,7 @@
 
 	New()
 		..()
-		reagents.add_reagent("????", 1)
+		reagents.add_reagent("????", 5)
 		reagents.add_reagent("carbon", 3)
 		bitesize = 2
 
@@ -1581,9 +1590,9 @@
 		reagents.add_reagent("nutriment", 4)
 		reagents.add_reagent("porktonium", 10)
 		baconbeacon = new /obj/item/device/radio/beacon/bacon(src)
-	On_Consume()
+	On_Consume(mob/M, mob/user)
 		if(!reagents.total_volume)
-			baconbeacon.loc = usr
+			baconbeacon.loc = user
 			baconbeacon.digest_delay()
 
 
@@ -2205,6 +2214,9 @@
 		..()
 		reagents.add_reagent("nutriment", 8)
 		reagents.add_reagent("gold", 5)
+		spawn(1)
+			reagents.del_reagent("egg")
+			reagents.update_total()
 		bitesize = 3
 
 /obj/item/weapon/reagent_containers/food/snacks/dough_ball
@@ -2580,6 +2592,9 @@
 	New()
 		..()
 		reagents.add_reagent("nutriment", 6)
+		spawn(1)
+			reagents.del_reagent("egg")
+			reagents.update_total()
 		bitesize = 2
 
 /obj/item/weapon/reagent_containers/food/snacks/breadslice
@@ -3012,6 +3027,9 @@
 		..()
 		reagents.add_reagent("nutriment", 2)
 		reagents.add_reagent("sugar", 5)
+		spawn(1)
+			reagents.del_reagent("egg")
+			reagents.update_total()
 		bitesize = 2
 
 /obj/item/weapon/reagent_containers/food/snacks/friedbanana

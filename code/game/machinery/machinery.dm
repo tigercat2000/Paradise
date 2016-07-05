@@ -407,7 +407,7 @@ Class Procs:
 		return 1
 	return 0
 
-/obj/machinery/proc/default_unfasten_wrench(mob/user, obj/item/weapon/wrench/W, time = 20)
+/obj/proc/default_unfasten_wrench(mob/user, obj/item/weapon/wrench/W, time = 20)
 	if(istype(W))
 		to_chat(user, "<span class='notice'>Now [anchored ? "un" : ""]securing [name].</span>")
 		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
@@ -420,7 +420,7 @@ Class Procs:
 
 /obj/machinery/proc/state(var/msg)
   for(var/mob/O in hearers(src, null))
-    O.show_message("\icon[src] <span class = 'notice'>[msg]</span>", 2)
+    O.show_message("[bicon(src)] <span class = 'notice'>[msg]</span>", 2)
 
 /obj/machinery/proc/ping(text=null)
   if (!text)
@@ -465,7 +465,7 @@ Class Procs:
 /obj/machinery/proc/display_parts(mob/user)
 	to_chat(user, "<span class='notice'>Following parts detected in the machine:</span>")
 	for(var/obj/item/C in component_parts)
-		to_chat(user, "<span class='notice'>\icon[C] [C.name]</span>")
+		to_chat(user, "<span class='notice'>[bicon(C)] [C.name]</span>")
 
 /obj/machinery/examine(mob/user)
 	..(user)
@@ -555,3 +555,14 @@ Class Procs:
 //called on machinery construction (i.e from frame to machinery) but not on initialization
 /obj/machinery/proc/construction()
 	return
+
+/obj/machinery/tesla_act(var/power)
+	..()
+	if(prob(85))
+		emp_act(2)
+	else if(prob(50))
+		ex_act(3)
+	else if(prob(90))
+		ex_act(2)
+	else
+		ex_act(1)

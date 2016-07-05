@@ -87,7 +87,7 @@
 						if(reagents.has_reagent(bad_reagent))
 							badshit += reagents_to_log[bad_reagent]
 					if(badshit.len)
-						var/hl="\red <b>([english_list(badshit)])</b> \black"
+						var/hl = "<span class='danger'>([english_list(badshit)])</span>"
 						message_admins("[key_name_admin(user)] added [reagents.get_reagent_ids(1)] to \a [target] with [src].[hl]")
 						log_game("[key_name(user)] added [reagents.get_reagent_ids(1)] to \a [target] with [src].")
 
@@ -115,6 +115,13 @@
 			icon_state = "[initial(icon_state)][filled]"
 
 		return
+
+/obj/item/weapon/reagent_containers/dropper/cyborg
+	name = "Industrial Dropper"
+	desc = "A larger dropper. Transfers 10 units."
+	amount_per_transfer_from_this = 10
+	possible_transfer_amounts = list(1,2,3,4,5,6,7,8,9,10)
+	volume = 10
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Droppers. END

@@ -10,7 +10,6 @@
 
 	New()
 		..()
-		sleep(2)
 		if(prob(50))
 			new /obj/item/weapon/storage/backpack/industrial(src)
 		else
@@ -19,6 +18,7 @@
 		new /obj/item/areaeditor/blueprints(src)
 		new /obj/item/weapon/storage/box/permits(src)
 		new /obj/item/clothing/under/rank/chief_engineer(src)
+		new /obj/item/clothing/under/rank/chief_engineer/skirt(src)
 		new /obj/item/clothing/head/hardhat/white(src)
 		new /obj/item/clothing/glasses/welding/superior(src)
 		new /obj/item/clothing/gloves/color/yellow(src)
@@ -32,7 +32,7 @@
 		new /obj/item/device/flash(src)
 		new /obj/item/taperoll/engineering(src)
 		new /obj/item/clothing/head/beret/eng(src)
-		return
+		new /obj/item/weapon/door_remote/chief_engineer(src)
 
 /obj/structure/closet/secure_closet/engineering_electrical
 	name = "electrical supplies locker"
@@ -47,7 +47,6 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/clothing/gloves/color/yellow(src)
 		new /obj/item/clothing/gloves/color/yellow(src)
 		new /obj/item/weapon/storage/toolbox/electrical(src)
@@ -60,7 +59,6 @@
 		new /obj/item/device/multitool(src)
 		new /obj/item/device/multitool(src)
 		new /obj/item/clothing/head/beret/eng
-		return
 
 
 
@@ -77,14 +75,12 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/clothing/head/welding(src)
 		new /obj/item/clothing/head/welding(src)
 		new /obj/item/clothing/head/welding(src)
 		new /obj/item/weapon/weldingtool/largetank(src)
 		new /obj/item/weapon/weldingtool/largetank(src)
 		new /obj/item/weapon/weldingtool/largetank(src)
-		return
 
 
 
@@ -101,7 +97,6 @@
 
 	New()
 		..()
-		sleep(2)
 		if(prob(50))
 			new /obj/item/weapon/storage/backpack/industrial(src)
 		else
@@ -110,13 +105,13 @@
 		new /obj/item/weapon/storage/toolbox/mechanical(src)
 		new /obj/item/device/radio/headset/headset_eng(src)
 		new /obj/item/clothing/under/rank/engineer(src)
+		new /obj/item/clothing/under/rank/engineer/skirt(src)
 		new /obj/item/clothing/suit/storage/hazardvest(src)
 		new /obj/item/clothing/mask/gas(src)
 		new /obj/item/clothing/glasses/meson(src)
 		new /obj/item/weapon/cartridge/engineering(src)
 		new /obj/item/taperoll/engineering(src)
 		new /obj/item/clothing/head/beret/eng(src)
-		return
 
 /obj/structure/closet/secure_closet/atmos_personal
 	name = "technician's locker"
@@ -131,7 +126,6 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/device/radio/headset/headset_eng(src)
 		new /obj/item/weapon/cartridge/atmos(src)
 		new /obj/item/weapon/storage/toolbox/mechanical(src)
@@ -148,5 +142,3 @@
 		new /obj/item/weapon/watertank/atmos(src)
 		new /obj/item/clothing/suit/fire/atmos(src)
 		new /obj/item/clothing/head/hardhat/atmos(src)
-
-		return

@@ -5,7 +5,7 @@
 	icon_state = "centcom"
 	desc = "It's good to be emperor."
 	item_state = "centhat"
-	armor = list(melee = 50, bullet = 15, laser = 50, energy = 10, bomb = 25, bio = 0, rad = 0)
+	armor = list(melee = 30, bullet = 15, laser = 30, energy = 10, bomb = 25, bio = 0, rad = 0)
 	strip_delay = 80
 
 /obj/item/clothing/head/hairflower
@@ -202,9 +202,14 @@
 	desc = "Woof!"
 	icon_state = "corgihead"
 	item_state = "chickensuit"
+	flags = BLOCKHAIR
+
+/obj/item/clothing/head/corgi/super_hero
+	name = "super-hero corgi suit head"
+	desc = "Woof! This one seems to pulse with a strange power"
 	flags = BLOCKHAIR | NODROP
 
-/obj/item/clothing/head/corgi/en
+/obj/item/clothing/head/corgi/super_hero/en
 	name = "E-N suit head"
 	icon_state = "enhead"
 

@@ -62,6 +62,7 @@ var/list/admin_verbs_admin = list(
 	/client/proc/man_up,
 	/client/proc/global_man_up,
 	/client/proc/delbook,
+	/client/proc/view_flagged_books,
 	/client/proc/empty_ai_core_toggle_latejoin,
 	/client/proc/aooc,
 	/client/proc/freeze,
@@ -70,7 +71,9 @@ var/list/admin_verbs_admin = list(
 	/client/proc/secrets,
 	/client/proc/change_human_appearance_admin,	/* Allows an admin to change the basic appearance of human-based mobs */
 	/client/proc/change_human_appearance_self,	/* Allows the human-based mob itself change its basic appearance */
-	/client/proc/debug_variables
+	/client/proc/debug_variables,
+	/client/proc/show_snpc_verbs,
+	/client/proc/reset_all_tcs			/*resets all telecomms scripts*/
 )
 var/list/admin_verbs_ban = list(
 	/client/proc/unban_panel,
@@ -123,8 +126,10 @@ var/list/admin_verbs_server = list(
 	/datum/admins/proc/toggleAI,
 	/client/proc/cmd_admin_delete,		/*delete an instance/object/mob/etc*/
 	/client/proc/cmd_debug_del_all,
+	/client/proc/cmd_debug_del_sing,
 	/datum/admins/proc/toggle_aliens,
 	/client/proc/delbook,
+	/client/proc/view_flagged_books,
 	/client/proc/toggle_antagHUD_use,
 	/client/proc/toggle_antagHUD_restrictions,
 	/client/proc/set_ooc,
@@ -138,6 +143,7 @@ var/list/admin_verbs_debug = list(
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,
 	/client/proc/cmd_debug_del_all,
+	/client/proc/cmd_debug_del_sing,
 	/client/proc/reload_admins,
 	/client/proc/restart_controller,
 	/client/proc/enable_debug_verbs,
@@ -151,7 +157,10 @@ var/list/admin_verbs_debug = list(
 	/client/proc/test_movable_UI,
 	/client/proc/test_snap_UI,
 	/client/proc/cinematic,
-	/proc/machine_upgrade
+	/proc/machine_upgrade,
+	/client/proc/map_template_load,
+	/client/proc/map_template_upload,
+	/client/proc/view_runtimes
 	)
 var/list/admin_verbs_possess = list(
 	/proc/possess,
@@ -185,10 +194,16 @@ var/list/admin_verbs_mentor = list(
 	/client/proc/cmd_admin_pm_panel,	/*admin-pm list*/
 	/client/proc/cmd_admin_pm_by_key_panel	/*admin-pm list by key*/
 )
-var/list/admin_verbs_proccall = list (
+var/list/admin_verbs_proccall = list(
 	/client/proc/callproc,
 	/client/proc/callproc_datum,
 	/client/proc/SDQL2_query
+)
+var/list/admin_verbs_snpc = list(
+	/client/proc/resetSNPC,
+	/client/proc/toggleSNPC,
+	/client/proc/customiseSNPC,
+	/client/proc/hide_snpc_verbs
 )
 
 /client/proc/add_admin_verbs()
@@ -246,6 +261,8 @@ var/list/admin_verbs_proccall = list (
 		admin_verbs_proccall,
 		admin_verbs_show_debug_verbs,
 		/client/proc/readmin,
+		admin_verbs_snpc,
+		/client/proc/hide_snpc_verbs
 	)
 
 /client/proc/hide_verbs()
@@ -922,3 +939,25 @@ var/list/admin_verbs_proccall = list (
 
 		log_admin("[key_name(usr)] told everyone to man up and deal with it.")
 		message_admins("[key_name_admin(usr)] told everyone to man up and deal with it.")
+
+/client/proc/show_snpc_verbs()
+	set name = "Show SNPC Verbs"
+	set category = "Admin"
+
+	if(!holder)
+		return
+
+	verbs += admin_verbs_snpc
+	verbs -= /client/proc/show_snpc_verbs
+	to_chat(src, "<span class='interface'>SNPC verbs on.</span>")
+
+/client/proc/hide_snpc_verbs()
+	set name = "Hide SNPC Verbs"
+	set category = "Admin"
+
+	if(!holder)
+		return
+
+	verbs -= admin_verbs_snpc
+	verbs += /client/proc/show_snpc_verbs
+	to_chat(src, "<span class='interface'>SNPC verbs off.</span>")

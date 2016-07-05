@@ -47,8 +47,6 @@
 	for(var/mob/dead/observer/O in player_list)
 		if(check_observer(O))
 			to_chat(O, "<span class='boldnotice'>\A [src] has been activated. (<a href='?src=\ref[O];jump=\ref[src]'>Teleport</a> | <a href='?src=\ref[src];signup=\ref[O]'>Sign Up</a>)</span>")
-//			if(ROLE_POSIBRAIN in O.client.prefs.be_special) The Guardian implementation looks cleaner
-//				question(O.client)
 
 /obj/item/device/mmi/posibrain/proc/check_observer(var/mob/dead/observer/O)
 	if(O.has_enabled_antagHUD == 1 && config.antag_hud_restricted)
@@ -146,11 +144,12 @@
 
 
 /obj/item/device/mmi/posibrain/examine(mob/user)
+	to_chat(user, "<span class='info'>*---------*</span>")
 	if(!..(user))
+		to_chat(user, "<span class='info'>*---------*</span>")
 		return
 
-	var/msg = "<span class='info'>*---------*\nThis is \icon[src] \a <EM>[src]</EM>!\n[desc]\n"
-	msg += "<span class='warning'>"
+	var/msg = "<span class='info'>"
 
 	if(src.brainmob && src.brainmob.key)
 		switch(src.brainmob.stat)
@@ -160,7 +159,7 @@
 			if(DEAD)			msg += "<span class='deadsay'>It appears to be completely inactive.</span>\n"
 	else
 		msg += "<span class='deadsay'>It appears to be completely inactive.</span>\n"
-	msg += "<span class='info'>*---------*</span>"
+	msg += "*---------*</span>"
 	to_chat(user, msg)
 
 /obj/item/device/mmi/posibrain/emp_act(severity)

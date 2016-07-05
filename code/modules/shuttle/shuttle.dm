@@ -136,6 +136,8 @@
 	var/turf_type = /turf/space
 	var/area_type = /area/space
 
+	var/lock_shuttle_doors = 0
+
 /obj/docking_port/stationary/register()
 	if(!shuttle_master)
 		throw EXCEPTION("docking port [src] could not initialize.")
@@ -165,6 +167,8 @@
 /obj/docking_port/stationary/transit
 	name = "In Transit"
 	turf_type = /turf/space/transit
+
+	lock_shuttle_doors = 1
 
 /obj/docking_port/stationary/transit/register()
 	if(!..())
@@ -302,10 +306,6 @@
 	//rotate our direction
 	dir = angle2dir(rotation+dir2angle(dir))
 
-	//resmooth if need be.
-	if(smooth)
-		smooth_icon(src)
-
 	//rotate the pixel offsets too.
 	if (pixel_x || pixel_y)
 		if (rotation < 0)
@@ -316,6 +316,9 @@
 			pixel_x = oldPY
 			pixel_y = (oldPX*(-1))
 
+/atom/proc/postDock()
+	if(smooth)
+		smooth_icon(src)
 
 
 //this is the main proc. It instantly moves our mobile port to stationary port S1
@@ -368,7 +371,7 @@
 
 	var/list/door_unlock_list = list()
 
-	for(var/i=1, i<=L0.len, ++i)
+	for(var/i in 1 to L0.len)
 		var/turf/T0 = L0[i]
 		if(!T0)
 			continue
@@ -443,11 +446,17 @@
 		T0.CalculateAdjacentTurfs()
 		air_master.add_to_active(T0,1)
 
+	for(var/A1 in L1)
+		var/turf/T1 = A1
+		T1.postDock()
+		for(var/atom/movable/M in T1)
+			M.postDock()
+
 	loc = S1.loc
 	dir = S1.dir
 
 	unlockPortDoors(S1)
-	if(S1 && S1.id != "[id]_transit")
+	if(S1 && !S1.lock_shuttle_doors)
 		for(var/obj/machinery/door/airlock/A in door_unlock_list)
 			spawn(-1)
 				A.unlock()
@@ -610,6 +619,7 @@
 	var/possible_destinations = ""
 	var/admin_controlled
 	var/max_connect_range = 7
+	var/docking_request = 0
 
 /obj/machinery/computer/shuttle/New(location, obj/item/weapon/circuitboard/shuttle/C)
 	..()
@@ -662,6 +672,8 @@
 			if(admin_controlled)
 				dat += "Authorized personnel only<br>"
 				dat += "<A href='?src=\ref[src];request=1]'>Request Authorization</A><br>"
+		if(docking_request)
+			dat += "<A href='?src=\ref[src];request=1]'>Request docking at NSS Cyberiad</A><br>"
 	dat += "<a href='?src=\ref[user];mach_close=computer'>Close</a>"
 
 	var/datum/browser/popup = new(user, "computer", M ? M.name : "shuttle", 300, 200)
@@ -671,14 +683,19 @@
 
 /obj/machinery/computer/shuttle/Topic(href, href_list)
 	if(..())
-		return
+		return 1
 	usr.set_machine(src)
 	src.add_fingerprint(usr)
 	if(!allowed(usr))
 		to_chat(usr, "<span class='danger'>Access denied.</span>")
 		return
 
+	var/list/options = params2list(possible_destinations)
 	if(href_list["move"])
+		if(!options.Find(href_list["move"])) //I see you're trying Href exploits, I see you're failing, I SEE ADMIN WARNING.
+			// Seriously, though, NEVER trust a Topic with something like this. Ever.
+			message_admins("move HREF ([src] attempted to move to: [href_list["move"]]) exploit attempted by [key_name_admin(usr)] on [src] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[x];Y=[y];Z=[z]'>JMP</a>)")
+			return
 		switch(shuttle_master.moveShuttle(shuttleId, href_list["move"], 1))
 			if(0)
 				to_chat(usr, "<span class='notice'>Shuttle received message and will be sent shortly.</span>")
@@ -709,7 +726,8 @@
 	admin_controlled = 1
 
 /obj/machinery/computer/shuttle/ferry/request/Topic(href, href_list)
-	..()
+	if(..())
+		return 1
 	if(href_list["request"])
 		if(cooldown)
 			return
@@ -757,6 +775,48 @@
 	desc = "Used to call and send the administration shuttle."
 	shuttleId = "admin"
 	possible_destinations = "admin_home;admin_away"
+
+/obj/machinery/computer/shuttle/sst
+	name = "Syndicate Strike Time Shuttle Console"
+	desc = "Used to call and send the SST shuttle."
+	shuttleId = "sst"
+	possible_destinations = "sst_home;sst_away"
+
+var/global/trade_dock_timelimit = 0
+var/global/trade_dockrequest_timelimit = 0
+
+/obj/machinery/computer/shuttle/trade
+	name = "Freighter Console"
+	docking_request = 1
+	var/possible_destinations_dock
+	var/possible_destinations_nodock
+	var/docking_request_message = "A trading ship has requested docking aboard the NSS Cyberiad for trading. This request can be accepted or denied using a communications console."
+
+/obj/machinery/computer/shuttle/trade/attack_hand(mob/user)
+	if(world.time < trade_dock_timelimit)
+		possible_destinations = possible_destinations_dock
+	else
+		possible_destinations = possible_destinations_nodock
+
+	docking_request = (world.time > trade_dockrequest_timelimit && world.time > trade_dock_timelimit)
+	..(user)
+
+/obj/machinery/computer/shuttle/trade/Topic(href, href_list)
+	if(..())
+		return 1
+	if(href_list["request"])
+		if(world.time < trade_dockrequest_timelimit || world.time < trade_dock_timelimit)
+			return
+		to_chat(usr, "<span class='notice'>Request sent.</span>")
+		command_announcement.Announce(docking_request_message, "Docking Request")
+		trade_dockrequest_timelimit = world.time + 1200 // They have 2 minutes to approve the request.
+
+/obj/machinery/computer/shuttle/trade/sol
+	req_access = list(access_trade_sol)
+	possible_destinations_dock = "trade_sol_base;trade_sol_offstation;trade_dock"
+	possible_destinations_nodock = "trade_sol_base;trade_sol_offstation"
+	shuttleId = "trade_sol"
+	docking_request_message = "A trading ship of Sol origin has requested docking aboard the NSS Cyberiad for trading. This request can be accepted or denied using a communications console."
 
 #undef DOCKING_PORT_HIGHLIGHT
 

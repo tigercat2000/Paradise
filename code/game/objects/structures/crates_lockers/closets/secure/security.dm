@@ -10,7 +10,6 @@
 
 	New()
 		..()
-		sleep(2)
 		if(prob(50))
 			new /obj/item/weapon/storage/backpack/captain(src)
 		else
@@ -27,7 +26,7 @@
 		new /obj/item/device/radio/headset/heads/captain/alt(src)
 		new /obj/item/clothing/gloves/color/captain(src)
 		new /obj/item/weapon/gun/energy/gun(src)
-		return
+		new /obj/item/weapon/door_remote/captain(src)
 
 
 
@@ -43,7 +42,6 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/clothing/glasses/sunglasses(src)
 		new /obj/item/clothing/head/hopcap(src)
 		new /obj/item/weapon/cartridge/hop(src)
@@ -55,7 +53,7 @@
 		new /obj/item/device/flash(src)
 		new /obj/item/weapon/mining_voucher(src)
 		new /obj/item/clothing/accessory/petcollar(src)
-		return
+		new /obj/item/weapon/door_remote/civillian(src)
 
 /obj/structure/closet/secure_closet/hop2
 	name = "head of personnel's attire"
@@ -69,7 +67,6 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/clothing/under/rank/head_of_personnel(src)
 		new /obj/item/clothing/under/dress/dress_hop(src)
 		new /obj/item/clothing/under/dress/dress_hr(src)
@@ -82,7 +79,6 @@
 		new /obj/item/clothing/shoes/leather(src)
 		new /obj/item/clothing/shoes/white(src)
 		new /obj/item/clothing/under/rank/head_of_personnel_whimsy(src)
-		return
 
 
 
@@ -98,7 +94,6 @@
 
 	New()
 		..()
-		sleep(2)
 		if(prob(50))
 			new /obj/item/weapon/storage/backpack/security(src)
 		else
@@ -108,6 +103,7 @@
 		new /obj/item/clothing/under/rank/head_of_security(src)
 		new /obj/item/clothing/under/rank/head_of_security/formal(src)
 		new /obj/item/clothing/under/rank/head_of_security/corp(src)
+		new /obj/item/clothing/under/rank/head_of_security/skirt(src)
 		new /obj/item/clothing/suit/armor/hos(src)
 		new /obj/item/clothing/suit/armor/hos/alt(src)
 		new /obj/item/clothing/head/HoS(src)
@@ -120,8 +116,8 @@
 		new /obj/item/weapon/melee/baton/loaded(src)
 		new /obj/item/weapon/storage/belt/security/sec(src)
 		new /obj/item/taperoll/police(src)
-		new /obj/item/weapon/gun/energy/hos(src)
-		return
+		new /obj/item/weapon/gun/energy/gun/hos(src)
+		new /obj/item/weapon/door_remote/head_of_security(src)
 
 
 
@@ -138,7 +134,6 @@
 
 	New()
 		..()
-		sleep(2)
 		if(prob(50))
 			new /obj/item/weapon/storage/backpack/security(src)
 		else
@@ -151,6 +146,7 @@
 		new /obj/item/clothing/under/rank/warden(src)
 		new /obj/item/clothing/under/rank/warden/formal(src)
 		new /obj/item/clothing/under/rank/warden/corp(src)
+		new /obj/item/clothing/under/rank/warden/skirt(src)
 		new /obj/item/clothing/glasses/hud/security/sunglasses(src)
 		new /obj/item/clothing/mask/gas/sechailer/warden(src)
 		new /obj/item/taperoll/police(src)
@@ -158,10 +154,10 @@
 		new /obj/item/weapon/storage/box/flashbangs(src)
 		new /obj/item/weapon/reagent_containers/spray/pepper(src)
 		new /obj/item/weapon/melee/baton/loaded(src)
-		new /obj/item/weapon/gun/energy/advtaser(src)
+		new /obj/item/weapon/gun/energy/gun/advtaser(src)
 		new /obj/item/weapon/storage/belt/security/sec(src)
 		new /obj/item/weapon/storage/box/holobadge(src)
-		return
+		new /obj/item/clothing/gloves/color/black/krav_maga/sec(src)
 
 
 
@@ -177,7 +173,6 @@
 
 	New()
 		..()
-		sleep(2)
 		if(prob(50))
 			new /obj/item/weapon/storage/backpack/security(src)
 		else
@@ -194,7 +189,6 @@
 		new /obj/item/clothing/head/helmet(src)
 		new /obj/item/weapon/melee/baton/loaded(src)
 		new /obj/item/taperoll/police(src)
-		return
 
 /obj/structure/closet/secure_closet/brigdoc
 	name = "brig physician's locker"
@@ -208,7 +202,6 @@
 
 	New()
 		..()
-		sleep(2)
 		if(prob(50))
 			new /obj/item/weapon/storage/backpack/medic(src)
 		else
@@ -225,7 +218,6 @@
 		new /obj/item/clothing/shoes/white(src)
 		new /obj/item/device/radio/headset/headset_sec/alt(src)
 		new /obj/item/clothing/shoes/sandal/white(src)
-		return
 
 /obj/structure/closet/secure_closet/blueshield
 	name = "blueshield's locker"
@@ -239,7 +231,6 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/weapon/storage/briefcase(src)
 		new	/obj/item/weapon/storage/firstaid/adv(src)
 		new /obj/item/weapon/storage/belt/security/sec(src)
@@ -257,7 +248,6 @@
 		new /obj/item/clothing/accessory/holster(src)
 		new /obj/item/clothing/accessory/blue(src)
 		new /obj/item/clothing/shoes/jackboots/jacksandals(src)
-		return
 
 /obj/structure/closet/secure_closet/ntrep
 	name = "\improper Nanotrasen Representative's locker"
@@ -271,7 +261,6 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/weapon/storage/briefcase(src)
 		new /obj/item/device/paicard(src)
 		new /obj/item/device/flash(src)
@@ -283,7 +272,6 @@
 		new /obj/item/clothing/under/lawyer/female(src)
 		new /obj/item/clothing/head/ntrep(src)
 		new /obj/item/clothing/shoes/sandal/fancy(src)
-		return
 
 
 /obj/structure/closet/secure_closet/security/cargo
@@ -292,7 +280,6 @@
 		..()
 		new /obj/item/clothing/accessory/armband/cargo(src)
 		new /obj/item/device/encryptionkey/headset_cargo(src)
-		return
 
 /obj/structure/closet/secure_closet/security/engine
 
@@ -300,7 +287,6 @@
 		..()
 		new /obj/item/clothing/accessory/armband/engine(src)
 		new /obj/item/device/encryptionkey/headset_eng(src)
-		return
 
 /obj/structure/closet/secure_closet/security/science
 
@@ -308,7 +294,6 @@
 		..()
 		new /obj/item/clothing/accessory/armband/science(src)
 		new /obj/item/device/encryptionkey/headset_sci(src)
-		return
 
 /obj/structure/closet/secure_closet/security/med
 
@@ -316,7 +301,6 @@
 		..()
 		new /obj/item/clothing/accessory/armband/medgreen(src)
 		new /obj/item/device/encryptionkey/headset_med(src)
-		return
 
 
 /obj/structure/closet/secure_closet/detective
@@ -331,11 +315,10 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/clothing/under/det(src)
 		new /obj/item/clothing/suit/storage/det_suit(src)
-		new /obj/item/clothing/suit/storage/forensics/blue(src)
-		new /obj/item/clothing/suit/storage/forensics/red(src)
+		new /obj/item/clothing/suit/storage/det_suit/forensics/blue(src)
+		new /obj/item/clothing/suit/storage/det_suit/forensics/red(src)
 		new /obj/item/clothing/gloves/color/black(src)
 		new /obj/item/clothing/head/det_hat(src)
 		new /obj/item/clothing/shoes/brown(src)
@@ -351,7 +334,6 @@
 		new /obj/item/clothing/accessory/holster/armpit(src)
 		new /obj/item/clothing/glasses/sunglasses/yeah(src)
 		new /obj/item/device/flashlight/seclite(src)
-		return
 
 /obj/structure/closet/secure_closet/detective/update_icon()
 	if(broken)
@@ -372,10 +354,8 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/weapon/reagent_containers/ld50_syringe/lethal(src)
 		new /obj/item/weapon/reagent_containers/ld50_syringe/lethal(src)
-		return
 
 
 
@@ -386,9 +366,9 @@
 	var/id = null
 
 	New()
+		..()
 		new /obj/item/clothing/under/color/orange/prison( src )
 		new /obj/item/clothing/shoes/orange( src )
-		return
 
 
 
@@ -398,7 +378,6 @@
 
 	New()
 		..()
-		sleep(2)
 		new /obj/item/clothing/shoes/brown(src)
 		new /obj/item/weapon/paper/Court (src)
 		new /obj/item/weapon/paper/Court (src)
@@ -407,7 +386,6 @@
 		new /obj/item/clothing/suit/judgerobe (src)
 		new /obj/item/clothing/head/powdered_wig (src)
 		new /obj/item/weapon/storage/briefcase(src)
-		return
 
 /obj/structure/closet/secure_closet/wall
 	name = "wall locker"

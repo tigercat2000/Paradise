@@ -33,7 +33,6 @@
 		/obj/machinery/iv_drip,
 		/obj/machinery/computer/pandemic,
 		/obj/machinery/disposal,
-		/obj/machinery/apiary,
 		/mob/living/simple_animal/cow,
 		/mob/living/simple_animal/hostile/retaliate/goat,
 		/obj/machinery/sleeper,
@@ -122,7 +121,7 @@
 				if(reagents.has_reagent(bad_reagent))
 					badshit += reagents_to_log[bad_reagent]
 			if(badshit.len)
-				var/hl="\red <b>([english_list(badshit)])</b> \black"
+				var/hl = "<span class='danger'>([english_list(badshit)])</span>"
 				message_admins("[key_name_admin(user)] added [reagents.get_reagent_ids(1)] to \a [target] with [src].[hl]")
 				log_game("[key_name(user)] added [reagents.get_reagent_ids(1)] to \a [target] with [src].")
 

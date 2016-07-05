@@ -4,13 +4,9 @@
 /datum/game_mode/wizard
 	name = "wizard"
 	config_tag = "wizard"
-	required_players = 2
-	required_players_secret = 10
+	required_players = 20
 	required_enemies = 1
 	recommended_enemies = 1
-
-	uplink_welcome = "Wizardly Uplink Console:"
-	uplink_uses = 20
 
 	var/use_huds = 0
 	var/finished = 0
@@ -18,7 +14,7 @@
 
 /datum/game_mode/wizard/announce()
 	to_chat(world, "<B>The current game mode is - Wizard!</B>")
-	to_chat(world, "<B>There is a \red SPACE WIZARD\black on the station. You can't let him achieve his objective!</B>")
+	to_chat(world, "<B>There is a <font color='red'>SPACE WIZARD</font> on the station. You can't let him achieve his objective!</B>")
 
 
 /datum/game_mode/wizard/can_start()//This could be better, will likely have to recode it later

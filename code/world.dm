@@ -18,7 +18,7 @@ var/global/datum/global_init/init = new ()
 	cache_lifespan = 0	//stops player uploaded stuff from being kept in the rsc past the current session
 
 
-#define RECOMMENDED_VERSION 508
+#define RECOMMENDED_VERSION 510
 
 /world/New()
 	//logs
@@ -52,8 +52,6 @@ var/global/datum/global_init/init = new ()
 
 	. = ..()
 
-	sleep_offline = 1
-
 	plant_controller = new()
 	// Create robolimbs for chargen.
 	populate_robolimb_list()
@@ -67,6 +65,7 @@ var/global/datum/global_init/init = new ()
 		processScheduler.setup()
 
 		master_controller.setup()
+		sleep_offline = 1
 
 	#ifdef MAP_NAME
 	map_name = "[MAP_NAME]"
@@ -116,6 +115,7 @@ var/world_topic_spam_protect_time = world.timeofday
 
 	else if ("status" in input)
 		var/list/s = list()
+		var/list/admins = list()
 		s["version"] = game_version
 		s["mode"] = master_mode
 		s["respawn"] = config ? abandon_allowed : 0
@@ -133,6 +133,7 @@ var/world_topic_spam_protect_time = world.timeofday
 				if(C.holder.fakekey)
 					continue	//so stealthmins aren't revealed by the hub
 				admin_count++
+				admins += list(list(C.key, C.holder.rank))
 			s["player[player_count]"] = C.key
 			player_count++
 		s["players"] = player_count
@@ -150,6 +151,11 @@ var/world_topic_spam_protect_time = world.timeofday
 				s["shuttle_mode"] = shuttle_master.emergency.mode
 				// Shuttle timer, in seconds
 				s["shuttle_timer"] = shuttle_master.emergency.timeLeft()
+
+			for(var/i in 1 to admins.len)
+				var/list/A = admins[i]
+				s["admin[i - 1]"] = A[1]
+				s["adminrank[i - 1]"] = A[2]
 
 		return list2params(s)
 
@@ -247,7 +253,7 @@ var/world_topic_spam_protect_time = world.timeofday
 	//kick_clients_in_lobby("<span class='boldannounce'>The round came to an end with you in the lobby.</span>", 1)
 
 	spawn(0)
-		to_chat(world, sound(pick('sound/AI/newroundsexy.ogg','sound/misc/apcdestroyed.ogg','sound/misc/bangindonk.ogg')))// random end sounds!! - LastyBatsy
+		world << sound(pick('sound/AI/newroundsexy.ogg','sound/misc/apcdestroyed.ogg','sound/misc/bangindonk.ogg'))// random end sounds!! - LastyBatsy
 
 
 	processScheduler.stop()
@@ -321,7 +327,7 @@ var/world_topic_spam_protect_time = world.timeofday
 /world/proc/save_mode(var/the_mode)
 	var/F = file("data/mode.txt")
 	fdel(F)
-	to_chat(F, the_mode)
+	F << the_mode
 
 /hook/startup/proc/loadMusic()
 	for(var/obj/machinery/media/jukebox/J in machines)

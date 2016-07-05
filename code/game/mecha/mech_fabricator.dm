@@ -9,9 +9,6 @@
 	idle_power_usage = 20
 	active_power_usage = 5000
 	var/time_coeff = 1
-	var/resource_coeff = 1
-	var/time_coeff_tech = 1
-	var/resource_coeff_tech = 1
 	var/list/resources = list(
 								MAT_METAL=0,
 								MAT_GLASS=0,
@@ -79,12 +76,6 @@
 	for(var/obj/item/weapon/stock_parts/matter_bin/M in component_parts)
 		T += M.rating
 	res_max_amount = (187000+(T * 37500))
-
-	//ressources adjustment coefficient (1 -> 0.88 -> 0.75)
-	T = -1
-	for(var/obj/item/weapon/stock_parts/micro_laser/Ma in component_parts)
-		T += Ma.rating
-	resource_coeff = round(initial(resource_coeff) - (initial(resource_coeff)*(T))/8,0.01)
 
 	//building time adjustment coefficient (1 -> 0.8 -> 0.6)
 	T = -1
@@ -162,7 +153,7 @@
 		I.loc = get_step(src,SOUTH)
 	I.materials[MAT_METAL] = get_resource_cost_w_coeff(D,MAT_METAL)
 	I.materials[MAT_GLASS] = get_resource_cost_w_coeff(D,MAT_GLASS)
-	visible_message("\icon[src] <b>\The [src]</b> beeps, \"\The [I] is complete.\"")
+	visible_message("[bicon(src)] <b>\The [src]</b> beeps, \"\The [I] is complete.\"")
 	being_built = null
 
 	updateUsrDialog()
@@ -205,14 +196,14 @@
 		if(stat&(NOPOWER|BROKEN))
 			return 0
 		if(!check_resources(D))
-			visible_message("\icon[src] <b>\The [src]</b> beeps, \"Not enough resources. Queue processing stopped.\"")
+			visible_message("[bicon(src)] <b>\The [src]</b> beeps, \"Not enough resources. Queue processing stopped.\"")
 			temp = {"<span class='alert'>Not enough resources to build next part.</span><br>
 						<a href='?src=\ref[src];process_queue=1'>Try again</a> | <a href='?src=\ref[src];clear_temp=1'>Return</a><a>"}
 			return 0
 		remove_from_queue(1)
 		build_part(D)
 		D = listgetindex(queue, 1)
-	visible_message("\icon[src] <b>\The [src]</b> beeps, \"Queue processing finished successfully.\"")
+	visible_message("[bicon(src)] <b>\The [src]</b> beeps, \"Queue processing finished successfully.\"")
 
 /obj/machinery/mecha_part_fabricator/proc/list_queue()
 	var/output = "<b>Queue contains:</b>"
@@ -230,29 +221,6 @@
 		output += "\[<a href='?src=\ref[src];process_queue=1'>Process queue</a> | <a href='?src=\ref[src];clear_queue=1'>Clear queue</a>\]"
 	return output
 
-/obj/machinery/mecha_part_fabricator/proc/update_tech()
-	if(!files)
-		return
-	var/output
-	for(var/datum/tech/T in files.known_tech)
-		if(T && T.level > 1)
-			var/diff
-			switch(T.id)
-				if("materials")
-					//one materials level is 1/32, so that max level is 0.75 coefficient
-					diff = round(initial(resource_coeff_tech) - (initial(resource_coeff_tech)*(T.level-1))/32,0.01)
-					if(resource_coeff_tech>diff)
-						resource_coeff_tech = diff
-						output+="Production efficiency increased.<br>"
-				if("programming")
-					//one materials level is 1/40, so that max level is 0.8 coefficient
-					diff = round(initial(time_coeff_tech) - (initial(time_coeff_tech)*(T.level-1))/40,0.1)
-					if(time_coeff_tech>diff)
-						time_coeff_tech = diff
-						output+="Production routines updated.<br>"
-	return output
-
-
 /obj/machinery/mecha_part_fabricator/proc/sync()
 	temp = "Updating local R&D database..."
 	updateUsrDialog()
@@ -269,11 +237,10 @@
 		files.RefreshResearch()
 		temp = "Processed equipment designs.<br>"
 		//check if the tech coefficients have changed
-		temp += update_tech()
 		temp += "<a href='?src=\ref[src];clear_temp=1'>Return</a>"
 
 		updateUsrDialog()
-		visible_message("\icon[src] <b>\The [src]</b> beeps, \"Successfully synchronized with R&D server.\"")
+		visible_message("[bicon(src)] <b>\The [src]</b> beeps, \"Successfully synchronized with R&D server.\"")
 		return
 
 	temp = "Unable to connect to local R&D Database.<br>Please check your connections and try again.<br><a href='?src=\ref[src];clear_temp=1'>Return</a>"
@@ -281,10 +248,10 @@
 	return
 
 /obj/machinery/mecha_part_fabricator/proc/get_resource_cost_w_coeff(datum/design/D, resource, roundto = 1)
-	return round(D.materials[resource]*resource_coeff*resource_coeff_tech, roundto)
+	return round(D.materials[resource], roundto)
 
 /obj/machinery/mecha_part_fabricator/proc/get_construction_time_w_coeff(datum/design/D, roundto = 1) //aran
-	return round(initial(D.construction_time)*time_coeff*time_coeff_tech, roundto)
+	return round(initial(D.construction_time)*time_coeff, roundto)
 
 /obj/machinery/mecha_part_fabricator/attack_ghost(mob/user)
 	interact(user)
@@ -304,7 +271,7 @@
 	user.set_machine(src)
 	var/turf/exit = get_step(src,SOUTH)
 	if(exit.density)
-		visible_message("\icon[src] <b>\The [src]</b> beeps, \"Error! Part outlet is obstructed.\"")
+		visible_message("[bicon(src)] <b>\The [src]</b> beeps, \"Error! Part outlet is obstructed.\"")
 		return
 	if(temp)
 		left_part = temp

@@ -36,6 +36,27 @@
 /mob/living/captive_brain/emote(var/message)
 	return
 
+/mob/living/captive_brain/resist()
+	var/mob/living/simple_animal/borer/B = loc
+
+	to_chat(src, "<span class='danger'>You begin doggedly resisting the parasite's control (this will take approximately sixty seconds).</span>")
+	to_chat(B.host, "<span class='danger'>You feel the captive mind of [src] begin to resist your control.</span>")
+
+	spawn(rand(350,450) + B.host.brainloss)
+
+		if(!B || !B.controlling)
+			return
+
+		B.host.adjustBrainLoss(rand(5,10))
+		to_chat(src, "<span class='danger'>With an immense exertion of will, you regain control of your body!</span>")
+		to_chat(B.host, "<span class='danger'>You feel control of the host brain ripped from your grasp, and retract your probosci before the wild neural impulses can damage you.</span>")
+
+		B.detatch()
+
+		verbs -= /mob/living/carbon/proc/release_control
+		verbs -= /mob/living/carbon/proc/punish_host
+		verbs -= /mob/living/carbon/proc/spawn_larvae
+
 /mob/living/simple_animal/borer
 	name = "cortical borer"
 	real_name = "cortical borer"
@@ -59,6 +80,7 @@
 	density = 0
 	pass_flags = PASSTABLE
 	ventcrawler = 2
+	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 
 	var/talk_inside_host = 0 				// So that borers don't accidentally give themselves away on a botched message
 	var/used_dominate
@@ -75,8 +97,13 @@
 	set category = "Borer"
 	set name = "Converse with Host"
 	set desc = "Send a silent message to your host."
+
 	if(!host)
 		to_chat(src, "You do not have a host to communicate with!")
+		return
+
+	if(stat)
+		to_chat(src, "You cannot do that in your current state.")
 		return
 
 	var/input = stripped_input(src, "Please enter a message to tell your host.", "Borer", "")
@@ -185,6 +212,12 @@
 				if(prob(host.getBrainLoss()/20))
 					host.say("*[pick(list("blink","blink_r","choke","aflap","drool","twitch","twitch_s","gasp"))]")
 
+/mob/living/simple_animal/borer/handle_environment()
+	if(host)
+		return // Snuggled up, nice and warm, in someone's head
+	else
+		return ..()
+
 /mob/living/simple_animal/borer/New(var/by_gamemode=0)
 	..()
 	add_language("Cortical Link")
@@ -208,14 +241,6 @@
 		stat("Chemicals", chemicals)
 
 // VERBS!
-
-/mob/living/simple_animal/borer/proc/borer_speak(var/message)
-	if(!message)
-		return
-
-	for(var/mob/M in mob_list)
-		if(M.mind && (istype(M, /mob/living/simple_animal/borer) || istype(M, /mob/dead/observer)))
-			to_chat(M, "<i>Cortical link, <b>[truename]:</b> [copytext(message, 2)]</i>")
 
 /mob/living/simple_animal/borer/verb/dominate_victim()
 	set category = "Borer"
@@ -264,6 +289,10 @@
 
 	if(!host)
 		to_chat(src, "You are not inside a host body.")
+		return
+
+	if(host.stat == DEAD)
+		to_chat(src, "This host is in no condition to be controlled.")
 		return
 
 	if(src.stat)
@@ -383,6 +412,7 @@
 
 	if(stat)
 		to_chat(src, "You cannot leave your host in your current state.")
+		return
 
 	if(docile)
 		to_chat(src, "\blue You are feeling far too docile to do that.")
@@ -625,7 +655,7 @@
 		if(jobban_isbanned(O, "Syndicate"))
 			continue
 		if(O.client)
-			if((ROLE_BORER in O.client.prefs.be_special) && !jobban_isbanned(O, "alien"))
+			if((ROLE_BORER in O.client.prefs.be_special) && !jobban_isbanned(O, ROLE_BORER))
 				question(O.client)
 
 /mob/living/simple_animal/borer/proc/question(var/client/C)

@@ -27,6 +27,7 @@
 	set_typing_indicator(0)
 	usr.say(message)
 
+
 /mob/verb/me_verb(message as text)
 	set name = "Me"
 	set category = "IC"
@@ -39,8 +40,9 @@
 	else
 		usr.emote(message)
 
+
 /mob/proc/say_dead(var/message)
-	if(!src.client.holder)
+	if(!(client && client.holder))
 		if(!config.dsay_allowed)
 			to_chat(src, "<span class='danger'>Deadchat is globally muted.</span>")
 			return
@@ -100,6 +102,7 @@
 /mob/proc/emote(var/act, var/type, var/message)
 	if(act == "me")
 		return custom_emote(type, message)
+
 
 /mob/proc/get_ear()
 	// returns an atom representing a location on the map from which this

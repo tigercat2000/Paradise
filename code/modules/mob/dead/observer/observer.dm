@@ -44,10 +44,6 @@ var/list/image/ghost_darkness_images = list() //this is a list of images for thi
 
 	stat = DEAD
 
-	ghostimage = image(src.icon,src,src.icon_state)
-	ghost_darkness_images |= ghostimage
-	updateallghostimages()
-
 	var/turf/T
 	if(ismob(body))
 		T = get_turf(body)				//Where is the body located?
@@ -76,7 +72,15 @@ var/list/image/ghost_darkness_images = list() //this is a list of images for thi
 					name = capitalize(pick(first_names_female)) + " " + capitalize(pick(last_names))
 
 		mind = body.mind	//we don't transfer the mind but we keep a reference to it.
-
+	
+	ghostimage = image(icon = icon, loc = src, icon_state = icon_state)
+	ghostimage.overlays = overlays
+	ghostimage.dir = dir
+	ghostimage.appearance_flags |= KEEP_TOGETHER
+	ghostimage.alpha = alpha
+	appearance_flags |= KEEP_TOGETHER
+	ghost_darkness_images |= ghostimage
+	updateallghostimages()
 	if(!T)	T = pick(latejoin)			//Safety in case we cannot find the body's position
 	forceMove(T)
 
@@ -166,6 +170,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /mob/dead/observer/Move(NewLoc, direct)
 	following = null
 	dir = direct
+	ghostimage.dir = dir
 	if(NewLoc)
 		forceMove(NewLoc)
 		return
@@ -192,7 +197,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	return 0
 
 /mob/dead/observer/can_use_hands()	return 0
-/mob/dead/observer/is_active()		return 0
 
 /mob/dead/observer/Stat()
 	..()
@@ -248,9 +252,19 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /mob/dead/observer/proc/notify_cloning(var/message, var/sound, var/atom/source)
 	if(message)
 		to_chat(src, "<span class='ghostalert'>[message]</span>")
+		if(source)
+			var/obj/screen/alert/A = throw_alert("\ref[source]_notify_cloning", /obj/screen/alert/notify_cloning)
+			if(A)
+				if(client && client.prefs && client.prefs.UI_style)
+					A.icon = ui_style2icon(client.prefs.UI_style)
+				A.desc = message
+				var/old_layer = source.layer
+				source.layer = FLOAT_LAYER
+				A.overlays += source
+				source.layer = old_layer
 	to_chat(src, "<span class='ghostalert'><a href=?src=\ref[src];reenter=1>(Click to re-enter)</a></span>")
 	if(sound)
-		to_chat(src, sound(sound))
+		src << sound(sound)
 
 /mob/dead/observer/proc/show_me_the_hud(hud_index)
 	var/datum/atom_hud/H = huds[hud_index]
@@ -508,7 +522,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 //this is called when a ghost is drag clicked to something.
 /mob/dead/observer/MouseDrop(atom/over)
 	if(!usr || !over) return
-	if (isobserver(usr) && usr.client && usr.client.holder && isliving(over))
+	if (isobserver(usr) && usr.client && usr.client.holder)
 		if (usr.client.holder.cmd_ghost_drag(src,over))
 			return
 
@@ -563,6 +577,10 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 						return
 					forceMove(T)
 				following = null
+
+	if(href_list["reenter"])
+		reenter_corpse()
+
 	..()
 //END TELEPORT HREF CODE
 

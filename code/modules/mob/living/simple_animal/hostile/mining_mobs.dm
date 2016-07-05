@@ -73,6 +73,8 @@
 	aggro_vision_range = 9
 	idle_vision_range = 2
 	turns_per_move = 5
+	loot = list(/obj/item/weapon/ore/diamond{layer = 4.1},
+				/obj/item/weapon/ore/diamond{layer = 4.1})
 
 /obj/item/projectile/temp/basilisk
 	name = "freezing blast"
@@ -84,16 +86,12 @@
 	temperature = 50
 
 /mob/living/simple_animal/hostile/asteroid/basilisk/GiveTarget(var/new_target)
-	target = new_target
-	if(target != null)
-		Aggro()
-		stance = HOSTILE_STANCE_ATTACK
+	if(..()) //we have a target
 		if(isliving(target))
 			var/mob/living/L = target
 			if(L.bodytemperature > 261)
 				L.bodytemperature = 261
 				visible_message("<span class='danger'>The [src.name]'s stare chills [L.name] to the bone!</span>")
-	return
 
 /mob/living/simple_animal/hostile/asteroid/basilisk/ex_act(severity)
 	switch(severity)
@@ -103,14 +101,6 @@
 			adjustBruteLoss(140)
 		if(3.0)
 			adjustBruteLoss(110)
-
-/mob/living/simple_animal/hostile/asteroid/basilisk/death()
-	if(stat != DEAD)
-		var/counter
-		for(counter=0, counter<2, counter++)
-			var/obj/item/weapon/ore/diamond/D = new /obj/item/weapon/ore/diamond(src.loc)
-			D.layer = 4.1
-	..()
 
 /mob/living/simple_animal/hostile/asteroid/goldgrub
 	name = "goldgrub"
@@ -156,17 +146,12 @@
 	if(target != null)
 		if(istype(target, /obj/item/weapon/ore))
 			visible_message("<span class='notice'>The [src.name] looks at [target.name] with hungry eyes.</span>")
-			stance = HOSTILE_STANCE_ATTACK
-			return
-		if(isliving(target))
+		else if(isliving(target))
 			Aggro()
-			stance = HOSTILE_STANCE_ATTACK
 			visible_message("<span class='danger'>The [src.name] tries to flee from [target.name]!</span>")
 			retreat_distance = 10
 			minimum_distance = 10
 			Burrow()
-			return
-	return
 
 /mob/living/simple_animal/hostile/asteroid/goldgrub/AttackingTarget()
 	if(istype(target, /obj/item/weapon/ore))
@@ -213,7 +198,7 @@
 	Reward()
 	..()
 
-/mob/living/simple_animal/hostile/asteroid/goldgrub/adjustBruteLoss(var/damage)
+/mob/living/simple_animal/hostile/asteroid/goldgrub/adjustHealth(damage)
 	idle_vision_range = 9
 	..()
 
@@ -248,6 +233,7 @@
 	retreat_distance = 3
 	minimum_distance = 3
 	pass_flags = PASSTABLE
+	loot = list(/obj/item/organ/internal/hivelord_core)
 
 /mob/living/simple_animal/hostile/asteroid/hivelord/OpenFire(var/the_target)
 	var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/A = new /mob/living/simple_animal/hostile/asteroid/hivelordbrood(src.loc)
@@ -258,11 +244,6 @@
 
 /mob/living/simple_animal/hostile/asteroid/hivelord/AttackingTarget()
 	OpenFire()
-
-/mob/living/simple_animal/hostile/asteroid/hivelord/death()
-	if(stat != DEAD)
-		new /obj/item/organ/internal/hivelord_core(src.loc)
-	..()
 
 /obj/item/organ/internal/hivelord_core
 	name = "hivelord remains"
@@ -379,6 +360,7 @@
 	idle_vision_range = 5
 	anchored = 1 //Stays anchored until death as to be unpullable
 	var/pre_attack = 0
+	loot = list(/obj/item/asteroid/goliath_hide{layer = 4.1})
 
 /mob/living/simple_animal/hostile/asteroid/goliath/process_ai()
 	..()
@@ -387,19 +369,12 @@
 /mob/living/simple_animal/hostile/asteroid/goliath/proc/handle_preattack()
 	if(ranged_cooldown <= 2 && !pre_attack)
 		pre_attack++
-	if(!pre_attack || stat || stance == HOSTILE_STANCE_IDLE)
+	if(!pre_attack || stat || AIStatus == AI_IDLE)
 		return
 	icon_state = "Goliath_preattack"
 
 /mob/living/simple_animal/hostile/asteroid/goliath/revive()
 	anchored = 1
-	..()
-
-/mob/living/simple_animal/hostile/asteroid/goliath/death()
-	anchored = 0
-	if(stat != DEAD)
-		var/obj/item/asteroid/goliath_hide/G = new /obj/item/asteroid/goliath_hide(src.loc)
-		G.layer = 4.1
 	..()
 
 /mob/living/simple_animal/hostile/asteroid/goliath/OpenFire()
@@ -412,7 +387,7 @@
 		pre_attack = 0
 	return
 
-/mob/living/simple_animal/hostile/asteroid/goliath/adjustBruteLoss(var/damage)
+/mob/living/simple_animal/hostile/asteroid/goliath/adjustHealth(damage)
 	ranged_cooldown--
 	handle_preattack()
 	..()
@@ -481,8 +456,8 @@
 		if(istype(target, /obj/item/clothing/suit/space/rig/mining) || istype(target, /obj/item/clothing/head/helmet/space/rig/mining) || istype(target, /obj/item/clothing/suit/space/eva/plasmaman/miner) || istype(target, /obj/item/clothing/head/helmet/space/eva/plasmaman/miner))
 			var/obj/item/clothing/C = target
 			var/current_armor = C.armor
-			if(current_armor.["melee"] < 80)
-				current_armor.["melee"] = min(current_armor.["melee"] + 10, 80)
+			if(current_armor.["melee"] < 60)
+				current_armor.["melee"] = min(current_armor.["melee"] + 10, 60)
 				to_chat(user, "<span class='info'>You strengthen [target], improving its resistance against melee attacks.</span>")
 				qdel(src)
 			else

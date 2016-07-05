@@ -49,6 +49,8 @@
 
 	var/last_plant_ikey		//This is for debugging reference, and is otherwise useless. --FalseIncarnate
 
+	var/recent_bee_visit = FALSE //Have we been visited by a bee recently, so bees dont overpolinate one plant
+
 /*
 *	process() can be found in \code\modules\hydroponics\tray\tray_process.dm
 *	reagent handling can be found in \code\modules\hydroponics\tray\tray_reagents.dm
@@ -258,12 +260,16 @@
 			if(prob(20+mutation_mod))							//Low chance of stat mutation
 				if(!isnull(plant_controller.seeds[seed.name]))
 					seed = seed.diverge()
+				else
+					seed.update_name_prefixes()
 				seed.mutate(1,get_turf(src))
 				return
 		if(2)		//Tier 2
 			if(prob(60+mutation_mod))							//Higher chance of stat mutation
 				if(!isnull(plant_controller.seeds[seed.name]))
 					seed = seed.diverge()
+				else
+					seed.update_name_prefixes()
 				seed.mutate(1,get_turf(src))
 				return
 		if(3)		//Tier 3
@@ -273,11 +279,15 @@
 				else											//No mutant species, mutate stats instead
 					if(!isnull(plant_controller.seeds[seed.name]))
 						seed = seed.diverge()
+					else
+						seed.update_name_prefixes()
 					seed.mutate(1,get_turf(src))
 				return
 			else												//Failed to shift, mutate stats instead
 				if(!isnull(plant_controller.seeds[seed.name]))
 					seed = seed.diverge()
+				else
+					seed.update_name_prefixes()
 				seed.mutate(1,get_turf(src))
 				return
 		if(4)		//Tier 4
@@ -287,19 +297,27 @@
 				else											//No mutant species, mutate stats instead
 					if(!isnull(plant_controller.seeds[seed.name]))
 						seed = seed.diverge()
+					else
+						seed.update_name_prefixes()
 					seed.mutate(1,get_turf(src))
 					if(prob(20+mutation_mod))					//Low chance for second stat mutation
 						if(!isnull(plant_controller.seeds[seed.name]))
 							seed = seed.diverge()
+						else
+							seed.update_name_prefixes()
 						seed.mutate(1,get_turf(src))
 				return
 			else												//Failed to shift, mutate stats instead
 				if(!isnull(plant_controller.seeds[seed.name]))
 					seed = seed.diverge()
+				else
+					seed.update_name_prefixes()
 				seed.mutate(1,get_turf(src))
 				if(prob(20+mutation_mod))						//Low chance for second stat mutation
 					if(!isnull(plant_controller.seeds[seed.name]))
 						seed = seed.diverge()
+					else
+						seed.update_name_prefixes()
 					seed.mutate(1,get_turf(src))
 				return
 		//Floral Somatoray Tiers
@@ -307,12 +325,16 @@
 			if(prob(80+mutation_mod))							//EVEN Higher chance of stat mutation
 				if(!isnull(plant_controller.seeds[seed.name]))
 					seed = seed.diverge()
+				else
+					seed.update_name_prefixes()
 				seed.mutate(1,get_turf(src))
 				return
 		if("F2")	//Yield Tier
 			if(prob(40+mutation_mod))							//Medium chance of Yield stat mutation
 				if(!isnull(plant_controller.seeds[seed.name]))
 					seed = seed.diverge()
+				else
+					seed.update_name_prefixes()
 				if(seed.get_trait(TRAIT_IMMUTABLE) <= 0 && seed.get_trait(TRAIT_YIELD) != -1)		//Check if the plant can be mutated and has a yield to mutate
 					seed.set_trait(TRAIT_YIELD, (seed.get_trait(TRAIT_YIELD) + rand(-2, 2)))		//Randomly adjust yield
 					if(seed.get_trait(TRAIT_YIELD) < 0)							//If yield would drop below 0 after adjustment, set to 0 to allow further attempts
@@ -586,19 +608,6 @@
 		anchored = !anchored
 		to_chat(user, "You [anchored ? "wrench" : "unwrench"] \the [src].")
 
-	else if(istype(O, /obj/item/apiary))
-
-		if(seed)
-			to_chat(user, "<span class='danger'>[src] is already occupied!</span>")
-		else
-			user.drop_item()
-			qdel(O)
-
-			var/obj/machinery/apiary/A = new(src.loc)
-			A.icon = src.icon
-			A.icon_state = src.icon_state
-			A.hydrotray_type = src.type
-			qdel(src)
 	else if ((istype(O, /obj/item/weapon/tank) && !( src.destroyed )))
 		if (src.holding)
 			to_chat(user, "\blue There is alreadu a tank loaded into the [src].")

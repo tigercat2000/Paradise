@@ -25,6 +25,7 @@
 	var/active_sound = null
 	var/toggle_cooldown = null
 	var/cooldown = 0
+	var/species_disguise = null
 
 //BS12: Species-restricted clothing check.
 /obj/item/clothing/mob_can_equip(M as mob, slot)
@@ -60,7 +61,7 @@
 	//Set species_restricted list
 	switch(target_species)
 		if("Human", "Skrell")	//humanoid bodytypes
-			species_restricted = list("exclude","Unathi","Tajaran","Diona","Vox","Wryn")
+			species_restricted = list("exclude","Unathi","Tajaran","Diona","Vox","Wryn","Drask")
 		else
 			species_restricted = list(target_species)
 
@@ -119,7 +120,7 @@
 /obj/item/clothing/ears/offear
 	name = "Other ear"
 	w_class = 5.0
-	icon = 'icons/mob/screen1_Midnight.dmi'
+	icon = 'icons/mob/screen_gen.dmi'
 	icon_state = "block"
 	slot_flags = SLOT_EARS | SLOT_TWOEARS
 
@@ -184,7 +185,8 @@ BLIND     // can't see anything
 	species_restricted = list("exclude","Unathi","Tajaran","Wryn")
 	species_fit = list("Vox")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/gloves.dmi'
+		"Vox" = 'icons/mob/species/vox/gloves.dmi',
+		"Drask" = 'icons/mob/species/drask/gloves.dmi'
 		)
 
 /obj/item/clothing/gloves/attackby(obj/item/weapon/W, mob/user, params)
@@ -519,7 +521,7 @@ BLIND     // can't see anything
 	flags = HEADCOVERSEYES | BLOCKHAIR | HEADCOVERSMOUTH | STOPSPRESSUREDMAGE | THICKMATERIAL
 	item_state = "s_helmet"
 	permeability_coefficient = 0.01
-	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 100, rad = 50)
+	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 100, rad = 50)
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
@@ -541,8 +543,8 @@ BLIND     // can't see anything
 	flags = STOPSPRESSUREDMAGE | THICKMATERIAL
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
 	allowed = list(/obj/item/device/flashlight,/obj/item/weapon/tank)
-	slowdown = 2
-	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 100, rad = 50)
+	slowdown = 1
+	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 100, rad = 50)
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAIL
 	cold_protection = UPPER_TORSO | LOWER_TORSO | LEGS | FEET | ARMS | HANDS
 	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
@@ -559,10 +561,11 @@ BLIND     // can't see anything
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
 	permeability_coefficient = 0.90
 	slot_flags = SLOT_ICLOTHING
-	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
+	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0)
 	species_fit = list("Vox")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/uniform.dmi'
+		"Vox" = 'icons/mob/species/vox/uniform.dmi',
+		"Drask" = 'icons/mob/species/drask/uniform.dmi'
 		)
 	var/has_sensor = 1//For the crew computer 2 = unable to change mode
 	var/sensor_mode = 0
@@ -662,12 +665,14 @@ BLIND     // can't see anything
 	if(!istype(usr, /mob/living)) return
 	if(usr.stat) return
 
-	if(copytext(item_color,-2) != "_d")
-		basecolor = item_color
-	to_chat(usr, "DEBUG:[basecolor]")
-	if(basecolor + "_d_s" in icon_states('icons/mob/uniform.dmi'))
-		item_color = item_color == "[basecolor]" ? "[basecolor]_d" : "[basecolor]"
-		usr.update_inv_w_uniform()
+	if(!usr.incapacitated())
+		if(copytext(item_color,-2) != "_d")
+			basecolor = item_color
+		if(basecolor + "_d_s" in icon_states('icons/mob/uniform.dmi'))
+			item_color = item_color == "[basecolor]" ? "[basecolor]_d" : "[basecolor]"
+			usr.update_inv_w_uniform()
+		else
+			to_chat(usr, "<span class='notice'>You cannot roll down this uniform!</span>")
 	else
 		to_chat(usr, "<span class='notice'>You cannot roll down the uniform!</span>")
 

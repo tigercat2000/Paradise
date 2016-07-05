@@ -302,14 +302,14 @@ var/const/INGEST = 2
 					var/list/seen = viewers(4, get_turf(my_atom))
 					for(var/mob/M in seen)
 						if(!C.no_message)
-							to_chat(M, "\blue \icon[my_atom] [C.mix_message]")
+							to_chat(M, "\blue [bicon(my_atom)] [C.mix_message]")
 
 					if(istype(my_atom, /obj/item/slime_extract))
 						var/obj/item/slime_extract/ME2 = my_atom
 						ME2.Uses--
 						if(ME2.Uses <= 0) // give the notification that the slime core is dead
 							for(var/mob/M in seen)
-								to_chat(M, "\blue \icon[my_atom] The [my_atom]'s power is consumed in the reaction.")
+								to_chat(M, "\blue [bicon(my_atom)] The [my_atom]'s power is consumed in the reaction.")
 								ME2.name = "used slime extract"
 								ME2.desc = "This extract has been used up."
 
@@ -387,45 +387,48 @@ var/const/INGEST = 2
 			can_process = 1
 	return can_process
 
-/datum/reagents/proc/reaction(var/atom/A, var/method=TOUCH, var/volume_modifier=0)
-
+/datum/reagents/proc/reaction(atom/A, method=TOUCH, volume_modifier = 1)
 	switch(method)
 		if(TOUCH)
 			for(var/datum/reagent/R in reagent_list)
 				if(ismob(A))
-					spawn(0)
-						if(!R) return
-						var/check = reaction_check(A, R)
-						if(!check)
-							continue
-						else
-							R.reaction_mob(A, TOUCH, R.volume+volume_modifier)
+					if(!R)
+						return
+					var/check = reaction_check(A, R)
+					if(!check)
+						continue
+					else
+						R.reaction_mob(A, TOUCH, R.volume*volume_modifier)
 				if(isturf(A))
-					spawn(0)
-						if(!R) return
-						else R.reaction_turf(A, R.volume+volume_modifier)
+					if(!R)
+						return
+					else
+						R.reaction_turf(A, R.volume*volume_modifier)
 				if(isobj(A))
-					spawn(0)
-						if(!R) return
-						else R.reaction_obj(A, R.volume+volume_modifier)
+					if(!R)
+						return
+					else
+						R.reaction_obj(A, R.volume*volume_modifier)
 		if(INGEST)
 			for(var/datum/reagent/R in reagent_list)
 				if(ismob(A) && R)
-					spawn(0)
-						if(!R) return
-						var/check = reaction_check(A, R)
-						if(!check)
-							continue
-						else
-							R.reaction_mob(A, INGEST, R.volume+volume_modifier)
+					if(!R)
+						return
+					var/check = reaction_check(A, R)
+					if(!check)
+						continue
+					else
+						R.reaction_mob(A, INGEST, R.volume*volume_modifier)
 				if(isturf(A) && R)
-					spawn(0)
-						if(!R) return
-						else R.reaction_turf(A, R.volume+volume_modifier)
+					if(!R)
+						return
+					else
+						R.reaction_turf(A, R.volume*volume_modifier)
 				if(isobj(A) && R)
-					spawn(0)
-						if(!R) return
-						else R.reaction_obj(A, R.volume+volume_modifier)
+					if(!R)
+						return
+					else
+						R.reaction_obj(A, R.volume*volume_modifier)
 	return
 
 /datum/reagents/proc/add_reagent_list(list/list_reagents, list/data=null) // Like add_reagent but you can enter a list. Format it like this: list("toxin" = 10, "beer" = 15)
