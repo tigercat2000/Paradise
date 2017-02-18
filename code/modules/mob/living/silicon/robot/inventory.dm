@@ -5,21 +5,16 @@
 /mob/living/silicon/robot/get_active_hand()
 	return module_active
 
-
+/mob/living/silicon/robot/get_all_slots()
+	return list(module_state_1, module_state_2, module_state_3)
 
 /*-------TODOOOOOOOOOO--------*/
 /mob/living/silicon/robot/proc/uneq_module(obj/item/O)
 	if(!O)
 		return 0
 
-	if(istype(O,/obj/item/borg/sight))
-		var/obj/item/borg/sight/S = O
-		sight_mode &= ~S.sight_mode
-	else if(istype(O, /obj/item/device/flashlight))
-		var/obj/item/device/flashlight/F = O
-		if(F.on)
-			F.on = 0
-			F.update_brightness(src)
+	O.mouse_opacity = 2
+
 	if(client)
 		client.screen -= O
 	contents -= O
@@ -45,31 +40,39 @@
 	if(!(locate(O) in src.module.modules) && O != src.module.emag)
 		return
 	if(activated(O))
-		src << "Already activated"
+		to_chat(src, "Already activated")
 		return
+	if(is_component_functioning("power cell") && cell)
+		if(istype(O, /obj/item/borg))
+			var/obj/item/borg/B = O
+			if(B.powerneeded)
+				if((cell.charge * 100 / cell.maxcharge) < B.powerneeded)
+					to_chat(src, "Not enough power to activate [B.name]!")
+					return
 	if(!module_state_1)
+		O.mouse_opacity = initial(O.mouse_opacity)
 		module_state_1 = O
 		O.layer = 20
+		O.plane = HUD_PLANE
 		O.screen_loc = inv1.screen_loc
 		contents += O
-		if(istype(module_state_1,/obj/item/borg/sight))
-			sight_mode |= module_state_1:sight_mode
 	else if(!module_state_2)
+		O.mouse_opacity = initial(O.mouse_opacity)
 		module_state_2 = O
 		O.layer = 20
+		O.plane = HUD_PLANE
 		O.screen_loc = inv2.screen_loc
 		contents += O
-		if(istype(module_state_2,/obj/item/borg/sight))
-			sight_mode |= module_state_2:sight_mode
 	else if(!module_state_3)
+		O.mouse_opacity = initial(O.mouse_opacity)
 		module_state_3 = O
 		O.layer = 20
+		O.plane = HUD_PLANE
 		O.screen_loc = inv3.screen_loc
 		contents += O
-		if(istype(module_state_3,/obj/item/borg/sight))
-			sight_mode |= module_state_3:sight_mode
 	else
-		src << "You need to disable a module first!"
+		to_chat(src, "You need to disable a module first!")
+	update_icons()
 
 /mob/living/silicon/robot/proc/uneq_active()
 	uneq_module(module_active)
@@ -99,6 +102,13 @@
 		return 1
 	else
 		return 0
+
+/mob/living/silicon/robot/drop_item()
+	var/obj/item/I = get_active_hand()
+	if(istype(I, /obj/item/weapon/gripper))
+		var/obj/item/weapon/gripper/G = I
+		G.drop_item_p(silent = 1)
+	return
 
 //Helper procs for cyborg modules on the UI.
 //These are hackish but they help clean up code elsewhere.
@@ -220,3 +230,14 @@
 	while(slot_start != slot_num) //If we wrap around without finding any free slots, just give up.
 
 	return
+
+/mob/living/silicon/robot/unEquip(obj/item/I)
+	if(I == module_active)
+		deselect_module(get_selected_module())
+	return ..()
+
+/mob/living/silicon/robot/proc/update_module_icon()
+	if(!module)
+		hands.icon_state = "nomod"
+	else
+		hands.icon_state = lowertext(module.module_type)

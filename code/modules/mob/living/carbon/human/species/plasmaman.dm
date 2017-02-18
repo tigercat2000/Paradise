@@ -1,13 +1,18 @@
 /datum/species/plasmaman // /vg/
 	name = "Plasmaman"
+	name_plural = "Plasmamen"
 	icobase = 'icons/mob/human_races/r_plasmaman_sb.dmi'
 	deform = 'icons/mob/human_races/r_plasmaman_pb.dmi'  // TODO: Need deform.
 	//language = "Clatter"
 	unarmed_type = /datum/unarmed_attack/punch
 
-	flags = IS_WHITELISTED | NO_BLOOD
+	flags = IS_WHITELISTED | NO_BLOOD | NOTRANSSTING
+	dietflags = DIET_OMNI
+	reagent_tag = PROCESS_ORG
 
 	//default_mutations=list(SKELETON) // This screws things up
+
+	butt_sprite = "plasma"
 
 	breath_type = "plasma"
 
@@ -15,18 +20,24 @@
 	heat_level_2 = 400  // Heat damage level 2 above this point.
 	heat_level_3 = 500  // Heat damage level 3 above this point.
 
+	//Has default darksight of 2.
+
+	suicide_messages = list(
+		"is twisting their own neck!",
+		"is letting some O2 in!",
+		"realizes the existential problem of being made out of plasma!",
+		"shows their true colors, which happens to be the color of plasma!")
+
 /datum/species/plasmaman/say_filter(mob/M, message, datum/language/speaking)
 	if(copytext(message, 1, 2) != "*")
 		message = replacetext(message, "s", stutter("ss"))
 	return message
 
 /datum/species/plasmaman/equip(var/mob/living/carbon/human/H)
-	H.fire_sprite = "Plasmaman"
-
 	// Unequip existing suits and hats.
 	H.unEquip(H.wear_suit)
 	H.unEquip(H.head)
-	if(H.mind.assigned_role!="Clown")
+	if(H.mind.assigned_role != "Clown")
 		H.unEquip(H.wear_mask)
 
 	H.equip_or_collect(new /obj/item/clothing/mask/breath(H), slot_wear_mask)
@@ -51,12 +62,23 @@
 		if("Life Support Specialist")
 			suit=/obj/item/clothing/suit/space/eva/plasmaman/atmostech
 			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/atmostech
-		if("Warden","Detective","Security Officer","Security Pod Pilot")
+		if("Detective")
 			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/
 			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/
-		if("Head of Security", "Magistrate")
+		if("Warden","Security Officer","Security Pod Pilot")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/
+			H.equip_or_collect(new /obj/item/weapon/gun/energy/gun/advtaser(H), slot_in_backpack)
+		if("Internal Affairs Agent")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/lawyer
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/lawyer
+		if("Magistrate")
+			suit=/obj/item/clothing/suit/space/eva/plasmaman/magistrate
+			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/magistrate
+		if("Head of Security")
 			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/hos
 			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/hos
+			H.equip_or_collect(new /obj/item/weapon/gun/energy/gun(H), slot_in_backpack)
 		if("Captain", "Blueshield")
 			suit=/obj/item/clothing/suit/space/eva/plasmaman/security/captain
 			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/security/captain
@@ -66,6 +88,7 @@
 		if("Medical Doctor","Brig Physician")
 			suit=/obj/item/clothing/suit/space/eva/plasmaman/medical
 			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/medical
+			H.equip_or_collect(new /obj/item/device/flashlight/pen(H), slot_in_backpack)
 		if("Paramedic")
 			suit=/obj/item/clothing/suit/space/eva/plasmaman/medical/paramedic
 			helm=/obj/item/clothing/head/helmet/space/eva/plasmaman/medical/paramedic
@@ -105,10 +128,9 @@
 	H.equip_or_collect(new suit(H), slot_wear_suit)
 	H.equip_or_collect(new helm(H), slot_head)
 	H.equip_or_collect(new/obj/item/weapon/tank/plasma/plasmaman(H), tank_slot) // Bigger plasma tank from Raggy.
-	H << "\blue You are now running on plasma internals from the [H.s_store] in your [tank_slot_name].  You must breathe plasma in order to survive, and are extremely flammable."
+	to_chat(H, "<span class='notice'>You are now running on plasma internals from the [H.s_store] in your [tank_slot_name].  You must breathe plasma in order to survive, and are extremely flammable.</span>")
 	H.internal = H.get_item_by_slot(tank_slot)
-	if (H.internals)
-		H.internals.icon_state = "internal1"
+	H.update_internals_hud_icon(1)
 
 // Plasmamen are so fucking different that they need their own proc.
 /datum/species/plasmaman/handle_breath(var/datum/gas_mixture/breath, var/mob/living/carbon/human/H)
@@ -172,22 +194,22 @@
 			if(SA_pp > SA_para_min) // Enough to make us paralysed for a bit
 				H.Paralyse(3) // 3 gives them one second to wake up and run away a bit!
 				if(SA_pp > SA_sleep_min) // Enough to make us sleep as well
-					H.sleeping = min(H.sleeping+2, 10)
+					H.AdjustSleeping(8, bound_lower = 0, bound_upper = 10)
 			else if(SA_pp > 0.15)	// There is sleeping gas in their lungs, but only a little, so give them a bit of a warning
 				if(prob(20))
 					spawn(0)
 						H.emote(pick("giggle", "laugh"))
 			SA.moles = 0
 
-	if( (abs(310.15 - breath.temperature) > 50) && !(RESIST_HEAT in H.mutations)) // Hot air hurts :(
+	if(abs(310.15 - breath.temperature) > 50) // Hot air hurts :(
 		if(H.status_flags & GODMODE)
 			return 1	//godmode
 		if(breath.temperature < cold_level_1)
 			if(prob(20))
-				src << "\red You feel your face freezing and an icicle forming in your lungs!"
+				to_chat(src, "\red You feel your face freezing and an icicle forming in your lungs!")
 		else if(breath.temperature > heat_level_1)
 			if(prob(20))
-				src << "\red You feel your face burning and a searing heat in your lungs!"
+				to_chat(src, "\red You feel your face burning and a searing heat in your lungs!")
 
 		switch(breath.temperature)
 			if(-INFINITY to cold_level_3)
@@ -213,4 +235,10 @@
 			if(heat_level_3 to INFINITY)
 				H.apply_damage(HEAT_GAS_DAMAGE_LEVEL_3, BURN, "head", used_weapon = "Excessive Heat")
 				H.fire_alert = max(H.fire_alert, 2)
+
+	if(!istype(H.wear_suit, /obj/item/clothing/suit/space/eva/plasmaman) || !istype(H.head, /obj/item/clothing/head/helmet/space/eva/plasmaman))
+		to_chat(H, "<span class='warning'>Your body reacts with the atmosphere and bursts into flame!</span>")
+		H.adjust_fire_stacks(0.5)
+		H.IgniteMob()
+
 	return 1

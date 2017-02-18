@@ -1,9 +1,11 @@
 /turf
 	icon = 'icons/turf/floors.dmi'
-	level = 1.0
+	level = 1
+	luminosity = 1
 
-	//for floors, use is_plating(), is_plasteel_floor() and is_light_floor()
 	var/intact = 1
+	var/turf/baseturf = /turf/space
+	var/slowdown = 0 //negative for faster, positive for slower
 
 	//Properties for open tiles (/floor)
 	var/oxygen = 0
@@ -19,25 +21,41 @@
 	var/temperature = T20C
 
 	var/blocks_air = 0
-	var/icon_old = null
-	var/pathweight = 1
-
-	//Mining resource generation stuff.
-	var/has_resources
-	var/list/resources
 
 	var/PathNode/PNode = null //associated PathNode in the A* algorithm
 
+	flags = 0
+
+	var/image/obscured	//camerachunks
+
+	var/list/blueprint_data //for the station blueprints, images of objects eg: pipes
+
+	var/list/footstep_sounds = list()
+	var/shoe_running_volume = 50
+	var/shoe_walking_volume = 20
+
 /turf/New()
 	..()
-	for(var/atom/movable/AM as mob|obj in src)
-		spawn( 0 )
-			src.Entered(AM)
-			return
-	return
+	for(var/atom/movable/AM in src)
+		Entered(AM)
+	if(smooth && ticker && ticker.current_state == GAME_STATE_PLAYING)
+		smooth_icon(src)
 
-// Adds the adjacent turfs to the current atmos processing
+/hook/startup/proc/smooth_world()
+	var/watch = start_watch()
+	log_startup_progress("Smoothing atoms...")
+	for(var/turf/T in world)
+		if(T.smooth)
+			smooth_icon(T)
+		for(var/A in T)
+			var/atom/AA = A
+			if(AA.smooth)
+				smooth_icon(AA)
+	log_startup_progress(" Smoothed atoms in [stop_watch(watch)]s.")
+	return 1
+
 /turf/Destroy()
+// Adds the adjacent turfs to the current atmos processing
 	if(air_master)
 		for(var/direction in cardinal)
 			if(atmos_adjacent_turfs & direction)
@@ -45,6 +63,10 @@
 				if(istype(T))
 					air_master.add_to_active(T)
 	..()
+	return QDEL_HINT_HARDDEL_NOW
+
+/turf/attack_hand(mob/user as mob)
+	user.Move_Pulled(src)
 
 /turf/ex_act(severity)
 	return 0
@@ -63,7 +85,7 @@
 	return 0
 
 /turf/Enter(atom/movable/mover as mob|obj, atom/forget as mob|obj|turf|area)
-	if (!mover)
+	if(!mover)
 		return 1
 
 
@@ -86,7 +108,7 @@
 			large_dense += border_obstacle
 
 	//Then, check the turf itself
-	if (!src.CanPass(mover, src))
+	if(!src.CanPass(mover, src))
 		mover.Bump(src, 1)
 		return 0
 
@@ -98,112 +120,19 @@
 	return 1 //Nothing found to block so return success!
 
 
-/turf/Entered(atom/atom as mob|obj)
-	..()
-//vvvvv Infared beam stuff vvvvv
-
-	if ((atom && atom.density && !( istype(atom, /obj/effect/beam) )))
-		for(var/obj/effect/beam/i_beam/I in src)
-			spawn( 0 )
-				if (I)
-					I.hit()
-				break
-
-//^^^^^ Infared beam stuff ^^^^^
-
-	if(!istype(atom, /atom/movable))
-		return
-
-	var/atom/movable/M = atom
+/turf/Entered(atom/movable/M, atom/OL, ignoreRest = 0)
+	if(ismob(M))
+		var/mob/O = M
+		if(!O.lastarea)
+			O.lastarea = get_area(O.loc)
+//		O.update_gravity(O.mob_has_gravity(src))
 
 	var/loopsanity = 100
-	if(ismob(M))
-		if(!M:lastarea)
-			M:lastarea = get_area(M.loc)
-		if(M:lastarea.has_gravity == 0)
-			inertial_drift(M)
-
-	/*
-		if(M.flags & NOGRAV)
-			inertial_drift(M)
-	*/
-
-
-
-		else if(!istype(src, /turf/space))
-			M:inertia_dir = 0
-	..()
-	var/objects = 0
-	for(var/atom/A as mob|obj|turf|area in range(1))
-		if(objects > loopsanity)	break
-		objects++
-		spawn( 0 )
-			if ((A && M))
-				A.HasProximity(M, 1)
-			return
-	return
-
-/turf/proc/adjacent_fire_act(turf/simulated/floor/source, temperature, volume)
-	return
-
-/turf/proc/is_plating()
-	return 0
-/turf/proc/is_asteroid_floor()
-	return 0
-/turf/proc/is_plasteel_floor()
-	return 0
-/turf/proc/is_light_floor()
-	return 0
-/turf/proc/is_grass_floor()
-	return 0
-/turf/proc/is_wood_floor()
-	return 0
-/turf/proc/is_carpet_floor()
-	return 0
-/turf/proc/is_catwalk()
-	return 0
-/turf/proc/return_siding_icon_state()		//used for grass floors, which have siding.
-	return 0
-
-/turf/proc/inertial_drift(atom/movable/A as mob|obj)
-	if(!(A.last_move))	return
-	if(istype(A, /obj/spacepod) && src.x > 2 && src.x < (world.maxx - 1) && src.y > 2 && src.y < (world.maxy-1))
-		var/obj/spacepod/SP = A
-		if(SP.Process_Spacemove(1))
-			SP.inertia_dir = 0
-			return
-		spawn(5)
-			if((SP && (SP.loc == src)))
-				if(SP.inertia_dir)
-					step(SP, SP.inertia_dir)
-					return
-	if(istype(A, /obj/structure/stool/bed/chair/cart/) && src.x > 2 && src.x < (world.maxx - 1) && src.y > 2 && src.y < (world.maxy-1))
-		var/obj/structure/stool/bed/chair/cart/JC = A //A bomb!
-		if(JC.Process_Spacemove(1))
-			JC.inertia_dir = 0
-			return
-		spawn(5)
-			if((JC && (JC.loc == src)))
-				if(JC.inertia_dir)
-					step(JC, JC.inertia_dir)
-					return
-				JC.inertia_dir = JC.last_move
-				step(JC, JC.inertia_dir)
-
-
-	if((istype(A, /mob/) && src.x > 2 && src.x < (world.maxx - 1) && src.y > 2 && src.y < (world.maxy-1)))
-		var/mob/M = A
-		if(M.Process_Spacemove(1))
-			M.inertia_dir  = 0
-			return
-		spawn(5)
-			if((M && !(M.anchored) && !(M.pulledby) && (M.loc == src)))
-				if(M.inertia_dir)
-					step(M, M.inertia_dir)
-					return
-				M.inertia_dir = M.last_move
-				step(M, M.inertia_dir)
-	return
+	for(var/atom/A in range(1))
+		if(loopsanity == 0)
+			break
+		loopsanity--
+		A.HasProximity(M, 1)
 
 /turf/proc/levelupdate()
 	for(var/obj/O in src)
@@ -220,35 +149,72 @@
 /turf/proc/RemoveLattice()
 	var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
 	if(L)
-		del L
+		qdel(L)
 
 //Creates a new turf
-/turf/proc/ChangeTurf(var/path)
-	if(!path)			return
-	if(path == type)	return src
-	var/old_lumcount = lighting_lumcount - initial(lighting_lumcount)
+/turf/proc/ChangeTurf(path, defer_change = FALSE, keep_icon = TRUE)
+	if(!path)
+		return
+	if(!use_preloader && path == type) // Don't no-op if the map loader requires it to be reconstructed
+		return src
 	var/old_opacity = opacity
+	var/old_dynamic_lighting = dynamic_lighting
+	var/old_affecting_lights = affecting_lights
+	var/old_lighting_overlay = lighting_overlay
+	var/old_blueprint_data = blueprint_data
+	var/old_obscured = obscured
+	var/old_corners = corners
+
+	BeforeChange()
 	if(air_master)
 		air_master.remove_from_active(src)
-
 	var/turf/W = new path(src)
+	if(!defer_change)
+		W.AfterChange()
 
-	if(istype(W, /turf/simulated))
-		W:Assimilate_Air()
-		W.RemoveLattice()
+	W.blueprint_data = old_blueprint_data
 
-	W.lighting_lumcount += old_lumcount
-	if(old_lumcount != W.lighting_lumcount)	//light levels of the turf have changed. We need to shift it to another lighting-subarea
-		W.lighting_changed = 1
-		lighting_controller.changed_turfs += W
+	for(var/turf/space/S in range(W,1))
+		S.update_starlight()
 
-	if(old_opacity != W.opacity)			//opacity has changed. Need to update surrounding lights
-		if(W.lighting_lumcount)				//unless we're being illuminated, don't bother (may be buggy, hard to test)
-			W.UpdateAffectingLights()
+	recalc_atom_opacity()
 
-	W.levelupdate()
-	W.CalculateAdjacentTurfs()
+	if(lighting_overlays_initialised)
+		lighting_overlay = old_lighting_overlay
+		affecting_lights = old_affecting_lights
+		corners = old_corners
+		if((old_opacity != opacity) || (dynamic_lighting != old_dynamic_lighting))
+			reconsider_lights()
+		if(dynamic_lighting != old_dynamic_lighting)
+			if(dynamic_lighting)
+				lighting_build_overlay()
+			else
+				lighting_clear_overlay()
+
+	obscured = old_obscured
+
 	return W
+
+/turf/proc/BeforeChange()
+	return
+
+// I'm including `ignore_air` because BYOND lacks positional-only arguments
+/turf/proc/AfterChange(ignore_air, keep_cabling = FALSE) //called after a turf has been replaced in ChangeTurf()
+	levelupdate()
+	CalculateAdjacentTurfs()
+
+	if(air_master && !ignore_air)
+		air_master.add_to_active(src)
+
+	if(!keep_cabling && !can_have_cabling())
+		for(var/obj/structure/cable/C in contents)
+			qdel(C)
+
+/turf/simulated/AfterChange(ignore_air, keep_cabling = FALSE)
+	..()
+	RemoveLattice()
+	if(!ignore_air)
+		Assimilate_Air()
 
 //////Assimilate Air//////
 /turf/simulated/proc/Assimilate_Air()
@@ -273,7 +239,7 @@
 					aco += S.air.carbon_dioxide
 					atox += S.air.toxins
 					atemp += S.air.temperature
-				turf_count ++
+				turf_count++
 		air.oxygen = (aoxy/max(turf_count,1))//Averages contents of the turfs, ignoring walls and the like
 		air.nitrogen = (anitro/max(turf_count,1))
 		air.carbon_dioxide = (aco/max(turf_count,1))
@@ -297,8 +263,6 @@
 			M.take_damage(100, "brute")
 
 /turf/proc/Bless()
-	if(flags & NOJAUNT)
-		return
 	flags |= NOJAUNT
 
 /////////////////////////////////////////////////////////////////////////
@@ -332,7 +296,7 @@
 	for(var/dir in cardinal)
 		T = get_step(src, dir)
 		if(istype(T) && !T.density)
-			if(!LinkBlocked(src, T))
+			if(!CanAtmosPass(T))
 				L.Add(T)
 	return L
 
@@ -363,7 +327,7 @@
 		if(T in closed) //turf already proceeded by A*
 			continue
 		if(istype(T) && !T.density)
-			if(!LinkBlocked(src, T))
+			if(!CanAtmosPass(T))
 				L.Add(T)
 	return L
 
@@ -377,7 +341,7 @@
 			continue
 		if(istype(T) && !T.density)
 			if(!ID)
-				if(!LinkBlocked(src, T))
+				if(!CanAtmosPass(T))
 					L.Add(T)
 			else
 				if(!LinkBlockedWithAccess(src, T, ID))
@@ -400,3 +364,79 @@
 	return abs(src.x - T.x) + abs(src.y - T.y)
 
 ////////////////////////////////////////////////////
+
+/turf/handle_fall(mob/faller, forced)
+	faller.lying = pick(90, 270)
+	if(!forced)
+		return
+	if(has_gravity(src))
+		playsound(src, "bodyfall", 50, 1)
+
+/turf/singularity_act()
+	if(intact)
+		for(var/obj/O in contents) //this is for deleting things like wires contained in the turf
+			if(O.level != 1)
+				continue
+			if(O.invisibility == 101)
+				O.singularity_act()
+	ChangeTurf(/turf/space)
+	return(2)
+
+/turf/proc/visibilityChanged()
+	if(ticker)
+		cameranet.updateVisibility(src)
+
+/turf/attackby(obj/item/C, mob/user, params)
+	if(can_lay_cable() && istype(C, /obj/item/stack/cable_coil))
+		var/obj/item/stack/cable_coil/coil = C
+		for(var/obj/structure/cable/LC in src)
+			if((LC.d1==0)||(LC.d2==0))
+				LC.attackby(C,user)
+				return
+		coil.place_turf(src, user)
+		return 1
+
+	return 0
+
+/turf/proc/can_have_cabling()
+	return 1
+
+/turf/proc/can_lay_cable()
+	return can_have_cabling() & !intact
+
+/turf/proc/add_blueprints(atom/movable/AM)
+	var/image/I = new
+	I.appearance = AM.appearance
+	I.appearance_flags = RESET_COLOR|RESET_ALPHA|RESET_TRANSFORM
+	I.loc = src
+	I.dir = AM.dir
+	I.alpha = 128
+
+	if(!blueprint_data)
+		blueprint_data = list()
+	blueprint_data += I
+
+/turf/proc/add_blueprints_preround(atom/movable/AM)
+	if(!ticker || ticker.current_state != GAME_STATE_PLAYING)
+		add_blueprints(AM)
+
+/turf/proc/empty(turf_type=/turf/space)
+	// Remove all atoms except observers, landmarks, docking ports, and (un)`simulated` atoms (lighting overlays)
+	var/turf/T0 = src
+	for(var/X in T0.GetAllContents())
+		var/atom/A = X
+		if(istype(A, /mob/dead))
+			continue
+		if(istype(A, /obj/effect/landmark))
+			continue
+		if(istype(A, /obj/docking_port))
+			continue
+		if(!A.simulated)
+			continue
+		qdel(A, force=TRUE)
+
+	T0.ChangeTurf(turf_type)
+
+	air_master.remove_from_active(T0)
+	T0.CalculateAdjacentTurfs()
+	air_master.add_to_active(T0,1)

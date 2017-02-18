@@ -4,16 +4,17 @@ var/list/possible_uplinker_IDs = list("Alfa","Bravo","Charlie","Delta","Echo","F
 
 
 /obj/machinery/computer/telecrystals
-	name = "\improper Telecrystal assignment station"
+	name = "telecrystal assignment station"
 	desc = "A device used to manage telecrystals during group operations. You shouldn't be looking at this particular one..."
-	icon_state = "tcstation"
 
 /////////////////////////////////////////////
 /obj/machinery/computer/telecrystals/uplinker
-	name = "\improper Telecrystal upload/recieve station"
+	name = "telecrystal upload/recieve station"
 	desc = "A device used to manage telecrystals during group operations. To use, simply insert your uplink. With your uplink installed \
 	you can upload your telecrystals to the group's pool using the console, or be assigned additional telecrystals by your lieutenant."
 	icon_state = "tcstation"
+	icon_keyboard = "tcstation_key"
+	icon_screen = "syndie"
 	var/obj/item/uplinkholder = null
 	var/obj/machinery/computer/telecrystals/boss/linkedboss = null
 
@@ -33,7 +34,7 @@ var/list/possible_uplinker_IDs = list("Alfa","Bravo","Charlie","Delta","Echo","F
 	if(istype(O, /obj/item))
 
 		if(uplinkholder)
-			user << "<span class='notice'>The [src] already has an uplink in it.</span>"
+			to_chat(user, "<span class='notice'>The [src] already has an uplink in it.</span>")
 			return
 
 		if(O.hidden_uplink)
@@ -45,12 +46,13 @@ var/list/possible_uplinker_IDs = list("Alfa","Bravo","Charlie","Delta","Echo","F
 			update_icon()
 			updateUsrDialog()
 		else
-			user << "<span class='notice'>The [O] doesn't appear to be an uplink...</span>"
+			to_chat(user, "<span class='notice'>The [O] doesn't appear to be an uplink...</span>")
 
 
 
 /obj/machinery/computer/telecrystals/uplinker/update_icon()
 	overlays.Cut()
+	..()
 	if(uplinkholder)
 		overlays += "[initial(icon_state)]-closed"
 
@@ -94,8 +96,8 @@ var/list/possible_uplinker_IDs = list("Alfa","Bravo","Charlie","Delta","Echo","F
 	if(uplinkholder)
 		dat += "[uplinkholder.hidden_uplink.uses] telecrystals remain in this uplink.<BR>"
 		if(linkedboss)
-			dat += "Donate TC: <a href='byond://?src=\ref[src];donate1=1'>1</a> | <a href='byond://?src=\ref[src];donate5=1'>5</a>"
-		dat += "<br><a href='byond://?src=\ref[src];eject=1'>Eject Uplink</a>"
+			dat += "Donate TC: <a href='byond://?src=[UID()];donate1=1'>1</a> | <a href='byond://?src=[UID()];donate5=1'>5</a>"
+		dat += "<br><a href='byond://?src=[UID()];eject=1'>Eject Uplink</a>"
 
 
 	var/datum/browser/popup = new(user, "computer", "Telecrystal Upload/Recieve Station", 700, 500)
@@ -126,7 +128,8 @@ var/list/possible_uplinker_IDs = list("Alfa","Bravo","Charlie","Delta","Echo","F
 	desc = "A device used to manage telecrystals during group operations. To use, simply initialize the machine by scanning for nearby uplink stations. \
 	Once the consoles are linked up, you can assign any telecrystals amongst your operatives; be they donated by your agents or rationed to the squad \
 	based on the danger rating of the mission."
-	icon_state = "tcboss"
+	icon_keyboard = "syndie_key"
+	icon_screen = "tcboss"
 	var/virgin = 1
 	var/scanrange = 10
 	var/storedcrystals = 0
@@ -165,7 +168,7 @@ var/list/possible_uplinker_IDs = list("Alfa","Bravo","Charlie","Delta","Echo","F
 
 
 	var/dat = ""
-	dat += "<a href='byond://?src=\ref[src];scan=1'>Scan for TC stations.</a><BR>"
+	dat += "<a href='byond://?src=[UID()];scan=1'>Scan for TC stations.</a><BR>"
 	dat += "This [src] has [storedcrystals] telecrystals available for distribution. <BR>"
 	dat += "<BR><BR>"
 
@@ -175,11 +178,11 @@ var/list/possible_uplinker_IDs = list("Alfa","Bravo","Charlie","Delta","Echo","F
 		if(A.uplinkholder)
 			dat += "[A.uplinkholder.hidden_uplink.uses] telecrystals."
 		if(storedcrystals)
-			dat+= "<BR>Add TC: <a href ='?src=\ref[src];give1=\ref[A]'>1</a> | <a href ='?src=\ref[src];give5=\ref[A]'>5</a>"
+			dat+= "<BR>Add TC: <a href ='?src=[UID()];give1=\ref[A]'>1</a> | <a href ='?src=[UID()];give5=\ref[A]'>5</a>"
 		dat += "<BR>"
 
 	if(TCstations.len)
-		dat += "<BR><BR><a href='byond://?src=\ref[src];distrib=1'>Evenly distribute remaining TC.</a><BR><BR>"
+		dat += "<BR><BR><a href='byond://?src=[UID()];distrib=1'>Evenly distribute remaining TC.</a><BR><BR>"
 
 
 	for(var/entry in transferlog)

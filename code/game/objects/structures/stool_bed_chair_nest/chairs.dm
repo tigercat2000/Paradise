@@ -2,26 +2,33 @@
 	name = "chair"
 	desc = "You sit in this. Either by will or force."
 	icon_state = "chair"
+	buckle_lying = 0 //you sit in a chair, not lay
+	burn_state = FIRE_PROOF
 
 	var/propelled = 0 // Check for fire-extinguisher-driven chairs
 
-/obj/structure/stool/MouseDrop(atom/over_object)
-	return
-
 /obj/structure/stool/bed/chair/New()
-	if(anchored)
-		src.verbs -= /atom/movable/verb/pull
 	..()
 	spawn(3)	//sorry. i don't think there's a better way to do this.
 		handle_rotation()
 	return
+
+/obj/structure/stool/bed/chair/narsie_act()
+	if(prob(20))
+		var/obj/structure/stool/bed/chair/wood/W = new/obj/structure/stool/bed/chair/wood(get_turf(src))
+		W.dir = dir
+		qdel(src)
+
+/obj/structure/stool/bed/chair/Move(atom/newloc, direct)
+	..()
+	handle_rotation()
 
 /obj/structure/stool/bed/chair/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
 	..()
 	if(istype(W, /obj/item/assembly/shock_kit))
 		var/obj/item/assembly/shock_kit/SK = W
 		if(!SK.status)
-			user << "<span class='notice'>[SK] is not ready to be attached!</span>"
+			to_chat(user, "<span class='notice'>[SK] is not ready to be attached!</span>")
 			return
 		user.drop_item()
 		var/obj/structure/stool/bed/chair/e_chair/E = new /obj/structure/stool/bed/chair/e_chair(src.loc)
@@ -30,7 +37,7 @@
 		E.part = SK
 		SK.loc = E
 		SK.master = E
-		del(src)
+		qdel(src)
 
 /obj/structure/stool/bed/chair/attack_tk(mob/user as mob)
 	if(buckled_mob)
@@ -49,7 +56,7 @@
 
 /obj/structure/stool/bed/chair/verb/rotate()
 	set name = "Rotate Chair"
-	set category = null
+	set category = "Object"
 	set src in oview(1)
 
 	if(config.ghost_interaction)
@@ -66,14 +73,22 @@
 		handle_rotation()
 		return
 
-/obj/structure/stool/bed/chair/MouseDrop_T(mob/M as mob, mob/user as mob)
-	if(!istype(M)) return
-	buckle_mob(M, user)
-	return
+/obj/structure/stool/bed/chair/AltClick(mob/user)
+	if(user.incapacitated())
+		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
+		return
+	if(!Adjacent(user))
+		return
+	rotate()
 
 // Chair types
 /obj/structure/stool/bed/chair/wood
+	burn_state = FLAMMABLE
+	burntime = 20
 	// TODO:  Special ash subtype that looks like charred chair legs
+
+/obj/structure/stool/bed/chair/wood/narsie_act()
+	return
 
 /obj/structure/stool/bed/chair/wood/normal
 	icon_state = "wooden_chair"
@@ -88,8 +103,10 @@
 /obj/structure/stool/bed/chair/wood/attackby(obj/item/weapon/W as obj, mob/user as mob, params)
 	if(istype(W, /obj/item/weapon/wrench))
 		playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
-		new /obj/item/stack/sheet/wood(src.loc)
-		del(src)
+		new /obj/item/stack/sheet/wood(get_turf(src))
+		new /obj/item/stack/sheet/wood(get_turf(src))
+		new /obj/item/stack/sheet/wood(get_turf(src))
+		qdel(src)
 	else
 		..()
 
@@ -98,6 +115,8 @@
 	desc = "It looks comfy."
 	icon_state = "comfychair"
 	color = rgb(255,255,255)
+	burn_state = FLAMMABLE
+	burntime = 30
 	var/image/armrest = null
 
 /obj/structure/stool/bed/chair/comfy/New()
@@ -106,7 +125,7 @@
 
 	return ..()
 
-/obj/structure/stool/bed/chair/comfy/afterbuckle()
+/obj/structure/stool/bed/chair/comfy/post_buckle_mob(mob/living/M)
 	if(buckled_mob)
 		overlays += armrest
 	else
@@ -143,21 +162,14 @@
 	anchored = 0
 	movable = 1
 
-/obj/structure/stool/bed/chair/office/Move()
-	..()
-	if(buckled_mob)
-		var/mob/living/occupant = buckled_mob
-		occupant.buckled = null
-		occupant.Move(src.loc)
-		occupant.buckled = src
-		if (occupant && (src.loc != occupant.loc))
-			if (propelled)
-				for (var/mob/O in src.loc)
-					if (O != occupant)
-						Bump(O)
-			else
-				unbuckle()
-	handle_rotation()
+/obj/structure/stool/bed/chair/comfy/attackby(obj/item/weapon/W, mob/user, params)
+	if(iswrench(W))
+		playsound(loc, 'sound/items/Ratchet.ogg', 50, 1)
+		new /obj/item/stack/sheet/metal(get_turf(src))
+		new /obj/item/stack/sheet/metal(get_turf(src))
+		qdel(src)
+	else
+		..()
 
 /obj/structure/stool/bed/chair/office/Bump(atom/A)
 	..()
@@ -165,7 +177,7 @@
 
 	if(propelled)
 		var/mob/living/occupant = buckled_mob
-		unbuckle()
+		unbuckle_mob()
 		occupant.throw_at(A, 3, propelled)
 		occupant.apply_effect(6, STUN, 0)
 		occupant.apply_effect(6, WEAKEN, 0)

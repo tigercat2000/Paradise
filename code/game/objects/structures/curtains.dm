@@ -17,7 +17,7 @@
 /obj/structure/curtain/bullet_act(obj/item/projectile/P, def_zone)
 	if(!P.nodamage)
 		visible_message("<span class='warning'>[P] tears [src] down!</span>")
-		del(src)
+		qdel(src)
 	else
 		..(P, def_zone)
 
@@ -27,7 +27,7 @@
 	..()
 
 /obj/structure/curtain/proc/toggle()
-	opacity = !opacity
+	set_opacity(!opacity)
 	if(opacity)
 		icon_state = "closed"
 		layer = SHOWER_CLOSED_LAYER
@@ -54,6 +54,9 @@
 
 /obj/structure/curtain/open/shower/security
 	color = "#AA0000"
+
+/obj/structure/curtain/open/shower/centcom
+	color = "#000066"
 
 #undef SHOWER_OPEN_LAYER
 #undef SHOWER_CLOSED_LAYER

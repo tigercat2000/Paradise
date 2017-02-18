@@ -5,100 +5,99 @@
 //////Allows admin's to right click on any mob/mech and freeze them in place.///
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-/client/proc/freeze(mob/living/M as mob in mob_list)
-	set category = "Special Verbs"
+var/global/list/frozen_mob_list = list()
+/client/proc/freeze(var/mob/living/M as mob in mob_list)
+	set category = "Admin"
 	set name = "Freeze"
-	if(!holder)
-		src << "Only administrators may use this command."
+		
+	if(!check_rights(R_ADMIN))
 		return
-	if(!mob)
-		return
-	if(!istype(M))
-		alert("Cannot freeze a ghost")
-		return
-	if(usr)
-		if (usr.client)
-			if(usr.client.holder)
-				if (istype(M, /mob/living/carbon/slime))
-					if(!M.paralysis)
-						M.adjustToxLoss(2147483647)
-						M.AdjustParalysis(2147483647)
-						var/adminomaly = new/obj/effect/overlay/adminoverlay
-						spawn(50)
-							M.overlays += adminomaly
-						M << "<b><font color= red>You have been frozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
-						message_admins("\blue [key_name_admin(usr)] froze [key_name(M)]")
-						log_admin("[key_name(usr)] froze [key_name(M)]")
-					else if (M.paralysis)
-						M.AdjustParalysis(-2147483647)
-						M.blinded = 0
-						M.lying = 0
-						M.stat = 0
-						M << "<b> <font color= red>You have been unfrozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
-						message_admins("\blue [key_name_admin(usr)] unfroze [key_name(M)]")
-						log_admin("[key_name(usr)] unfroze [key_name(M)]")
-						M.revive()
-				else if (istype(M, /mob/living/carbon/human))
-					var/mob/living/carbon/human/FM = M
+		
+	if(!istype(M))	
+		return	
 
-					if(!FM.paralysis)
-						FM.anchored = 1
-						FM.frozen = 1
-						FM.AdjustParalysis(2147483647)
-						var/adminomaly = new/obj/effect/overlay/adminoverlay
-						spawn(50)
-							FM.overlays += adminomaly
-						FM << "<b><font color= red>You have been frozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
-						message_admins("\blue [key_name_admin(usr)] froze [key_name(FM)]")
-						log_admin("[key_name(usr)] froze [key_name(FM)]")
-					else if (M.paralysis)
-						FM.anchored = 0
-						FM.frozen = 0
-						FM.AdjustParalysis(-2147483647)
-						FM.blinded = 0
-						FM.lying = 0
-						FM.stat = 0
+	if(M in frozen_mob_list)
+		M.admin_unFreeze(src)
+	else
+		M.admin_Freeze(src)
 
-						FM << "<b> <font color= red>You have been unfrozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
-						message_admins("\blue [key_name_admin(usr)] unfroze [key_name(FM)]")
-						log_admin("[key_name(usr)] unfroze [key_name(FM)]")
+///mob freeze procs
 
-				else
+/mob/living/var/frozen = null //used for preventing attacks on admin-frozen mobs
+/mob/living/var/admin_prev_sleeping = 0 //used for keeping track of previous sleeping value with admin freeze
 
-					if(!M.paralysis)
-						M.anchored = 1
-						M.AdjustParalysis(2147483647)
-						var/adminomaly = new/obj/effect/overlay/adminoverlay
-						spawn(50)
-							M.overlays += adminomaly
-						M << "<b><font color= red>You have been frozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
-						message_admins("\blue [key_name_admin(usr)] froze [key_name(M)]")
-						log_admin("[key_name(usr)] froze [key_name(M)]")
-					else if (M.paralysis)
-						M.anchored = 0
-						M.AdjustParalysis(-2147483647)
-						M.blinded = 0
-						M.lying = 0
-						M.stat = 0
+/mob/living/proc/admin_Freeze(var/client/admin)
+	if(istype(admin))
+		to_chat(src, "<b><font color= red>You have been frozen by [key_name(admin)]</b></font>")
+		message_admins("<span class='notice'>[key_name_admin(admin)]</span> froze [key_name_admin(src)]")
+		log_admin("[key_name(admin)] froze [key_name(src)]")
 
-						M << "<b> <font color= red>You have been unfrozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
-						message_admins("\blue [key_name_admin(usr)] unfroze [key_name(M)]")
-						log_admin("[key_name(usr)] unfroze [key_name(M)]")
+	var/obj/effect/overlay/adminoverlay/AO = new
+	src.overlays += AO
+
+	anchored = 1
+	frozen = AO
+	admin_prev_sleeping = sleeping
+	AdjustSleeping(20000)
+	if(!(src in frozen_mob_list))
+		frozen_mob_list += src
+
+/mob/living/proc/admin_unFreeze(var/client/admin)
+	if(istype(admin))
+		to_chat(src, "<b><font color= red>You have been unfrozen by [key_name(admin)]</b></font>")
+		message_admins("\blue [key_name_admin(admin)] unfroze [key_name_admin(src)]")
+		log_admin("[key_name(admin)] unfroze [key_name(src)]")
+
+	anchored = 0
+	overlays -= frozen
+	frozen = null
+	SetSleeping(admin_prev_sleeping)
+	admin_prev_sleeping = null
+	if(src in frozen_mob_list)
+		frozen_mob_list -= src
+
+	update_icons()
 
 
-/client/proc/freezemecha(obj/mecha/O as obj in mechas_list)
-	set category = "Special Verbs"
+/mob/living/carbon/slime/admin_Freeze(admin)
+	..(admin)
+	adjustToxLoss(1010101010) //arbitrary large value
+
+/mob/living/carbon/slime/admin_unFreeze(admin)
+	..(admin)
+	adjustToxLoss(-1010101010)
+	stat = 0
+	revive()
+
+
+/mob/living/simple_animal/var/admin_prev_health = null
+
+/mob/living/simple_animal/admin_Freeze(admin)
+	..(admin)
+	admin_prev_health = health
+	health = 0
+
+/mob/living/simple_animal/admin_unFreeze(admin)
+	..(admin)
+	revive()
+	overlays.Cut()
+
+//////////////////////////Freeze Mech
+
+/client/proc/freezemecha(var/obj/mecha/O as obj in mechas_list)
+	set category = "Admin"
 	set name = "Freeze Mech"
-	if(!holder)
-		src << "Only administrators may use this command."
-		return
+
+	if(!check_rights(R_ADMIN))
+		return	
+	
 	var/obj/mecha/M = O
 	if(!istype(M,/obj/mecha))
-		src << "\red <b>This can only be used on Mechs!</b>"
+		to_chat(src, "<span class='danger'>This can only be used on mechs!</span>")
 		return
 	else
 		if(usr)
-			if (usr.client)
+			if(usr.client)
 				if(usr.client.holder)
 					var/adminomaly = new/obj/effect/overlay/adminoverlay
 					if(M.can_move == 1)
@@ -106,7 +105,7 @@
 						M.overlays += adminomaly
 						if(M.occupant)
 							M.removeVerb(/obj/mecha/verb/eject)
-							M.occupant << "<b><font color= red>You have been frozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
+							to_chat(M.occupant, "<b><font color= red>You have been frozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>")
 							message_admins("\blue [key_name_admin(usr)] froze [key_name(M.occupant)] in a [M.name]")
 							log_admin("[key_name(usr)] froze [key_name(M.occupant)] in a [M.name]")
 						else
@@ -117,7 +116,7 @@
 						M.overlays -= adminomaly
 						if(M.occupant)
 							M.addVerb(/obj/mecha/verb/eject)
-							M.occupant << "<b><font color= red>You have been unfrozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>"
+							to_chat(M.occupant, "<b><font color= red>You have been unfrozen by <a href='?priv_msg=\ref[usr.client]'>[key]</a></b></font>")
 							message_admins("\blue [key_name_admin(usr)] unfroze [key_name(M.occupant)] in a [M.name]")
 							log_admin("[key_name(usr)] unfroze [M.occupant.name]/[M.occupant.ckey] in a [M.name]")
 						else

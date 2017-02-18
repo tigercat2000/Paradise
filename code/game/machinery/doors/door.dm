@@ -18,6 +18,7 @@
 	var/p_open = 0
 	var/operating = 0
 	var/autoclose = 0
+	var/autoclose_timer
 	var/glass = 0
 	var/normalspeed = 1
 	var/heat_proof = 0 // For glass airlocks/opacity firedoors
@@ -45,35 +46,32 @@
 			bound_width = world.icon_size
 			bound_height = width * world.icon_size
 
-	air_update_turf(1)
-	update_freelok_sight()
+	update_freelook_sight()
 	airlocks += src
 	return
 
+/obj/machinery/door/initialize()
+	air_update_turf(1)
+	..()
 
 /obj/machinery/door/Destroy()
 	density = 0
 	air_update_turf(1)
-	update_freelok_sight()
+	update_freelook_sight()
 	airlocks -= src
-	..()
-	return
+	if(autoclose_timer)
+		deltimer(autoclose_timer)
+		autoclose_timer = 0
+	return ..()
 
 /obj/machinery/door/Bumped(atom/AM)
 	if(p_open || operating) return
-	if(ismob(AM))
-		var/mob/M = AM
+	if(isliving(AM))
+		var/mob/living/M = AM
 		if(world.time - M.last_bumped <= 10) return	//Can bump-open one airlock per second. This is to prevent shock spam.
 		M.last_bumped = world.time
-		if(!M.restrained() && !M.small)
+		if(!M.restrained() && M.mob_size > MOB_SIZE_SMALL)
 			bumpopen(M)
-		return
-
-	if(istype(AM, /obj/machinery/bot))
-		var/obj/machinery/bot/bot = AM
-		if(src.check_access(bot.botcard) || emergency == 1)
-			if(density)
-				open()
 		return
 
 	if(istype(AM, /obj/mecha))
@@ -82,15 +80,7 @@
 			if(mecha.occupant && (src.allowed(mecha.occupant) || src.check_access_list(mecha.operation_req_access) || emergency == 1))
 				open()
 			else
-				flick("door_deny", src)
-		return
-	if(istype(AM, /obj/structure/stool/bed/chair/wheelchair))
-		var/obj/structure/stool/bed/chair/wheelchair/wheel = AM
-		if(density)
-			if(wheel.pulling && (src.allowed(wheel.pulling)))
-				open()
-			else
-				flick("door_deny", src)
+				do_animate("deny")
 		return
 	return
 
@@ -104,38 +94,25 @@
 /obj/machinery/door/CanAtmosPass()
 	return !density
 
-//used in the AStar algorithm to determinate if the turf the door is on is passable
-/obj/machinery/door/proc/CanAStarPass(var/obj/item/weapon/card/id/ID)
-	return !density
-
 /obj/machinery/door/proc/bumpopen(mob/user as mob)
-	if(operating)	return
-//	if(user.last_airflow > world.time) //Fakkit //remind me to figure out the linda equiv
-//	if(user.last_airflow > world.time - zas_settings.Get("airflow_delay")) //Fakkit
-//		return
-	src.add_fingerprint(user)
-	if(!src.requiresID())
+	if(operating)
+		return
+	add_fingerprint(user)
+	if(!requiresID())
 		user = null
 
 	if(density)
-		if(allowed(user) || src.emergency == 1)
+		if(allowed(user) || emergency == 1)
 			open()
+			if(istype(user, /mob/living/simple_animal/bot))
+				var/mob/living/simple_animal/bot/B = user
+				B.door_opened(src)
 		else
-			flick("door_deny", src)
+			do_animate("deny")
 	return
-
-/obj/machinery/door/meteorhit(obj/M as obj)
-	src.open()
-	return
-
 
 /obj/machinery/door/attack_ai(mob/user as mob)
 	return src.attack_hand(user)
-
-
-/obj/machinery/door/attack_paw(mob/user as mob)
-	return src.attack_hand(user)
-
 
 /obj/machinery/door/attack_hand(mob/user as mob)
 	return src.attackby(user, user)
@@ -164,7 +141,7 @@
 			close()
 		return
 	if(src.density)
-		flick("door_deny", src)
+		do_animate("deny")
 	return
 
 /obj/machinery/door/emag_act(user as mob)
@@ -177,13 +154,14 @@
 
 /obj/machinery/door/blob_act()
 	if(prob(40))
-		del(src)
+		qdel(src)
 	return
 
 
 /obj/machinery/door/emp_act(severity)
 	if(prob(20/severity) && (istype(src,/obj/machinery/door/airlock) || istype(src,/obj/machinery/door/window)) )
-		open()
+		spawn(0)
+			open()
 	..()
 
 
@@ -196,7 +174,7 @@
 				qdel(src)
 		if(3.0)
 			if(prob(80))
-				var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+				var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
 				s.set_up(2, 1, src)
 				s.start()
 	return
@@ -235,23 +213,20 @@
 	if(!operating)		operating = 1
 
 	do_animate("opening")
-	src.SetOpacity(0)
+	src.set_opacity(0)
 	sleep(5)
 	src.density = 0
 	sleep(5)
-	src.layer = 2.7
+	src.layer = open_layer
 	update_icon()
-	SetOpacity(0)
+	set_opacity(0)
 	operating = 0
 	air_update_turf(1)
-	update_freelok_sight()
+	update_freelook_sight()
 
-	if(autoclose  && normalspeed)
-		spawn(150)
-			autoclose()
-	if(autoclose && !normalspeed)
-		spawn(5)
-			autoclose()
+	// The `addtimer` system has the advantage of being cancelable
+	if(autoclose)
+		autoclose_timer = addtimer(src, "autoclose", normalspeed ? 150 : 5, unique = 1)
 
 	return 1
 
@@ -262,22 +237,21 @@
 		return
 	operating = 1
 
+	if(autoclose_timer)
+		deltimer(autoclose_timer)
+		autoclose_timer = 0
+
 	do_animate("closing")
-	src.layer = 3.1
+	src.layer = closed_layer
 	sleep(5)
 	src.density = 1
 	sleep(5)
 	update_icon()
 	if(visible && !glass)
-		SetOpacity(1)	//caaaaarn!
+		set_opacity(1)	//caaaaarn!
 	operating = 0
 	air_update_turf(1)
-	update_freelok_sight()
-
-	//I shall not add a check every x ticks if a door has closed over some fire.
-	var/obj/effect/hotspot/fire = locate() in loc
-	if(fire)
-		qdel(fire)
+	update_freelook_sight()
 	return
 
 /obj/machinery/door/proc/crush()
@@ -287,32 +261,29 @@
 			L.emote("roar")
 		else if(ishuman(L)) //For humans
 			L.adjustBruteLoss(DOOR_CRUSH_DAMAGE)
-			L.emote("scream")
-			L.Weaken(5)
-		else if(ismonkey(L)) //For monkeys
-			L.adjustBruteLoss(DOOR_CRUSH_DAMAGE)
+			if(L.stat == CONSCIOUS)
+				L.emote("scream")
 			L.Weaken(5)
 		else //for simple_animals & borgs
 			L.adjustBruteLoss(DOOR_CRUSH_DAMAGE)
-		var/turf/location = src.loc
+		var/turf/simulated/location = src.loc
 		if(istype(location, /turf/simulated)) //add_blood doesn't work for borgs/xenos, but add_blood_floor does.
-			location.add_blood(L)
+			location.add_blood_floor(L)
 
 /obj/machinery/door/proc/requiresID()
 	return 1
 
 /obj/machinery/door/proc/autoclose()
-	var/obj/machinery/door/airlock/A = src
-	if(!A.density && !A.operating && !A.locked && !A.welded && A.autoclose)
+	autoclose_timer = 0
+	if(!qdeleted(src) && !density && !operating && autoclose)
 		close()
 	return
 
 /obj/machinery/door/Move(new_loc, new_dir)
 	var/turf/T = loc
-	..()
+	. = ..()
 	move_update_air(T)
 
-	. = ..()
 	if(width > 1)
 		if(dir in list(EAST, WEST))
 			bound_width = width * world.icon_size
@@ -321,6 +292,12 @@
 			bound_width = world.icon_size
 			bound_height = width * world.icon_size
 
+/obj/machinery/door/proc/update_freelook_sight()
+	// Glass door glass = 1
+	// don't check then?
+	if(!glass && cameranet)
+		cameranet.updateVisibility(src, 0)
+
 /obj/machinery/door/BlockSuperconductivity()
 	if(opacity || heat_proof)
 		return 1
@@ -328,3 +305,11 @@
 
 /obj/machinery/door/morgue
 	icon = 'icons/obj/doors/doormorgue.dmi'
+
+/obj/machinery/door/proc/hostile_lockdown(mob/origin)
+	if(!stat) //So that only powered doors are closed.
+		close() //Close ALL the doors!
+
+/obj/machinery/door/proc/disable_lockdown()
+	if(!stat) //Opens only powered doors.
+		open() //Open everything!

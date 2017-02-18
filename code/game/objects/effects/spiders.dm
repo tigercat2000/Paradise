@@ -13,10 +13,10 @@
 		if(1.0)
 			qdel(src)
 		if(2.0)
-			if (prob(50))
+			if(prob(50))
 				qdel(src)
 		if(3.0)
-			if (prob(5))
+			if(prob(5))
 				qdel(src)
 	return
 
@@ -65,7 +65,7 @@
 		return 1
 	else if(istype(mover, /mob/living))
 		if(prob(50))
-			mover << "<span class='danger'>You get stuck in \the [src] for a moment.</span>"
+			to_chat(mover, "<span class='danger'>You get stuck in \the [src] for a moment.</span>")
 			return 0
 	else if(istype(mover, /obj/item/projectile))
 		return prob(30)
@@ -77,6 +77,8 @@
 	icon_state = "eggs"
 	var/amount_grown = 0
 	var/player_spiders = 0
+	var/faction = list()
+	var/master_commander = null
 
 /obj/effect/spider/eggcluster/New()
 	pixel_x = rand(3,-3)
@@ -89,6 +91,8 @@
 		var/num = rand(3,12)
 		for(var/i=0, i<num, i++)
 			var/obj/effect/spider/spiderling/S = new /obj/effect/spider/spiderling(src.loc)
+			S.faction = faction
+			S.master_commander = master_commander
 			if(player_spiders)
 				S.player_spiders = 1
 		qdel(src)
@@ -105,6 +109,9 @@
 	var/obj/machinery/atmospherics/unary/vent_pump/entry_vent
 	var/travelling_in_vent = 0
 	var/player_spiders = 0
+	var/faction = list()
+	var/master_commander = null
+	var/selecting_player = 0
 
 /obj/effect/spider/spiderling/New()
 	pixel_x = rand(6,-6)
@@ -133,43 +140,40 @@
 			entry_vent = null
 	else if(entry_vent)
 		if(get_dist(src, entry_vent) <= 1)
-			if(entry_vent.network && entry_vent.network.normal_members.len)
-				var/list/vents = list()
-				for(var/obj/machinery/atmospherics/unary/vent_pump/temp_vent in entry_vent.network.normal_members)
-					vents.Add(temp_vent)
-				if(!vents.len)
-					entry_vent = null
-					return
-				var/obj/machinery/atmospherics/unary/vent_pump/exit_vent = pick(vents)
-				if(prob(50))
-					visible_message("<B>[src] scrambles into the ventillation ducts!</B>", \
-									"<span class='notice'>You hear something squeezing through the ventilation ducts.</span>")
-
-				spawn(rand(20,60))
-					loc = exit_vent
-					var/travel_time = round(get_dist(loc, exit_vent.loc) / 2)
-					spawn(travel_time)
-
-						if(!exit_vent || exit_vent.welded)
-							loc = entry_vent
-							entry_vent = null
-							return
-
-						if(prob(50))
-							audible_message("<span class='notice'>You hear something squeezing through the ventilation ducts.</span>")
-						sleep(travel_time)
-
-						if(!exit_vent || exit_vent.welded)
-							loc = entry_vent
-							entry_vent = null
-							return
-						loc = exit_vent.loc
-						entry_vent = null
-						var/area/new_area = get_area(loc)
-						if(new_area)
-							new_area.Entered(src)
-			else
+			var/list/vents = list()
+			for(var/obj/machinery/atmospherics/unary/vent_pump/temp_vent in entry_vent.parent.other_atmosmch)
+				vents.Add(temp_vent)
+			if(!vents.len)
 				entry_vent = null
+				return
+			var/obj/machinery/atmospherics/unary/vent_pump/exit_vent = pick(vents)
+			if(prob(50))
+				visible_message("<B>[src] scrambles into the ventillation ducts!</B>", \
+								"<span class='notice'>You hear something squeezing through the ventilation ducts.</span>")
+
+			spawn(rand(20,60))
+				loc = exit_vent
+				var/travel_time = round(get_dist(loc, exit_vent.loc) / 2)
+				spawn(travel_time)
+
+					if(!exit_vent || exit_vent.welded)
+						loc = entry_vent
+						entry_vent = null
+						return
+
+					if(prob(50))
+						audible_message("<span class='notice'>You hear something squeezing through the ventilation ducts.</span>")
+					sleep(travel_time)
+
+					if(!exit_vent || exit_vent.welded)
+						loc = entry_vent
+						entry_vent = null
+						return
+					loc = exit_vent.loc
+					entry_vent = null
+					var/area/new_area = get_area(loc)
+					if(new_area)
+						new_area.Entered(src)
 	//=================
 
 	else if(prob(33))
@@ -192,13 +196,18 @@
 			if(!grow_as)
 				grow_as = pick(typesof(/mob/living/simple_animal/hostile/poison/giant_spider))
 			var/mob/living/simple_animal/hostile/poison/giant_spider/S = new grow_as(src.loc)
-			if(player_spiders)
-				var/list/candidates = get_candidates(BE_ALIEN, ALIEN_AFK_BRACKET)
-				var/client/C = null
+			S.faction = faction
+			S.master_commander = master_commander
+			if(player_spiders && !selecting_player)
+				selecting_player = 1
+				spawn()
+					var/list/candidates = pollCandidates("Do you want to play as a spider?", ROLE_GSPIDER, 1)
 
-				if(candidates.len)
-					C = pick(candidates)
-					S.key = C.key
+					if(candidates.len)
+						var/mob/C = pick(candidates)
+						S.key = C.key
+						if(master_commander)
+							to_chat(S, "<span class='userdanger'>You are a spider who is loyal to [master_commander], obey [master_commander]'s every order and assist them in completing their goals at any cost.</span>")
 			qdel(src)
 
 /obj/effect/decal/cleanable/spiderling_remains
@@ -206,6 +215,7 @@
 	desc = "Green squishy mess."
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "greenshatter"
+	anchored = 1
 
 /obj/effect/spider/cocoon
 	name = "cocoon"
@@ -220,4 +230,4 @@
 	src.visible_message("<span class='danger'>\The [src] splits open.</span>")
 	for(var/atom/movable/A in contents)
 		A.loc = src.loc
-	..()
+	return ..()

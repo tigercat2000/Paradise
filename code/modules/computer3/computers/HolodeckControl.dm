@@ -10,7 +10,7 @@
 
 
 /datum/file/program/holodeck
-	name = "Holodeck Control Console"
+	name = "holodeck control console"
 	desc = "Used to control a nearby holodeck."
 	active_state = "holocontrol"
 	var/area/linkedholodeck = null
@@ -26,28 +26,28 @@
 		if(!interactable())
 			return
 		var/dat = "<h3>Current Loaded Programs</h3>"
-		dat += "<A href='?src=\ref[src];emptycourt'>((Empty Court)</font>)</A><BR>"
-		dat += "<A href='?src=\ref[src];boxingcourt'>((Boxing Court)</font>)</A><BR>"
-		dat += "<A href='?src=\ref[src];basketball'>((Basketball Court)</font>)</A><BR>"
-		dat += "<A href='?src=\ref[src];thunderdomecourt'>((Thunderdome Court)</font>)</A><BR>"
-		dat += "<A href='?src=\ref[src];beach'>((Beach)</font>)</A><BR>"
-//		dat += "<A href='?src=\ref[src];turnoff'>((Shutdown System)</font>)</A><BR>"
+		dat += "<A href='?src=[UID()];emptycourt'>((Empty Court)</font>)</A><BR>"
+		dat += "<A href='?src=[UID()];boxingcourt'>((Boxing Court)</font>)</A><BR>"
+		dat += "<A href='?src=[UID()];basketball'>((Basketball Court)</font>)</A><BR>"
+		dat += "<A href='?src=[UID()];thunderdomecourt'>((Thunderdome Court)</font>)</A><BR>"
+		dat += "<A href='?src=[UID()];beach'>((Beach)</font>)</A><BR>"
+//		dat += "<A href='?src=[UID()];turnoff'>((Shutdown System)</font>)</A><BR>"
 
 		dat += "<span class='notice'>Please ensure that only holographic weapons are used in the holodeck if a combat simulation has been loaded.</span><BR>"
 
 		if(emagged)
-			dat += "<A href='?src=\ref[src];burntest'>(<font color=red>Begin Atmospheric Burn Simulation</font>)</A><BR>"
+			dat += "<A href='?src=[UID()];burntest'>(<font color=red>Begin Atmospheric Burn Simulation</font>)</A><BR>"
 			dat += "Ensure the holodeck is empty before testing.<BR>"
 			dat += "<BR>"
-			dat += "<A href='?src=\ref[src];wildlifecarp'>(<font color=red>Begin Wildlife Simulation</font>)</A><BR>"
+			dat += "<A href='?src=[UID()];wildlifecarp'>(<font color=red>Begin Wildlife Simulation</font>)</A><BR>"
 			dat += "Ensure the holodeck is empty before testing.<BR>"
 			dat += "<BR>"
 			if(issilicon(usr))
-				dat += "<A href='?src=\ref[src];AIoverride'>(<font color=green>Re-Enable Safety Protocols?</font>)</A><BR>"
+				dat += "<A href='?src=[UID()];AIoverride'>(<font color=green>Re-Enable Safety Protocols?</font>)</A><BR>"
 			dat += "Safety Protocols are <font class='bad'>DISABLED</font><BR>"
 		else
 			if(issilicon(usr))
-				dat += "<A href='?src=\ref[src];AIoverride'>(<font color=red>Override Safety Protocols?</font>)</A><BR>"
+				dat += "<A href='?src=[UID()];AIoverride'>(<font color=red>Override Safety Protocols?</font>)</A><BR>"
 			dat += "<BR>"
 			dat += "Safety Protocols are <font class='good'>ENABLED</font><BR>"
 
@@ -132,7 +132,7 @@
 
 				for(var/turf/T in linkedholodeck)
 					if(prob(30))
-						var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+						var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
 						s.set_up(2, 1, T)
 						s.start()
 					T.ex_act(3)
@@ -160,7 +160,7 @@
 		if(!silent)
 			var/obj/oldobj = obj
 			obj.visible_message("The [oldobj.name] fades away!")
-		del(obj)
+		qdel(obj)
 
 	proc/checkInteg(var/area/A)
 		for(var/turf/T in A)
@@ -180,7 +180,7 @@
 					if(L.name=="Atmospheric Test Start")
 						spawn(20)
 							var/turf/T = get_turf(L)
-							var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+							var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
 							s.set_up(2, 1, T)
 							s.start()
 							if(T)
@@ -213,10 +213,10 @@
 			derez(item)
 
 		for(var/obj/effect/decal/cleanable/blood/B in linkedholodeck)
-			del(B)
+			qdel(B)
 
 		for(var/mob/living/simple_animal/hostile/carp/C in linkedholodeck)
-			del(C)
+			qdel(C)
 
 		holographic_items = A.copy_contents_to(linkedholodeck , 1)
 
@@ -229,7 +229,7 @@
 				if(L.name=="Atmospheric Test Start")
 					spawn(20)
 						var/turf/T = get_turf(L)
-						var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+						var/datum/effect/system/spark_spread/s = new /datum/effect/system/spark_spread
 						s.set_up(2, 1, T)
 						s.start()
 						if(T)

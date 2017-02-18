@@ -30,7 +30,7 @@
 		if(air_contents.oxygen < 0.5 || air_contents.toxins < 0.5)
 			return 0
 
-		active_hotspot = new(src)
+		active_hotspot = new /obj/effect/hotspot(src)
 		active_hotspot.temperature = exposed_temperature
 		active_hotspot.volume = exposed_volume
 
@@ -47,7 +47,9 @@
 	icon = 'icons/effects/fire.dmi'
 	icon_state = "1"
 	layer = TURF_LAYER
-	luminosity = 3
+
+	blend_mode = BLEND_ADD
+	light_range = 3
 
 	var/volume = 125
 	var/temperature = FIRE_MINIMUM_TEMPERATURE_TO_EXIST
@@ -57,9 +59,12 @@
 /obj/effect/hotspot/New()
 	..()
 	air_master.hotspots += src
+	perform_exposure()
+	dir = pick(cardinal)
+	air_update_turf()
 
 /obj/effect/hotspot/proc/perform_exposure()
-	var/turf/simulated/floor/location = loc
+	var/turf/simulated/location = loc
 	if(!istype(location) || !(location.air))	return 0
 
 	if(volume > CELL_VOLUME*0.95)	bypassing = 1
@@ -77,10 +82,13 @@
 		volume = affected.fuel_burnt*FIRE_GROWTH_RATE
 		location.assume_air(affected)
 
-	for(var/atom/item in loc)
-		if(item) // It's possible that the item is deleted in temperature_expose
+	for(var/A in loc)
+		var/atom/item = A
+		if(item && item != src) // It's possible that the item is deleted in temperature_expose
 			item.fire_act(null, temperature, volume)
 
+	color = heat2color(temperature)
+	set_light(l_color = color)
 	return 0
 
 
@@ -89,25 +97,25 @@
 		just_spawned = 0
 		return 0
 
-	var/turf/simulated/floor/location = loc
+	var/turf/simulated/location = loc
 	if(!istype(location))
-		Kill()
+		qdel(src)
 		return
 
 	if(location.excited_group)
 		location.excited_group.reset_cooldowns()
 
 	if((temperature < FIRE_MINIMUM_TEMPERATURE_TO_EXIST) || (volume <= 1))
-		Kill()
+		qdel(src)
 		return
 
-	if((!(location.air) || location.air.toxins < 0.5 || location.air.oxygen < 0.5))
-		Kill()
+	if(!(location.air) || location.air.toxins < 0.5 || location.air.oxygen < 0.5)
+		qdel(src)
 		return
 
 	perform_exposure()
 
-	if(location.wet) location.wet = 0
+	if(location.wet) location.wet = TURF_DRY
 
 	if(bypassing)
 		icon_state = "3"
@@ -118,6 +126,9 @@
 			var/radiated_temperature = location.air.temperature*FIRE_SPREAD_RADIOSITY_SCALE
 			for(var/direction in cardinal)
 				if(!(location.atmos_adjacent_turfs & direction))
+					var/turf/simulated/wall/W = get_step(src, direction)
+					if(istype(W))
+						W.adjacent_fire_act(W, radiated_temperature)
 					continue
 				var/turf/simulated/T = get_step(src, direction)
 				if(istype(T) && T.active_hotspot)
@@ -141,17 +152,15 @@
 
 // Garbage collect itself by nulling reference to it
 
-/obj/effect/hotspot/proc/Kill()
+/obj/effect/hotspot/Destroy()
+	set_light(0)
 	air_master.hotspots -= src
 	DestroyTurf()
-	qdel(src)
-
-/obj/effect/hotspot/Destroy()
 	if(istype(loc, /turf/simulated))
 		var/turf/simulated/T = loc
 		if(T.active_hotspot == src)
 			T.active_hotspot = null
-	loc = null
+	return ..()
 
 /obj/effect/hotspot/proc/DestroyTurf()
 
@@ -159,7 +168,7 @@
 		var/turf/simulated/T = loc
 		if(T.to_be_destroyed)
 			var/chance_of_deletion
-			if (T.heat_capacity) //beware of division by zero
+			if(T.heat_capacity) //beware of division by zero
 				chance_of_deletion = T.max_fire_temperature_sustained / T.heat_capacity * 8 //there is no problem with prob(23456), min() was redundant --rastaf0
 			else
 				chance_of_deletion = 100
@@ -169,9 +178,7 @@
 				T.to_be_destroyed = 0
 				T.max_fire_temperature_sustained = 0
 
-/obj/effect/hotspot/New()
+/obj/effect/hotspot/Crossed(mob/living/L)
 	..()
-	dir = pick(cardinal)
-	air_update_turf()
-	return
-
+	if(isliving(L))
+		L.fire_act()

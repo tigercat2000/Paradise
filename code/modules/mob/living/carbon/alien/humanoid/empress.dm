@@ -5,11 +5,10 @@
 	health = 700
 	icon_state = "alienq_s"
 	status_flags = CANPARALYSE
-	heal_rate = 5
-	plasma_rate = 20
+	mob_size = MOB_SIZE_LARGE
 	move_delay_add = 3
-	max_plasma = 1000
 	large = 1
+	ventcrawler = 0
 
 /mob/living/carbon/alien/humanoid/empress/large
 	name = "alien empress"
@@ -19,23 +18,20 @@
 	pixel_x = -32
 
 /mob/living/carbon/alien/humanoid/empress/large/update_icons()
-	lying_prev = lying	//so we don't update overlays for lying/standing unless our stance changes again
-	update_hud()		//TODO: remove the need for this to be here
 	overlays.Cut()
-	if(lying)
-		if(resting)					icon_state = "empress_sleep"
-		else						icon_state = "empress_l"
-		for(var/image/I in overlays_lying)
-			overlays += I
+
+	if(stat == DEAD)
+		icon_state = "empress_dead"
+	else if(stat == UNCONSCIOUS || lying || resting)
+		icon_state = "empress_sleep"
 	else
 		icon_state = "empress_s"
-		for(var/image/I in overlays_standing)
-			overlays += I
+
+	for(var/image/I in overlays_standing)
+		overlays += I
 
 /mob/living/carbon/alien/humanoid/empress/New()
-	var/datum/reagents/R = new/datum/reagents(100)
-	reagents = R
-	R.my_atom = src
+	create_reagents(100)
 
 	//there should only be one queen
 	for(var/mob/living/carbon/alien/humanoid/empress/E in living_mob_list)
@@ -46,8 +42,11 @@
 			break
 
 	real_name = src.name
-	verbs.Add(/mob/living/carbon/alien/humanoid/proc/corrosive_acid,/mob/living/carbon/alien/humanoid/proc/resin)
-	verbs -= /mob/living/carbon/alien/verb/ventcrawl
+	alien_organs += new /obj/item/organ/internal/xenos/plasmavessel/queen
+	alien_organs += new /obj/item/organ/internal/xenos/acidgland
+	alien_organs += new /obj/item/organ/internal/xenos/eggsac
+	alien_organs += new /obj/item/organ/internal/xenos/resinspinner
+	alien_organs += new /obj/item/organ/internal/xenos/neurotoxin
 	..()
 
 /mob/living/carbon/alien/humanoid/empress
@@ -56,8 +55,8 @@
 
 		..() //-Yvarov
 
-		if (src.healths)
-			if (src.stat != 2)
+		if(src.healths)
+			if(src.stat != 2)
 				switch(health)
 					if(250 to INFINITY)
 						src.healths.icon_state = "health0"
@@ -80,11 +79,11 @@
 	set category = "Alien"
 
 	if(locate(/obj/structure/alien/egg) in get_turf(src))
-		src << "<span class='noticealien'>There's already an egg here.</span>"
+		to_chat(src, "<span class='noticealien'>There's already an egg here.</span>")
 		return
 
-	if(powerc(75,1))//Can't plant eggs on spess tiles. That's silly.
-		adjustToxLoss(-75)
+	if(powerc(250,1))//Can't plant eggs on spess tiles. That's silly.
+		adjustPlasma(-250)
 		for(var/mob/O in viewers(src, null))
 			O.show_message(text("\green <B>[src] has laid an egg!</B>"), 1)
 		new /obj/structure/alien/egg(loc)

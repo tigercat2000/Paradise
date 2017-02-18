@@ -1,6 +1,6 @@
 
 /obj/machinery/artifact_analyser
-	name = "Anomaly Analyser"
+	name = "anomaly analyser"
 	desc = "Studies the emissions of anomalous materials to discover their uses."
 	icon = 'icons/obj/virology.dmi'
 	icon_state = "isolator"
@@ -43,14 +43,14 @@
 		dat += "<b><font color=red>Unable to locate analysis pad.</font></b><br>"
 	else if(scan_in_progress)
 		dat += "Please wait. Analysis in progress.<br>"
-		dat += "<a href='?src=\ref[src];halt_scan=1'>Halt scanning.</a><br>"
+		dat += "<a href='?src=[UID()];halt_scan=1'>Halt scanning.</a><br>"
 	else
 		dat += "Scanner is ready.<br>"
-		dat += "<a href='?src=\ref[src];begin_scan=1'>Begin scanning.</a><br>"
+		dat += "<a href='?src=[UID()];begin_scan=1'>Begin scanning.</a><br>"
 
 	dat += "<br>"
 	dat += "<hr>"
-	dat += "<a href='?src=\ref[src]'>Refresh</a> <a href='?src=\ref[src];close=1'>Close</a>"
+	dat += "<a href='?src=[UID()]'>Refresh</a> <a href='?src=[UID()];close=1'>Close</a>"
 	user << browse(dat, "window=artanalyser;size=450x500")
 	user.set_machine(src)
 	onclose(user, "artanalyser")
@@ -73,11 +73,12 @@
 			results = get_scan_info(scanned_object)
 
 		src.visible_message("<b>[name]</b> states, \"Scanning complete.\"")
+		playsound(loc, 'sound/goonstation/machines/printer_dotmatrix.ogg', 50, 1)
 		var/obj/item/weapon/paper/P = new(src.loc)
 		P.name = "[src] report #[++report_num]"
 		P.info = "<b>[src] analysis report #[report_num]</b><br>"
 		P.info += "<br>"
-		P.info += "\icon[scanned_object] [results]"
+		P.info += "[bicon(scanned_object)] [results]"
 		P.stamped = list(/obj/item/weapon/stamp)
 		P.overlays = list("paper_stamped")
 
@@ -135,10 +136,7 @@
 			ecosystem involving self cannibalism and a symbiotic relationship with the contained liquid.<br><br>\
 			Structure is composed of a carbo-titanium alloy with interlaced reinforcing energy fields, and the contained liquid \
 			resembles proto-plasmic residue supportive of single cellular developmental conditions."
-		if(/obj/machinery/power/supermatter)
-			return "Super dense plasma clump - Appears to have been shaped or hewn, structure is composed of matter 2000% denser than ordinary carbon matter residue.\
-			Potential application as unrefined plasma source."
-		if(/obj/machinery/power/supermatter)
+		if(/obj/machinery/power/supermatter_shard)
 			return "Super dense plasma clump - Appears to have been shaped or hewn, structure is composed of matter 2000% denser than ordinary carbon matter residue.\
 			Potential application as unrefined plasma source."
 		if(/obj/structure/constructshell)

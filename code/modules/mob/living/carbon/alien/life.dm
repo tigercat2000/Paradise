@@ -1,71 +1,4 @@
-/mob/living/carbon/alien/proc/handle_chemicals_in_body()
-	if(reagents)
-		reagents.metabolize(src)
-
-	if (drowsyness)
-		drowsyness--
-		eye_blurry = max(2, eye_blurry)
-		if (prob(5))
-			sleeping += 1
-			Paralyse(5)
-
-	confused = max(0, confused - 1)
-	// decrement dizziness counter, clamped to 0
-	if(resting)
-		dizziness = max(0, dizziness - 5)
-		jitteriness = max(0, jitteriness - 5)
-	else
-		dizziness = max(0, dizziness - 1)
-		jitteriness = max(0, jitteriness - 1)
-
-	updatehealth()
-
-	return //TODO: DEFERRED
-
-/mob/living/carbon/alien/proc/breathe()
-	if(reagents)
-		if(reagents.has_reagent("lexorin")) return
-	if(istype(loc, /obj/machinery/atmospherics/unary/cryo_cell)) return
-
-	var/datum/gas_mixture/environment = loc.return_air()
-	var/datum/gas_mixture/breath
-	// HACK NEED CHANGING LATER
-	if(health <= config.health_threshold_crit)
-		losebreath++
-
-	if(losebreath>0) //Suffocating so do not take a breath
-		losebreath--
-		if (prob(75)) //High chance of gasping for air
-			spawn emote("gasp")
-		if(istype(loc, /obj/))
-			var/obj/location_as_object = loc
-			location_as_object.handle_internal_lifeform(src, 0)
-	else
-		//First, check for air from internal atmosphere (using an air tank and mask generally)
-		breath = get_breath_from_internal(BREATH_VOLUME)
-
-		//No breath from internal atmosphere so get breath from location
-		if(!breath)
-			if(istype(loc, /obj/))
-				var/obj/location_as_object = loc
-				breath = location_as_object.handle_internal_lifeform(src, BREATH_VOLUME)
-			else if(istype(loc, /turf/))
-				var/breath_moles = environment.total_moles()*BREATH_PERCENTAGE
-
-				breath = loc.remove_air(breath_moles)
-
-
-		else //Still give containing object the chance to interact
-			if(istype(loc, /obj/))
-				var/obj/location_as_object = loc
-				location_as_object.handle_internal_lifeform(src, 0)
-
-	handle_breath(breath)
-
-	if(breath)
-		loc.assume_air(breath)
-
-/mob/living/carbon/alien/proc/handle_breath(datum/gas_mixture/breath)
+/mob/living/carbon/alien/check_breath(datum/gas_mixture/breath)
 	if(status_flags & GODMODE)
 		return
 
@@ -74,49 +7,55 @@
 		return 0
 
 	var/toxins_used = 0
-	var/breath_pressure = (breath.total_moles()*R_IDEAL_GAS_EQUATION*breath.temperature)/BREATH_VOLUME
+	var/breath_pressure = (breath.total_moles() * R_IDEAL_GAS_EQUATION * breath.temperature) / BREATH_VOLUME
 
 	//Partial pressure of the toxins in our breath
-	var/Toxins_pp = (breath.toxins/breath.total_moles())*breath_pressure
+	var/Toxins_pp = (breath.toxins / breath.total_moles()) * breath_pressure
 
 	if(Toxins_pp) // Detect toxins in air
-
-		adjustToxLoss(breath.toxins*250)
-		toxins_alert = max(toxins_alert, 1)
+		adjustPlasma(breath.toxins*250)
+		throw_alert("alien_tox", /obj/screen/alert/alien_tox)
 
 		toxins_used = breath.toxins
 
 	else
-		toxins_alert = 0
+		clear_alert("alien_tox")
 
 	//Breathe in toxins and out oxygen
 	breath.toxins -= toxins_used
 	breath.oxygen += toxins_used
 
-	if(breath.temperature > (T0C+66) && !(RESIST_COLD  in mutations)) // Hot air hurts :(
-		if(prob(20))
-			src << "<span class='danger'>You feel a searing heat in your lungs!</span>"
-		fire_alert = max(fire_alert, 1)
-	else
-		fire_alert = 0
-
-	//Temporary fixes to the alerts.
+	//BREATH TEMPERATURE
+	handle_breath_temperature(breath)
 
 	return 1
 
-/mob/living/carbon/alien/proc/handle_stomach()
-	spawn(0)
-		for(var/mob/living/M in stomach_contents)
-			if(M.loc != src)
-				stomach_contents.Remove(M)
-				continue
-			if(istype(M, /mob/living/carbon) && stat != 2)
-				if(M.stat == 2)
-					M.death(1)
-					stomach_contents.Remove(M)
-					qdel(M)
-					continue
-				if(mob_master.current_cycle%3==1)
-					if(!(M.status_flags & GODMODE))
-						M.adjustBruteLoss(5)
-					nutrition += 10
+/mob/living/carbon/alien/update_sight()
+	if(!client)
+		return
+	if(stat == DEAD)
+		grant_death_vision()
+		return
+
+	sight = SEE_MOBS
+	if(nightvision)
+		see_in_dark = 8
+		see_invisible = SEE_INVISIBLE_MINIMUM
+	else
+		see_in_dark = 4
+		see_invisible = SEE_INVISIBLE_LEVEL_TWO
+
+	if(client.eye != src)
+		var/atom/A = client.eye
+		if(A.update_remote_sight(src)) //returns 1 if we override all other sight updates.
+			return
+
+	for(var/obj/item/organ/internal/cyberimp/eyes/E in internal_organs)
+		sight |= E.vision_flags
+		if(E.dark_view)
+			see_in_dark = max(see_in_dark, E.dark_view)
+		if(E.see_invisible)
+			see_invisible = min(see_invisible, E.see_invisible)
+
+	if(see_override)
+		see_invisible = see_override

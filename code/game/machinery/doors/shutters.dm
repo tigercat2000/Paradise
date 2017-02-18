@@ -24,7 +24,7 @@
 			icon_state = "shutter0"
 			sleep(15)
 			density = 0
-			SetOpacity(0)
+			set_opacity(0)
 			operating = 0
 			return
 	return
@@ -40,9 +40,9 @@
 	icon_state = "shutter0"
 	sleep(10)
 	density = 0
-	SetOpacity(0)
+	set_opacity(0)
 	air_update_turf(1)
-	update_freelok_sight()
+	update_freelook_sight()
 
 	if(operating == 1) //emag again
 		operating = 0
@@ -59,9 +59,9 @@
 	icon_state = "shutter1"
 	density = 1
 	if(visible)
-		SetOpacity(1)
+		set_opacity(1)
 	air_update_turf(1)
-	update_freelok_sight()
+	update_freelook_sight()
 
 	sleep(10)
 	operating = 0

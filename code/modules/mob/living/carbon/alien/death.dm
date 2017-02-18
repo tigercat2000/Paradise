@@ -11,13 +11,15 @@
 	animation.icon = 'icons/mob/mob.dmi'
 	animation.master = src
 
+	playsound(src.loc, 'sound/goonstation/effects/gib.ogg', 50, 1)
+
 	flick("gibbed-a", animation)
 	xgibs(loc, viruses)
 	dead_mob_list -= src
 
 	spawn(15)
-		if(animation)	del(animation)
-		if(src)			del(src)
+		if(animation)	qdel(animation)
+		if(src)			qdel(src)
 
 /mob/living/carbon/alien/dust()
 	death(1)
@@ -37,8 +39,8 @@
 	dead_mob_list -= src
 
 	spawn(15)
-		if(animation)	del(animation)
-		if(src)			del(src)
+		if(animation)	qdel(animation)
+		if(src)			qdel(src)
 
 /mob/living/carbon/alien/death(gibbed)
 	if(stat == DEAD)	return
@@ -50,10 +52,9 @@
 		for(var/mob/O in viewers(src, null))
 			O.show_message("<B>[src]</B> lets out a waning guttural screech, green blood bubbling from its maw...", 1)
 		update_canmove()
-		if(client)	blind.layer = 0
 		update_icons()
 
-	tod = worldtime2text() //weasellos time of death patch
-	if(mind) 	mind.store_memory("Time of death: [tod]", 0)
+	timeofdeath = world.time
+	if(mind) 	mind.store_memory("Time of death: [worldtime2text(timeofdeath)]", 0)
 
 	return ..(gibbed)

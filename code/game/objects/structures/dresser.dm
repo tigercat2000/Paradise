@@ -6,47 +6,49 @@
 	density = 1
 	anchored = 1
 
-/obj/structure/dresser/proc/convUnM(mund)
-	return underwear_m.Find(mund)
-
-/obj/structure/dresser/proc/convUnF(fund)
-	return underwear_f.Find(fund)
-
-/obj/structure/dresser/proc/convUs(us)
-	return undershirt_list.Find(us)
-
 /obj/structure/dresser/attack_hand(mob/user as mob)
 	if(!Adjacent(user))//no tele-grooming
 		return
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 
-		var/choice = input(user, "Underwear, or Undershirt?", "Changing") as null|anything in list("Underwear","Undershirt")
+		var/choice = input(user, "Underwear, Undershirt, or Socks?", "Changing") as null|anything in list("Underwear","Undershirt","Socks")
 
 		if(!Adjacent(user))
 			return
 		switch(choice)
 			if("Underwear")
-				if(H.gender == FEMALE)
-					var/new_undies = input(user, "Select your underwear", "Changing")  as null|anything in underwear_f
-					if(new_undies)
-						H << "\red You selected [new_undies]."
-						var/freturn = convUnF(new_undies)
-						H.underwear = freturn
-
-				else
-					var/new_undies = input(user, "Select your underwear", "Changing")  as null|anything in underwear_m
-					if(new_undies)
-						H << "\red You selected [new_undies]."
-						var/mreturn = convUnM(new_undies)
-						H.underwear = mreturn
+				var/list/valid_underwear = list()
+				for(var/underwear in underwear_list)
+					var/datum/sprite_accessory/S = underwear_list[underwear]
+					if(!(H.species.name in S.species_allowed))
+						continue
+					valid_underwear[underwear] = underwear_list[underwear]
+				var/new_underwear = input(user, "Choose your underwear:", "Changing") as null|anything in valid_underwear
+				if(new_underwear)
+					H.underwear = new_underwear
 
 			if("Undershirt")
-				var/new_undershirt = input(user, "Select your undershirt", "Changing") as null|anything in undershirt_list
+				var/list/valid_undershirts = list()
+				for(var/undershirt in undershirt_list)
+					var/datum/sprite_accessory/S = undershirt_list[undershirt]
+					if(!(H.species.name in S.species_allowed))
+						continue
+					valid_undershirts[undershirt] = undershirt_list[undershirt]
+				var/new_undershirt = input(user, "Choose your undershirt:", "Changing") as null|anything in valid_undershirts
 				if(new_undershirt)
-					H << "\red You selected [new_undershirt]"
-					var/usreturn = convUs(new_undershirt)
-					H.undershirt = usreturn
+					H.undershirt = new_undershirt
+
+			if("Socks")
+				var/list/valid_sockstyles = list()
+				for(var/sockstyle in socks_list)
+					var/datum/sprite_accessory/S = socks_list[sockstyle]
+					if(!(H.species.name in S.species_allowed))
+						continue
+					valid_sockstyles[sockstyle] = socks_list[sockstyle]
+				var/new_socks = input(user, "Choose your socks:", "Changing")  as null|anything in valid_sockstyles
+				if(new_socks)
+					H.socks = new_socks
 
 		add_fingerprint(H)
 		H.update_body()

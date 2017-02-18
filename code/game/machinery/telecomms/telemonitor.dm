@@ -8,8 +8,8 @@
 
 
 /obj/machinery/computer/telecomms/monitor
-	name = "Telecommunications Monitor"
-	icon_state = "comm_monitor"
+	name = "telecommunications monitor"
+	icon_screen = "comm_monitor"
 
 	var/screen = 0				// the screen number:
 	var/list/machinelist = list()	// the machines located by the computer
@@ -18,9 +18,9 @@
 	var/network = "NULL"		// the network to probe
 
 	var/temp = ""				// temporary feedback messages
-	circuit = "/obj/item/weapon/circuitboard/comm_monitor"
-	
-	l_color = "#50AB00"
+	circuit = /obj/item/weapon/circuitboard/comm_monitor
+
+	light_color = LIGHT_COLOR_DARKGREEN
 
 	attack_hand(mob/user as mob)
 		if(stat & (BROKEN|NOPOWER))
@@ -35,28 +35,28 @@
 
 			if(0)
 				dat += "<br>[temp]<br><br>"
-				dat += "<br>Current Network: <a href='?src=\ref[src];network=1'>[network]</a><br>"
+				dat += "<br>Current Network: <a href='?src=[UID()];network=1'>[network]</a><br>"
 				if(machinelist.len)
 					dat += "<br>Detected Network Entities:<ul>"
 					for(var/obj/machinery/telecomms/T in machinelist)
-						dat += "<li><a href='?src=\ref[src];viewmachine=[T.id]'>\ref[T] [T.name]</a> ([T.id])</li>"
+						dat += "<li><a href='?src=[UID()];viewmachine=[T.id]'>\ref[T] [T.name]</a> ([T.id])</li>"
 					dat += "</ul>"
-					dat += "<br><a href='?src=\ref[src];operation=release'>\[Flush Buffer\]</a>"
+					dat += "<br><a href='?src=[UID()];operation=release'>\[Flush Buffer\]</a>"
 				else
-					dat += "<a href='?src=\ref[src];operation=probe'>\[Probe Network\]</a>"
+					dat += "<a href='?src=[UID()];operation=probe'>\[Probe Network\]</a>"
 
 
 		  // --- Viewing Machine ---
 
 			if(1)
 				dat += "<br>[temp]<br>"
-				dat += "<center><a href='?src=\ref[src];operation=mainmenu'>\[Main Menu\]</a></center>"
+				dat += "<center><a href='?src=[UID()];operation=mainmenu'>\[Main Menu\]</a></center>"
 				dat += "<br>Current Network: [network]<br>"
 				dat += "Selected Network Entity: [SelectedMachine.name] ([SelectedMachine.id])<br>"
 				dat += "Linked Entities: <ol>"
 				for(var/obj/machinery/telecomms/T in SelectedMachine.links)
 					if(!T.hide)
-						dat += "<li><a href='?src=\ref[src];viewmachine=[T.id]'>\ref[T.id] [T.name]</a> ([T.id])</li>"
+						dat += "<li><a href='?src=[UID()];viewmachine=[T.id]'>\ref[T.id] [T.name]</a> ([T.id])</li>"
 				dat += "</ol>"
 
 
@@ -129,30 +129,30 @@
 	attackby(var/obj/item/weapon/D as obj, var/mob/user as mob, params)
 		if(istype(D, /obj/item/weapon/screwdriver))
 			playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
-			if(do_after(user, 20))
-				if (src.stat & BROKEN)
-					user << "\blue The broken glass falls out."
+			if(do_after(user, 20, target = src))
+				if(src.stat & BROKEN)
+					to_chat(user, "\blue The broken glass falls out.")
 					var/obj/structure/computerframe/A = new /obj/structure/computerframe( src.loc )
-					getFromPool(/obj/item/weapon/shard, loc)
+					new /obj/item/weapon/shard(loc)
 					var/obj/item/weapon/circuitboard/comm_monitor/M = new /obj/item/weapon/circuitboard/comm_monitor( A )
-					for (var/obj/C in src)
+					for(var/obj/C in src)
 						C.loc = src.loc
 					A.circuit = M
 					A.state = 3
 					A.icon_state = "3"
 					A.anchored = 1
-					del(src)
+					qdel(src)
 				else
-					user << "\blue You disconnect the monitor."
+					to_chat(user, "\blue You disconnect the monitor.")
 					var/obj/structure/computerframe/A = new /obj/structure/computerframe( src.loc )
 					var/obj/item/weapon/circuitboard/comm_monitor/M = new /obj/item/weapon/circuitboard/comm_monitor( A )
-					for (var/obj/C in src)
+					for(var/obj/C in src)
 						C.loc = src.loc
 					A.circuit = M
 					A.state = 4
 					A.icon_state = "4"
 					A.anchored = 1
-					del(src)
+					qdel(src)
 		src.updateUsrDialog()
 		return
 
@@ -160,4 +160,4 @@
 		if(!emagged)
 			playsound(src.loc, 'sound/effects/sparks4.ogg', 75, 1)
 			emagged = 1
-			user << "\blue You you disable the security protocols"
+			to_chat(user, "\blue You you disable the security protocols")
