@@ -47,8 +47,6 @@
 			if(newpoll)
 				client.handle_player_polling()
 
-	if(ckey in deadmins)
-		verbs += /client/proc/readmin
 	spawn(40)
 		if(client)
 			client.playtitlemusic()

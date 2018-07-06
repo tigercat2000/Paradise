@@ -10,6 +10,15 @@
 									//I would just like the code ready should it ever need to be used.
 #define SUGGESTED_CLIENT_VERSION	511		// only integers (e.g: 510, 511) useful here. Does not properly handle minor versions (e.g: 510.58, 511.848)
 
+GLOBAL_LIST_INIT(blacklisted_builds, list(
+	"1407" = "bug preventing client display overrides from working leads to clients being able to see things/mobs they shouldn't be able to see",
+	"1408" = "bug preventing client display overrides from working leads to clients being able to see things/mobs they shouldn't be able to see",
+	"1428" = "bug causing right-click menus to show too many verbs that's been fixed in version 1429",
+	"1432" = "bug with turf images not being shown leads to camera static being invisible",
+	"1433" = "bug with turf images not being shown leads to camera static being invisible",
+	"1434" = "bug with turf images not being shown leads to camera static being invisible",
+))
+
 	/*
 	When somebody clicks a link in game, this Topic is called first.
 	It does the stuff in this proc and  then is redirected to the Topic() proc for the src=[0xWhatever]
@@ -403,11 +412,16 @@
 	clients += src
 	directory[ckey] = src
 
+	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
 	//Admin Authorisation
 	holder = admin_datums[ckey]
 	if(holder)
 		admins += src
 		holder.owner = src
+		connecting_admin = TRUE
+	else if(ckey in deadmins)
+		verbs += /client/proc/readmin
+		connecting_admin = TRUE
 
 	donator_check()
 
@@ -452,11 +466,28 @@
 
 	. = ..()	//calls mob.Login()
 
+	if(byond_version >= 512)
+		if(!byond_build || byond_build < 1386)
+			message_admins("<span class='adminnotice'>[key_name(src)] has been detected as spoofing their byond version. Connection rejected.</span>")
+			log_adminwarn("Failed Login (spoofed byond version): [key] [address]-[computer_id]")
+			del(src)
+			return
+
+		if(num2text(byond_build) in GLOB.blacklisted_builds)
+			log_adminwarn("Failed Login (blacklisted byond version): [key] [address]-[computer_id]")
+			to_chat(src, "<span class='userdanger'>Your version of byond is blacklisted.</span>")
+			to_chat(src, "<span class='danger'>Byond build [byond_build] ([byond_version].[byond_build]) has been blacklisted for the following reason: [GLOB.blacklisted_builds[num2text(byond_build)]].</span>")
+			to_chat(src, "<span class='danger'>Please download a new version of byond. If [byond_build] is the latest, you can go to <a href=\"https://secure.byond.com/download/build\">BYOND's website</a> to download other versions.</span>")
+			if(connecting_admin)
+				to_chat(src, "As an admin, you are being allowed to continue using this version, but please consider changing byond versions")
+			else
+				del(src)
+				return
+
 	if(ckey in clientmessages)
 		for(var/message in clientmessages[ckey])
 			to_chat(src, message)
 		clientmessages.Remove(ckey)
-
 
 	send_resources()
 

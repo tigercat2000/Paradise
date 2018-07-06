@@ -46,10 +46,6 @@
 
 	reset_perspective(loc)
 
-
-	if(ckey in deadmins)
-		verbs += /client/proc/readmin
-
 	//Clear ability list and update from mob.
 	client.verbs -= ability_verbs
 
